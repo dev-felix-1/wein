@@ -1,6 +1,7 @@
 package de.fekl.tone.api.core.x;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import de.fekl.cone.api.core.SimpleColouredNet;
 import de.fekl.cone.api.core.SimpleToken;
@@ -8,7 +9,6 @@ import de.fekl.dine.api.core.INet;
 import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.dine.api.core.SimpleNet;
 import de.fekl.dine.api.core.SimpleNode;
-import junit.framework.Assert;
 
 public class ConeTest {
 

@@ -1,6 +1,7 @@
 package de.fekl.tone.api.core.x;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import de.fekl.cone.api.core.SimpleColouredNet;
 import de.fekl.cone.api.core.SimpleToken;
@@ -8,11 +9,8 @@ import de.fekl.dine.api.core.INet;
 import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.dine.api.core.SimpleNet;
 import de.fekl.dine.api.core.SimpleNode;
-import de.fekl.esta.api.core.IEvent;
-import de.fekl.esta.api.core.IStateChangeOperation;
 import de.fekl.esta.api.core.IStateHasChangedEvent;
 import de.fekl.esta.api.core.SimpleStateContainer;
-import junit.framework.Assert;
 
 public class EstaTest {
 
@@ -61,12 +59,12 @@ public class EstaTest {
 	@Test
 	public void testStateContainer() {
 		SimpleStateContainer<String> simpleStateContainer = new SimpleStateContainer<>("init");
-		Assert.assertEquals(0, simpleStateContainer.getStateChangedEvents().size());
+		Assertions.assertEquals(0, simpleStateContainer.getStateChangedEvents().size());
 		simpleStateContainer.changeState(initial -> initial + "-changed");
-		Assert.assertEquals(1, simpleStateContainer.getStateChangedEvents().size());
+		Assertions.assertEquals(1, simpleStateContainer.getStateChangedEvents().size());
 		IStateHasChangedEvent<String> poll = simpleStateContainer.getStateChangedEvents().poll();
-		Assert.assertEquals("init", poll.getSourceState());
-		Assert.assertEquals("init-changed", poll.getTargetState());
+		Assertions.assertEquals("init", poll.getSourceState());
+		Assertions.assertEquals("init-changed", poll.getTargetState());
 		
 	}
 

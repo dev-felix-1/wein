@@ -3,7 +3,8 @@ package de.fekl.tone.api.core.x;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import de.fekl.cone.api.core.IColouredNet;
 import de.fekl.cone.api.core.IToken;
@@ -24,7 +25,6 @@ import de.fekl.tone.api.core.x.claz.Message;
 import de.fekl.tone.api.core.x.claz.RequestTransformer;
 import de.fekl.tone.api.core.x.claz.ResponseTransformer;
 import de.fekl.tone.api.core.x.claz.TokenCopyNode;
-import junit.framework.Assert;
 
 public class SepeTest {
 
@@ -107,7 +107,7 @@ public class SepeTest {
 					}
 					
 					List<String> tokensOnNode = currentState.getCurrentState().getTokensOnNode(nodeId);
-					Assert.assertEquals(tokensOnNode.size(), outgoingEdges.size());
+					Assertions.assertEquals(tokensOnNode.size(), outgoingEdges.size());
 					IntStream.range(0, tokensOnNode.size()).forEach(i->{
 						String tId = tokensOnNode.get(i);
 						String nId = outgoingEdges.get(i).getTarget();

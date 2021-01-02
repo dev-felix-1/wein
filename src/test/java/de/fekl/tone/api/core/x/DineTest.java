@@ -1,12 +1,12 @@
 package de.fekl.tone.api.core.x;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import de.fekl.dine.api.core.INet;
 import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.dine.api.core.SimpleNet;
 import de.fekl.dine.api.core.SimpleNode;
-import junit.framework.Assert;
 
 public class DineTest {
 
@@ -36,11 +36,11 @@ public class DineTest {
 		simpleNet.addEdge(NID_B, NID_C);
 		simpleNet.addEdge(NID_C, NID_D);
 
-		Assert.assertNull(simpleNet.getNode("X"));
-		Assert.assertNotNull(simpleNet.getNode(NID_A));
-		Assert.assertNotNull(simpleNet.getNode(NID_B));
-		Assert.assertNotNull(simpleNet.getNode(NID_C));
-		Assert.assertNotNull(simpleNet.getNode(NID_D));
+		Assertions.assertNull(simpleNet.getNode("X"));
+		Assertions.assertNotNull(simpleNet.getNode(NID_A));
+		Assertions.assertNotNull(simpleNet.getNode(NID_B));
+		Assertions.assertNotNull(simpleNet.getNode(NID_C));
+		Assertions.assertNotNull(simpleNet.getNode(NID_D));
 	}
 
 	@Test
@@ -59,33 +59,38 @@ public class DineTest {
 
 	// ERROR Tests
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void testErrorOnDuplicateNodeDefinition() {
-		createSimpleABCNet().addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNode());
+		Assertions.assertThrows(IllegalStateException.class,
+				() -> createSimpleABCNet().addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNode()));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testErrorOnConnectionToMissingNode() {
-		createSimpleABCNet().addEdge(NID_A, NID_D);
+		Assertions.assertThrows(IllegalArgumentException.class, () -> createSimpleABCNet().addEdge(NID_A, NID_D));
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void testErrorOnDuplicateConnection() {
-		createSimpleABCNet().addEdge(NID_A, NID_B);
+		Assertions.assertThrows(IllegalStateException.class, () -> createSimpleABCNet().addEdge(NID_A, NID_B));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testErrorOnConnectionBeforeStartNode() {
-		INet simpleNet = createSimpleABCNet();
-		simpleNet.addNode(NID_D, NodeRoles.INTERMEDIATE, new SimpleNode());
-		simpleNet.addEdge(NID_D, NID_A);
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+			INet simpleNet = createSimpleABCNet();
+			simpleNet.addNode(NID_D, NodeRoles.INTERMEDIATE, new SimpleNode());
+			simpleNet.addEdge(NID_D, NID_A);
+		});
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testErrorOnConnectionBehindEndNode() {
-		INet simpleNet = createSimpleABCNet();
-		simpleNet.addNode(NID_D, NodeRoles.INTERMEDIATE, new SimpleNode());
-		simpleNet.addEdge(NID_C, NID_D);
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+			INet simpleNet = createSimpleABCNet();
+			simpleNet.addNode(NID_D, NodeRoles.INTERMEDIATE, new SimpleNode());
+			simpleNet.addEdge(NID_C, NID_D);
+		});
 	}
 
 }

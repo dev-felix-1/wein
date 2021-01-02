@@ -14,14 +14,10 @@
 
 	<properties>
 
-		<cd.helper.version>6.8.0</cd.helper.version>
+		<JAVA_1_15_HOME>C:/DEV/FE/jdk-15.0.1</JAVA_1_15_HOME>
 
-
-
-		<springfox.version>3.0.0</springfox.version>
 		<spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-		<spring-cloud.version>Hoxton.SR7</spring-cloud.version>
-		<spring-cloud-starter.version>2.2.3.RELEASE</spring-cloud-starter.version>
+
 		<log4j.version>2.13.3</log4j.version>
 
 		<json.version>20190722</json.version>
@@ -29,14 +25,16 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-		<spock-core.version>1.3-groovy-2.5</spock-core.version>
-		<gmavenplus.version>1.9.0</gmavenplus.version>
+
+		<gmavenplus.version>1.11.1</gmavenplus.version>
 		<groovy-wslite.version>1.1.3</groovy-wslite.version>
-		<groovy.version>2.5.12</groovy.version>
+		<groovy.version>3.0.7</groovy.version>
+
+		<java.version>15</java.version>
 
 	</properties>
 
-	<dependencyManagement>
+<!-- 	<dependencyManagement>
 		<dependencies>
 
 			<dependency>
@@ -48,63 +46,48 @@
 			</dependency>
 
 		</dependencies>
-	</dependencyManagement>
+	</dependencyManagement> -->
 
 
 	<dependencies>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-
+		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter</artifactId> 
+			</dependency> -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
+			<version>${groovy.version}</version>
 		</dependency>
 
 
-		<dependency>
-			<groupId>com.github.groovy-wslite</groupId>
-			<artifactId>groovy-wslite</artifactId>
-			<version>${groovy-wslite.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.codehaus.groovy</groupId>
-					<artifactId>groovy-all</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+		<!-- <dependency> <groupId>com.github.groovy-wslite</groupId> <artifactId>groovy-wslite</artifactId> 
+			<version>${groovy-wslite.version}</version> <exclusions> <exclusion> <groupId>org.codehaus.groovy</groupId> 
+			<artifactId>groovy-all</artifactId> </exclusion> </exclusions> </dependency> -->
 
-		<!-- Test Dependencies -->
-		<dependency>
+<!-- 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-test</artifactId>
+			<version>${groovy.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.spockframework</groupId>
-			<artifactId>spock-core</artifactId>
-			<version>${spock-core.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.spockframework</groupId>
-			<artifactId>spock-spring</artifactId>
-			<version>${spock-core.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>com.vaadin.external.google</groupId>
-					<artifactId>android-json</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+		</dependency> -->
+		<!-- <dependency> <groupId>org.spockframework</groupId> <artifactId>spock-core</artifactId> 
+			<version>${spock-core.version}</version> <scope>test</scope> </dependency> -->
+		<!-- <dependency> <groupId>org.spockframework</groupId> <artifactId>spock-spring</artifactId> 
+			<version>${spock-core.version}</version> <scope>test</scope> </dependency> -->
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-api</artifactId>
+    <version>5.7.0</version>
+    <scope>test</scope>
+</dependency>
+
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-engine</artifactId>
+    <version>5.7.0</version>
+    <scope>test</scope>
+</dependency>
+
 	</dependencies>
 
 	<build>
@@ -118,19 +101,50 @@
 						<goals>
 							<goal>addSources</goal>
 							<goal>compile</goal>
-						<!-- 	<goal>compileTests</goal> -->
+							<goal>compileTests</goal>
 						</goals>
 					</execution>
 				</executions>
+<!-- 				<dependencies>
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-test</artifactId>
+						<scope>test</scope>
+						<version>2.3.1.RELEASE</version>
+						<exclusions>
+							<exclusion>
+								<groupId>com.vaadin.external.google</groupId>
+								<artifactId>android-json</artifactId>
+							</exclusion>
+						</exclusions>
+					</dependency>
+				</dependencies> -->
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-compiler-plugin</artifactId> 
+				<configuration> <source>1.8</source> <target>1.8</target> <verbose>true</verbose> 
+				<fork>true</fork> <executable>${JAVA_1_15_HOME}/bin/javac</executable> <compilerVersion>1.15</compilerVersion> 
+				</configuration> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 			</plugin>
+
+			<plugin>
+
+				<artifactId>maven-compiler-plugin</artifactId>
+				<!-- <version>3.8.0</version> -->
+
+				<configuration>
+
+					<release>15</release>
+
+					<forceJavacCompilerUse>true</forceJavacCompilerUse>
+					<parameters>true</parameters>
+					<executable>${JAVA_1_15_HOME}/bin/javac</executable>
+				</configuration>
+			</plugin>
+
+
 		</plugins>
 	</build>
 
