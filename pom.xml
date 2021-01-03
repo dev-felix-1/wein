@@ -3,8 +3,6 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<!-- ======================================================================== 
-		Basic project information ======================================================================== -->
 	<modelVersion>4.0.0</modelVersion>
 
 
@@ -14,7 +12,7 @@
 
 	<properties>
 
-		<JAVA_1_15_HOME>C:/DEV/FE/jdk-15.0.1</JAVA_1_15_HOME>
+		<JAVA_1_15_HOME>C:/Users/felix/Desktop/wein/jdk-15.0.1</JAVA_1_15_HOME>
 
 		<spring-boot.version>2.3.1.RELEASE</spring-boot.version>
 
@@ -22,8 +20,8 @@
 
 		<json.version>20190722</json.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>15</maven.compiler.target>
+		<maven.compiler.source>15</maven.compiler.source>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
 
 		<gmavenplus.version>1.11.1</gmavenplus.version>
@@ -34,25 +32,10 @@
 
 	</properties>
 
-<!-- 	<dependencyManagement>
-		<dependencies>
-
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
-		</dependencies>
-	</dependencyManagement> -->
 
 
 	<dependencies>
 
-		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter</artifactId> 
-			</dependency> -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
@@ -60,20 +43,6 @@
 		</dependency>
 
 
-		<!-- <dependency> <groupId>com.github.groovy-wslite</groupId> <artifactId>groovy-wslite</artifactId> 
-			<version>${groovy-wslite.version}</version> <exclusions> <exclusion> <groupId>org.codehaus.groovy</groupId> 
-			<artifactId>groovy-all</artifactId> </exclusion> </exclusions> </dependency> -->
-
-<!-- 		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-test</artifactId>
-			<version>${groovy.version}</version>
-			<scope>test</scope>
-		</dependency> -->
-		<!-- <dependency> <groupId>org.spockframework</groupId> <artifactId>spock-core</artifactId> 
-			<version>${spock-core.version}</version> <scope>test</scope> </dependency> -->
-		<!-- <dependency> <groupId>org.spockframework</groupId> <artifactId>spock-spring</artifactId> 
-			<version>${spock-core.version}</version> <scope>test</scope> </dependency> -->
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter-api</artifactId>
@@ -105,39 +74,26 @@
 						</goals>
 					</execution>
 				</executions>
-<!-- 				<dependencies>
-					<dependency>
-						<groupId>org.springframework.boot</groupId>
-						<artifactId>spring-boot-starter-test</artifactId>
-						<scope>test</scope>
-						<version>2.3.1.RELEASE</version>
-						<exclusions>
-							<exclusion>
-								<groupId>com.vaadin.external.google</groupId>
-								<artifactId>android-json</artifactId>
-							</exclusion>
-						</exclusions>
-					</dependency>
-				</dependencies> -->
+
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-compiler-plugin</artifactId> 
-				<configuration> <source>1.8</source> <target>1.8</target> <verbose>true</verbose> 
-				<fork>true</fork> <executable>${JAVA_1_15_HOME}/bin/javac</executable> <compilerVersion>1.15</compilerVersion> 
-				</configuration> </plugin> -->
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				        <configuration>
+            <argLine>--enable-preview</argLine>
+        </configuration>
 			</plugin>
 
 			<plugin>
 
 				<artifactId>maven-compiler-plugin</artifactId>
-				<!-- <version>3.8.0</version> -->
+	
 
 				<configuration>
-
 					<release>15</release>
-
+					<compilerArgs>--enable-preview</compilerArgs>
+					<fork>true</fork>
 					<forceJavacCompilerUse>true</forceJavacCompilerUse>
 					<parameters>true</parameters>
 					<executable>${JAVA_1_15_HOME}/bin/javac</executable>

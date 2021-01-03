@@ -5,8 +5,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import de.fekl.baut.MapFormat;
 import de.fekl.baut.Precondition;
 
 public class SimpleNet implements INet {
@@ -93,25 +97,40 @@ public class SimpleNet implements INet {
 		return allNodes;
 	}
 
+	private static String join(Stream<String> stream) {
+		return stream.collect(Collectors.joining(", "));
+	}
+
+	private static String formatNodeMapEntry(Entry<String, INode> entry) {
+		return String.format("{%s (%s)}", entry.getKey(), entry.getValue().print());
+	}
+
+	private static <S, T> Stream<Entry<S, T>> stream(Map<S, T> map) {
+		return map.entrySet().stream();
+	}
+
+	private static Stream<String> transformEntriesToStrings(Map<String, INode> map) {
+		return stream(map).map(SimpleNet::formatNodeMapEntry);
+	}
+
 	@Override
 	public String print() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("### SIMPLE NET - %s ###%n", id));
-		sb.append(String.format("StartNode: {%s (%s)}%n", startNodeId, startNode.print()));
-		sb.append("IntermediateNodes: [");
-		sb.append(intermediateNodes.entrySet().stream()
-				.map(entry -> String.format("{%s (%s)}", entry.getKey(), entry.getValue().print()))
-				.collect(Collectors.joining(", ")));
-		sb.append("]\n");
-		sb.append("EndNodes: [");
-		sb.append(endNodes.entrySet().stream()
-				.map(entry -> String.format("{%s (%s)}", entry.getKey(), entry.getValue().print()))
-				.collect(Collectors.joining(", ")));
-		sb.append("]\n");
-		sb.append("Connections: [");
-		sb.append(edges.stream().map(IEdge::print).collect(Collectors.joining(", ")));
-		sb.append("]\n");
-		return sb.toString();
+		//@formatter:off
+		var printTemplate = """
+		### SIMPLE NET - %s ### {
+		    StartNode: {%s (%s)}
+		    IntermediateNodes: [%s]
+		    EndNodes: [%s]
+		    Connections: [%s]
+		}
+		""";
+		return String.format(printTemplate, 
+				id, 
+				startNodeId, startNode.print(), 
+				join(transformEntriesToStrings(intermediateNodes)),
+				join(transformEntriesToStrings(endNodes)),
+				join(edges.stream().map(IEdge::print)));
+		//@formatter:on
 	}
 
 	@Override
