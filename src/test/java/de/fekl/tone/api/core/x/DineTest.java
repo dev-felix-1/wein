@@ -7,6 +7,8 @@ import de.fekl.dine.api.core.INet;
 import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.dine.api.core.SimpleNet;
 import de.fekl.dine.api.core.SimpleNode;
+import de.fekl.dine.api.graph.DirectedGraphBuilder;
+import de.fekl.dine.api.graph.IDirectedGraph;
 
 public class DineTest {
 
@@ -23,6 +25,35 @@ public class DineTest {
 		simpleNet.addEdge(NID_A, NID_B);
 		simpleNet.addEdge(NID_B, NID_C);
 		return simpleNet;
+	}
+
+	private static IDirectedGraph createSimpleABCGraph() {
+		return new DirectedGraphBuilder().addNode(NID_A).addNode(NID_B).addNode(NID_C).addEdge(NID_A, NID_B)
+				.addEdge(NID_B, NID_C).build();
+	}
+
+	@Test
+	public void testGraph() {
+		IDirectedGraph graph = createSimpleABCGraph();
+
+		Assertions.assertFalse(graph.hasNode("X"));
+
+		Assertions.assertTrue(graph.hasNode(NID_A));
+		Assertions.assertTrue(graph.hasNode(NID_B));
+		Assertions.assertTrue(graph.hasNode(NID_C));
+
+		Assertions.assertEquals(2, graph.getEdges().size());
+
+		Assertions.assertEquals(0, graph.getIncomingEdges(NID_A).size());
+		Assertions.assertEquals(1, graph.getOutgoingEdges(NID_A).size());
+
+		Assertions.assertEquals(1, graph.getIncomingEdges(NID_B).size());
+		Assertions.assertEquals(1, graph.getOutgoingEdges(NID_B).size());
+
+		Assertions.assertEquals(1, graph.getIncomingEdges(NID_C).size());
+		Assertions.assertEquals(0, graph.getOutgoingEdges(NID_C).size());
+
+		System.err.println(graph);
 	}
 
 	@Test

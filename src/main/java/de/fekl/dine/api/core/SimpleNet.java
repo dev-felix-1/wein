@@ -6,11 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import de.fekl.baut.MapFormat;
 import de.fekl.baut.Precondition;
 
 public class SimpleNet implements INet {
