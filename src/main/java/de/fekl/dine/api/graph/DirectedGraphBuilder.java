@@ -1,7 +1,9 @@
 package de.fekl.dine.api.graph;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import de.fekl.dine.api.core.IEdge;
 import de.fekl.dine.api.core.IEdgeFactory;
@@ -9,7 +11,7 @@ import de.fekl.dine.api.core.SimpleEdgeFactory;
 
 public class DirectedGraphBuilder {
 
-	private final List<String> nodes = new ArrayList<>();
+	private final Set<String> nodes = new HashSet<>();
 	private final List<IEdge> edges = new ArrayList<>();
 
 	private IDirectedGraphFactory directedGraphFactory = new SimpleDirectedGraphFactory();

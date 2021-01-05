@@ -3,6 +3,7 @@ package de.fekl.dine.api.graph;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.fekl.baut.Precondition;
@@ -10,18 +11,18 @@ import de.fekl.dine.api.core.IEdge;
 
 public class SimpleDirectedGraph implements IDirectedGraph {
 
-	private final List<String> nodes;
+	private final Set<String> nodes;
 	private final List<IEdge> edges;
 
-	public SimpleDirectedGraph(List<String> nodes, List<IEdge> edges) {
+	public SimpleDirectedGraph(Set<String> nodes, List<IEdge> edges) {
 		Precondition.isNotEmpty(nodes);
 		Precondition.isNotNull(edges);
-		this.nodes = Collections.unmodifiableList(new ArrayList<>(nodes));
+		this.nodes = Collections.unmodifiableSet(nodes);
 		this.edges = Collections.unmodifiableList(new ArrayList<>(edges));
 	}
 
 	@Override
-	public List<String> getNodes() {
+	public Set<String> getNodes() {
 		return nodes;
 	}
 

@@ -5,7 +5,7 @@ plugins {
 }
 
 repositories {
-	if (maven_local_repo) {
+	if (project.hasProperty('maven_local_repo')) {
 	    maven {
 			url maven_local_repo
 		} 
