@@ -1,8 +1,8 @@
 package de.fekl.wein.api.core;
 
-import de.fekl.dine.api.core.INode;
+import de.fekl.dine.api.core.INodeDeprecated;
 
-public interface ITransformer<S, T> extends INode {
+public interface ITransformer<S, T> extends INodeDeprecated {
 
 	IContentType<S> getSourceContentType();
 

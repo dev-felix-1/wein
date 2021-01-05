@@ -1,9 +1,9 @@
 package de.fekl.tone.api.core.x.claz;
 
-import de.fekl.dine.api.core.INode;
-import de.fekl.dine.api.core.SimpleNode;
+import de.fekl.dine.api.core.INodeDeprecated;
+import de.fekl.dine.api.core.SimpleNodeDeprecated;
 
-public class ResponseTransformer extends SimpleNode implements INode, ITransformer{
+public class ResponseTransformer extends SimpleNodeDeprecated implements INodeDeprecated, ITransformer{
 
 	public Message transform(Message s) {
 		s.setValue(s.getValue() + "y");

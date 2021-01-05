@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test;
 import de.fekl.dine.api.core.INet;
 import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.dine.api.core.SimpleNet;
-import de.fekl.dine.api.core.SimpleNode;
+import de.fekl.dine.api.core.SimpleNodeDeprecated;
 import de.fekl.dine.api.graph.DirectedGraphBuilder;
 import de.fekl.dine.api.graph.IDirectedGraph;
+import de.fekl.dine.api.tree.ISpongeNet;
+import de.fekl.dine.api.tree.SpongeNetBuilder;
 
 public class DineTest {
 
@@ -19,9 +21,9 @@ public class DineTest {
 
 	private static INet createSimpleABCNet() {
 		INet simpleNet = new SimpleNet("hello");
-		simpleNet.addNode(NID_A, NodeRoles.START, new SimpleNode());
-		simpleNet.addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNode());
-		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNode());
+		simpleNet.addNode(NID_A, NodeRoles.START, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNodeDeprecated());
 		simpleNet.addEdge(NID_A, NID_B);
 		simpleNet.addEdge(NID_B, NID_C);
 		return simpleNet;
@@ -36,11 +38,11 @@ public class DineTest {
 	public void testGraph() {
 		IDirectedGraph graph = createSimpleABCGraph();
 
-		Assertions.assertFalse(graph.hasNode("X"));
+		Assertions.assertFalse(graph.contains("X"));
 
-		Assertions.assertTrue(graph.hasNode(NID_A));
-		Assertions.assertTrue(graph.hasNode(NID_B));
-		Assertions.assertTrue(graph.hasNode(NID_C));
+		Assertions.assertTrue(graph.contains(NID_A));
+		Assertions.assertTrue(graph.contains(NID_B));
+		Assertions.assertTrue(graph.contains(NID_C));
 
 		Assertions.assertEquals(2, graph.getEdges().size());
 
@@ -54,6 +56,81 @@ public class DineTest {
 		Assertions.assertEquals(0, graph.getOutgoingEdges(NID_C).size());
 
 		System.err.println(graph);
+	}
+
+	@Test
+	public void testSpongeNet() {
+		ISpongeNet spongeNet =
+		//@formatter:off
+			new SpongeNetBuilder()
+				.setGraph(new DirectedGraphBuilder()
+					.addNode(NID_A)
+					.addNode(NID_B)
+					.addNode(NID_C)
+					.addEdge(NID_A, NID_B)
+					.addEdge(NID_B, NID_C)
+					.build())
+				.setStartNode(NID_A)
+				.build();
+		//@formatter:on
+
+		Assertions.assertFalse(spongeNet.contains("X"));
+
+		Assertions.assertTrue(spongeNet.contains(NID_A));
+		Assertions.assertTrue(spongeNet.contains(NID_B));
+		Assertions.assertTrue(spongeNet.contains(NID_C));
+
+		Assertions.assertEquals(2, spongeNet.getEdges().size());
+
+		Assertions.assertEquals(0, spongeNet.getIncomingEdges(NID_A).size());
+		Assertions.assertEquals(1, spongeNet.getOutgoingEdges(NID_A).size());
+
+		Assertions.assertEquals(1, spongeNet.getIncomingEdges(NID_B).size());
+		Assertions.assertEquals(1, spongeNet.getOutgoingEdges(NID_B).size());
+
+		Assertions.assertEquals(1, spongeNet.getIncomingEdges(NID_C).size());
+		Assertions.assertEquals(0, spongeNet.getOutgoingEdges(NID_C).size());
+
+		Assertions.assertEquals(1, spongeNet.getLeafs().size());
+		Assertions.assertEquals(NID_A, spongeNet.getRoot().getId());
+
+		System.err.println(spongeNet);
+	}
+
+	@Test
+	public void testSpongeNetFailOnCycle() {
+		Assertions.assertThrows(IllegalArgumentException.class, () ->
+		//@formatter:off
+			new SpongeNetBuilder()
+				.setGraph(new DirectedGraphBuilder()
+					.addNode(NID_A)
+					.addNode(NID_B)
+					.addNode(NID_C)
+					.addEdge(NID_A, NID_B)
+					.addEdge(NID_B, NID_C)
+					.addEdge(NID_C, NID_A)
+					.build())
+				.setStartNode(NID_A)
+				.build()
+		//@formatter:on
+		);
+	}
+
+	@Test
+	public void testSpongeNetFailOnDisconnected() {
+		Assertions.assertThrows(IllegalArgumentException.class, () ->
+		//@formatter:off
+			new SpongeNetBuilder()
+				.setGraph(new DirectedGraphBuilder()
+					.addNode(NID_A)
+					.addNode(NID_B)
+					.addNode(NID_C)
+					.addEdge(NID_A, NID_B)
+					.build())
+			.setStartNode(NID_A)
+			.build()
+		//@formatter:on
+		);
 	}
 
 	@Test
@@ -77,7 +154,7 @@ public class DineTest {
 	@Test
 	public void testAddNodeBehindStartNode() {
 		INet simpleNet = createSimpleABCNet();
-		simpleNet.addNode(NID_D, NodeRoles.INTERMEDIATE, new SimpleNode());
+		simpleNet.addNode(NID_D, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated());
 		simpleNet.addEdge(NID_A, NID_D);
 		System.err.println(simpleNet.print());
 	}
@@ -93,7 +170,7 @@ public class DineTest {
 	@Test
 	public void testErrorOnDuplicateNodeDefinition() {
 		Assertions.assertThrows(IllegalStateException.class,
-				() -> createSimpleABCNet().addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNode()));
+				() -> createSimpleABCNet().addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated()));
 	}
 
 	@Test
@@ -110,7 +187,7 @@ public class DineTest {
 	public void testErrorOnConnectionBeforeStartNode() {
 		Assertions.assertThrows(IllegalArgumentException.class, () -> {
 			INet simpleNet = createSimpleABCNet();
-			simpleNet.addNode(NID_D, NodeRoles.INTERMEDIATE, new SimpleNode());
+			simpleNet.addNode(NID_D, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated());
 			simpleNet.addEdge(NID_D, NID_A);
 		});
 	}
@@ -119,7 +196,7 @@ public class DineTest {
 	public void testErrorOnConnectionBehindEndNode() {
 		Assertions.assertThrows(IllegalArgumentException.class, () -> {
 			INet simpleNet = createSimpleABCNet();
-			simpleNet.addNode(NID_D, NodeRoles.INTERMEDIATE, new SimpleNode());
+			simpleNet.addNode(NID_D, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated());
 			simpleNet.addEdge(NID_C, NID_D);
 		});
 	}

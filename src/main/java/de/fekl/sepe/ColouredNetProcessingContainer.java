@@ -10,10 +10,10 @@ import de.fekl.baut.ILogger;
 import de.fekl.baut.LogManager;
 import de.fekl.baut.RandomNames;
 import de.fekl.cone.api.core.IColouredNet;
-import de.fekl.cone.api.core.IToken;
+import de.fekl.cone.api.core.ITokenDeprecated;
 import de.fekl.cone.api.core.TokenNames;
 import de.fekl.dine.api.core.IEdge;
-import de.fekl.dine.api.core.INode;
+import de.fekl.dine.api.core.INodeDeprecated;
 import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.esta.api.core.IStateContainer;
 import de.fekl.esta.api.core.SimpleStateContainer;
@@ -35,7 +35,7 @@ public class ColouredNetProcessingContainer {
 		stepCounter = 0;
 	}
 
-	public void process(IToken token) {
+	public void process(ITokenDeprecated token) {
 		String startNodeId = stateContainer.getCurrentState().getNet().getStartNodeId();
 		stateContainer.changeState(ColouredNetOperations.putToken(startNodeId, TokenNames.generateTokenName(), token));
 		run();
@@ -67,7 +67,7 @@ public class ColouredNetProcessingContainer {
 
 	protected boolean isEndNodeReached() {
 		IColouredNet currentState = stateContainer.getCurrentState();
-		Map<String, INode> endNodes = currentState.getNet().getNodesByRole(NodeRoles.END);
+		Map<String, INodeDeprecated> endNodes = currentState.getNet().getNodesByRole(NodeRoles.END);
 		Set<String> reachedEndNodes = currentState.getTokenToNodeMapping().values().stream().distinct()
 				.filter(endNodes::containsKey).collect(Collectors.toSet());
 		boolean endNodeReadched = !reachedEndNodes.isEmpty();

@@ -1,12 +1,18 @@
 package de.fekl.dine.api.core;
 
+import de.fekl.dine.api.graph.INode;
+
 public class SimpleNode implements INode {
 
-	public static final SimpleNode PLACEHOLDER = new SimpleNode();
+	private final String id;
+
+	public SimpleNode(String id) {
+		this.id = id;
+	}
 
 	@Override
-	public String print() {
-		return "SimpleNode";
+	public String getId() {
+		return id;
 	}
 
 }

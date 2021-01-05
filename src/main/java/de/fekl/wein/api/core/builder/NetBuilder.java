@@ -2,11 +2,11 @@ package de.fekl.wein.api.core.builder;
 
 import de.fekl.baut.AlphabeticalNames;
 import de.fekl.dine.api.core.INet;
-import de.fekl.dine.api.core.INode;
+import de.fekl.dine.api.core.INodeDeprecated;
 import de.fekl.dine.api.core.NodeNames;
 import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.dine.api.core.SimpleNet;
-import de.fekl.dine.api.core.SimpleNode;
+import de.fekl.dine.api.core.SimpleNodeDeprecated;
 
 public class NetBuilder {
 
@@ -72,7 +72,7 @@ public class NetBuilder {
 	private void buildNode(SimpleNet simpleNet, NodeBuilder nodeBuilder) {
 		String nodeId = nodeBuilder.getId();
 		String role = nodeBuilder.getRole();
-		INode impl = nodeBuilder.getImpl();
+		INodeDeprecated impl = nodeBuilder.getImpl();
 		if (nodeId == null) {
 			if (withAlphabeticalNames) {
 				nodeId = AlphabeticalNames.getNextLetter(SimpleNet.class.getName() + simpleNet.getId());
@@ -86,7 +86,7 @@ public class NetBuilder {
 			nodeBuilder.role(role);
 		}
 		if (impl == null) {
-			impl = new SimpleNode();
+			impl = new SimpleNodeDeprecated();
 			nodeBuilder.impl(impl);
 		}
 		simpleNet.addNode(nodeId, role, impl);

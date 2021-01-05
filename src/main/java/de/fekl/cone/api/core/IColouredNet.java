@@ -5,13 +5,14 @@ import java.util.Map;
 
 import de.fekl.dine.api.core.INet;
 
+@Deprecated
 public interface IColouredNet {
 
 	String getId();
 
 	INet getNet();
 
-	void putToken(String nodeId, String tokenId, IToken token);
+	void putToken(String nodeId, String tokenId, ITokenDeprecated token);
 
 	void removeToken(String nodeId, String tokenId);
 
@@ -19,9 +20,9 @@ public interface IColouredNet {
 
 	Map<String, String> getTokenToNodeMapping();
 
-	Map<String, IToken> getAllToken();
+	Map<String, ITokenDeprecated> getAllToken();
 
-	IToken getToken(String tokenId);
+	ITokenDeprecated getToken(String tokenId);
 	
 	List<String> getTokensOnNode(String nodeId);
 

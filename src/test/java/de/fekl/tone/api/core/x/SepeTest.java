@@ -7,15 +7,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import de.fekl.cone.api.core.IColouredNet;
-import de.fekl.cone.api.core.IToken;
+import de.fekl.cone.api.core.ITokenDeprecated;
 import de.fekl.cone.api.core.SimpleColouredNet;
 import de.fekl.cone.api.core.SimpleToken;
 import de.fekl.dine.api.core.IEdge;
 import de.fekl.dine.api.core.INet;
-import de.fekl.dine.api.core.INode;
+import de.fekl.dine.api.core.INodeDeprecated;
 import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.dine.api.core.SimpleNet;
-import de.fekl.dine.api.core.SimpleNode;
+import de.fekl.dine.api.core.SimpleNodeDeprecated;
 import de.fekl.esta.api.core.IStateChangeOperation;
 import de.fekl.esta.api.core.IStateContainer;
 import de.fekl.sepe.ColouredNetOperations;
@@ -36,11 +36,11 @@ public class SepeTest {
 
 	private static INet createSimpleABCNet() {
 		INet simpleNet = new SimpleNet("hello");
-		simpleNet.addNode(NID_A, NodeRoles.START, new SimpleNode());
-		simpleNet.addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNode());
-		simpleNet.addNode(NID_B2, NodeRoles.INTERMEDIATE, new SimpleNode());
-		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNode());
-		simpleNet.addNode(NID_D, NodeRoles.END, new SimpleNode());
+		simpleNet.addNode(NID_A, NodeRoles.START, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_B2, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_D, NodeRoles.END, new SimpleNodeDeprecated());
 		simpleNet.addEdge(NID_A, NID_B);
 		simpleNet.addEdge(NID_A, NID_B2);
 		simpleNet.addEdge(NID_B, NID_C);
@@ -51,10 +51,10 @@ public class SepeTest {
 	private static INet createSimpleSplitterABCNet() {
 		INet simpleNet = new SimpleNet("hello");
 		simpleNet.addNode(NID_A, NodeRoles.START, new TokenCopyNode());
-		simpleNet.addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNode());
-		simpleNet.addNode(NID_B2, NodeRoles.INTERMEDIATE, new SimpleNode());
-		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNode());
-		simpleNet.addNode(NID_D, NodeRoles.END, new SimpleNode());
+		simpleNet.addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_B2, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_D, NodeRoles.END, new SimpleNodeDeprecated());
 		simpleNet.addEdge(NID_A, NID_B);
 		simpleNet.addEdge(NID_A, NID_B2);
 		simpleNet.addEdge(NID_B, NID_C);
@@ -66,7 +66,7 @@ public class SepeTest {
 		INet simpleNet = new SimpleNet("hello");
 		simpleNet.addNode(NID_A, NodeRoles.START, new RequestTransformer());
 		simpleNet.addNode(NID_B, NodeRoles.INTERMEDIATE, new ResponseTransformer());
-		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNode());
+		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNodeDeprecated());
 		simpleNet.addEdge(NID_A, NID_B);
 		simpleNet.addEdge(NID_B, NID_C);
 		return simpleNet;
@@ -145,10 +145,10 @@ public class SepeTest {
 
 			protected void handleToken(IStateContainer<IColouredNet> currentState, String tokenId, String nodeId) {
 
-				IToken token = currentState.getCurrentState().getToken(tokenId);
+				ITokenDeprecated token = currentState.getCurrentState().getToken(tokenId);
 				if (token instanceof Message) {
 
-					INode node = currentState.getCurrentState().getNet().getNode(nodeId);
+					INodeDeprecated node = currentState.getCurrentState().getNet().getNode(nodeId);
 					if (node instanceof ITransformer) {
 						((ITransformer) node).transform((Message) token);
 					}

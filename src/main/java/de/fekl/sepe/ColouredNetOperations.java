@@ -5,7 +5,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import de.fekl.cone.api.core.IColouredNet;
-import de.fekl.cone.api.core.IToken;
+import de.fekl.cone.api.core.ITokenDeprecated;
 import de.fekl.cone.api.core.SimpleColouredNet;
 import de.fekl.cone.api.core.TokenNames;
 import de.fekl.esta.api.core.IStateChangeOperation;
@@ -16,9 +16,9 @@ public class ColouredNetOperations {
 
 		private String nodeId;
 		private String tokenId;
-		private IToken token;
+		private ITokenDeprecated token;
 
-		PutToken(String sourceNodeId, String tokenId, IToken token) {
+		PutToken(String sourceNodeId, String tokenId, ITokenDeprecated token) {
 			this.nodeId = sourceNodeId;
 			this.tokenId = tokenId;
 			this.token = token;
@@ -79,7 +79,7 @@ public class ColouredNetOperations {
 
 		@Override
 		public IColouredNet apply(IColouredNet state) {
-			IToken token = state.getToken(tokenId);
+			ITokenDeprecated token = state.getToken(tokenId);
 			IColouredNet newState = new SimpleColouredNet(state);
 			newState.removeToken(sourceNodeId, tokenId);
 			newState.putToken(targetNodeId, tokenId, token);
@@ -104,7 +104,7 @@ public class ColouredNetOperations {
 
 		@Override
 		public IColouredNet apply(IColouredNet state) {
-			IToken token = state.getToken(tokenId);
+			ITokenDeprecated token = state.getToken(tokenId);
 			IColouredNet newState = new SimpleColouredNet(state);
 			Map<String, String> tokenToNodeMapping = newState.getTokenToNodeMapping();
 			String nodeId = tokenToNodeMapping.get(tokenId);
@@ -118,7 +118,7 @@ public class ColouredNetOperations {
 
 	}
 
-	public static IStateChangeOperation<IColouredNet> putToken(String nodeId, String tokenId, IToken token) {
+	public static IStateChangeOperation<IColouredNet> putToken(String nodeId, String tokenId, ITokenDeprecated token) {
 		return new PutToken(nodeId, tokenId, token);
 	}
 

@@ -7,6 +7,6 @@ import de.fekl.dine.api.core.IEdge;
 
 public interface IDirectedGraphFactory {
 
-	IDirectedGraph createDirectedGraph(Set<String> nodes, List<IEdge> edges);
+	IDirectedGraph createDirectedGraph(Set<INode> nodes, List<IEdge> edges);
 
 }

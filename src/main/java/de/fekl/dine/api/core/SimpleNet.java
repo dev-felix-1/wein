@@ -14,11 +14,11 @@ import de.fekl.baut.Precondition;
 public class SimpleNet implements INet {
 
 	private final String id;
-	private final Map<String, INode> intermediateNodes = new HashMap<>();
-	private final Map<String, INode> endNodes = new HashMap<>();
+	private final Map<String, INodeDeprecated> intermediateNodes = new HashMap<>();
+	private final Map<String, INodeDeprecated> endNodes = new HashMap<>();
 	private final List<IEdge> edges = new ArrayList<>();
 
-	private INode startNode;
+	private INodeDeprecated startNode;
 	private String startNodeId;
 
 	public SimpleNet(String id) {
@@ -26,7 +26,7 @@ public class SimpleNet implements INet {
 	}
 
 	@Override
-	public synchronized void addNode(String id, String role, INode node) {
+	public synchronized void addNode(String id, String role, INodeDeprecated node) {
 		Precondition.isNotNull(id);
 		Precondition.isNotNull(role);
 		Precondition.isNotNull(node);
@@ -54,12 +54,12 @@ public class SimpleNet implements INet {
 
 	@Override
 	public void addNode(String id, String role) {
-		addNode(id, role, SimpleNode.PLACEHOLDER);
+		addNode(id, role, SimpleNodeDeprecated.PLACEHOLDER);
 	}
 
 	@Override
 	public void addNode(String id) {
-		addNode(id, NodeRoles.INTERMEDIATE, SimpleNode.PLACEHOLDER);
+		addNode(id, NodeRoles.INTERMEDIATE, SimpleNodeDeprecated.PLACEHOLDER);
 	}
 
 	@Override
@@ -87,8 +87,8 @@ public class SimpleNet implements INet {
 	}
 
 	@Override
-	public Map<String, INode> getAllNodes() {
-		Map<String, INode> allNodes = new HashMap<>();
+	public Map<String, INodeDeprecated> getAllNodes() {
+		Map<String, INodeDeprecated> allNodes = new HashMap<>();
 		allNodes.put(startNodeId, startNode);
 		allNodes.putAll(intermediateNodes);
 		allNodes.putAll(endNodes);
@@ -99,7 +99,7 @@ public class SimpleNet implements INet {
 		return stream.collect(Collectors.joining(", "));
 	}
 
-	private static String formatNodeMapEntry(Entry<String, INode> entry) {
+	private static String formatNodeMapEntry(Entry<String, INodeDeprecated> entry) {
 		return String.format("{%s (%s)}", entry.getKey(), entry.getValue().print());
 	}
 
@@ -107,7 +107,7 @@ public class SimpleNet implements INet {
 		return map.entrySet().stream();
 	}
 
-	private static Stream<String> transformEntriesToStrings(Map<String, INode> map) {
+	private static Stream<String> transformEntriesToStrings(Map<String, INodeDeprecated> map) {
 		return stream(map).map(SimpleNet::formatNodeMapEntry);
 	}
 
@@ -132,9 +132,9 @@ public class SimpleNet implements INet {
 	}
 
 	@Override
-	public INode getNode(String id) {
+	public INodeDeprecated getNode(String id) {
 		Precondition.isNotNull(id);
-		INode result = null;
+		INodeDeprecated result = null;
 		if (id.equals(startNodeId)) {
 			result = startNode;
 		} else {
@@ -163,7 +163,7 @@ public class SimpleNet implements INet {
 	}
 
 	@Override
-	public INode getStartNode() {
+	public INodeDeprecated getStartNode() {
 		return startNode;
 	}
 
@@ -173,7 +173,7 @@ public class SimpleNet implements INet {
 	}
 
 	@Override
-	public Map<String, INode> getNodesByRole(String role) {
+	public Map<String, INodeDeprecated> getNodesByRole(String role) {
 		Precondition.isNotNull(role);
 		switch (role) {
 		case NodeRoles.START:
@@ -198,7 +198,7 @@ public class SimpleNet implements INet {
 	}
 
 	@Override
-	public void setNode(String id, String role, INode node) {
+	public void setNode(String id, String role, INodeDeprecated node) {
 		preconditionContainsNode(id);
 		Precondition.isNotNull(role);
 		Precondition.isNotNull(node);
@@ -219,7 +219,7 @@ public class SimpleNet implements INet {
 	}
 
 	@Override
-	public void setStartNode(INode node) {
+	public void setStartNode(INodeDeprecated node) {
 		Precondition.isNotNull(node);
 		startNode = node;
 	}

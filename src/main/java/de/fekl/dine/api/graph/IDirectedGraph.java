@@ -1,19 +1,23 @@
 package de.fekl.dine.api.graph;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import de.fekl.dine.api.core.IEdge;
 
 public interface IDirectedGraph {
 
-	Set<String> getNodes();
+	Collection<INode> getNodes();
 
 	List<IEdge> getEdges();
 
-	boolean hasNode(String name);
+	boolean contains(String nodeId);
 	
-	List<IEdge> getIncomingEdges(String nodeName);
+	boolean contains(INode node);
+	
+	List<IEdge> getIncomingEdges(String nodeId);
 
-	List<IEdge> getOutgoingEdges(String nodeName);
+	List<IEdge> getOutgoingEdges(String nodeId);
+	
+	INode getNode(String nodeId);
 }

@@ -2,7 +2,7 @@ package de.fekl.wein.api.core;
 
 import de.fekl.baut.ICopyFactory;
 import de.fekl.baut.Precondition;
-import de.fekl.cone.api.core.IToken;
+import de.fekl.cone.api.core.ITokenDeprecated;
 
 public class SimpleMessage<T> implements IMessage<T> {
 
@@ -17,17 +17,17 @@ public class SimpleMessage<T> implements IMessage<T> {
 	}
 
 	@Override
-	public ICopyFactory<IToken> getCopyFactory() {
-		return new ICopyFactory<IToken>() {
+	public ICopyFactory<ITokenDeprecated> getCopyFactory() {
+		return new ICopyFactory<ITokenDeprecated>() {
 
 			@Override
-			public IToken copy(IToken object) {
+			public ITokenDeprecated copy(ITokenDeprecated object) {
 				Precondition.hasClass(object, SimpleMessage.class);
 				return new SimpleMessage<>(object);
 			}
 
 			@Override
-			public IToken copy() {
+			public ITokenDeprecated copy() {
 				return copy(SimpleMessage.this);
 			}
 

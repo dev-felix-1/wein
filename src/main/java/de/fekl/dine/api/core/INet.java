@@ -2,14 +2,14 @@ package de.fekl.dine.api.core;
 
 import java.util.List;
 import java.util.Map;
-
+@Deprecated
 public interface INet {
 
 	String getId();
 
 	String print();
 
-	void addNode(String id, String role, INode node);
+	void addNode(String id, String role, INodeDeprecated node);
 
 	void addNode(String id, String role);
 
@@ -17,19 +17,19 @@ public interface INet {
 
 	void addEdge(String srcNodeId, String targetNodeId);
 
-	INode getNode(String id);
+	INodeDeprecated getNode(String id);
 	
-	void setNode(String id, String role, INode node);
+	void setNode(String id, String role, INodeDeprecated node);
 	
-	void setStartNode(INode node);
+	void setStartNode(INodeDeprecated node);
 
-	INode getStartNode();
+	INodeDeprecated getStartNode();
 
 	String getStartNodeId();
 
-	Map<String, INode> getAllNodes();
+	Map<String, INodeDeprecated> getAllNodes();
 
-	Map<String, INode> getNodesByRole(String role);
+	Map<String, INodeDeprecated> getNodesByRole(String role);
 
 	List<IEdge> getAllEdges();
 	

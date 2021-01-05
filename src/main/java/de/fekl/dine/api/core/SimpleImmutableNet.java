@@ -28,7 +28,7 @@ public class SimpleImmutableNet extends SimpleNet implements INet {
 	}
 
 	@Override
-	public synchronized void addNode(String id, String role, INode node) {
+	public synchronized void addNode(String id, String role, INodeDeprecated node) {
 		throw new UnsupportedOperationException();
 	}
 

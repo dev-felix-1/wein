@@ -8,7 +8,7 @@ import de.fekl.cone.api.core.SimpleToken;
 import de.fekl.dine.api.core.INet;
 import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.dine.api.core.SimpleNet;
-import de.fekl.dine.api.core.SimpleNode;
+import de.fekl.dine.api.core.SimpleNodeDeprecated;
 import de.fekl.esta.api.core.IStateHasChangedEvent;
 import de.fekl.esta.api.core.SimpleStateContainer;
 
@@ -21,9 +21,9 @@ public class EstaTest {
 
 	private static INet createSimpleABCNet() {
 		INet simpleNet = new SimpleNet("hello");
-		simpleNet.addNode(NID_A, NodeRoles.START, new SimpleNode());
-		simpleNet.addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNode());
-		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNode());
+		simpleNet.addNode(NID_A, NodeRoles.START, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated());
+		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNodeDeprecated());
 		simpleNet.addEdge(NID_A, NID_B);
 		simpleNet.addEdge(NID_B, NID_C);
 		return simpleNet;

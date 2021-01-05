@@ -1,6 +1,7 @@
 package de.fekl.dine.api.core;
 
-public interface INode {
+@Deprecated
+public interface INodeDeprecated {
 	
 	String print();
 

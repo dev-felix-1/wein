@@ -2,7 +2,7 @@ package de.fekl.cone.api.core;
 
 import de.fekl.baut.ICopyFactory;
 
-public class SimpleToken implements IToken {
+public class SimpleToken implements ITokenDeprecated {
 
 	public SimpleToken() {
 		super();
@@ -13,16 +13,16 @@ public class SimpleToken implements IToken {
 	}
 
 	@Override
-	public ICopyFactory<IToken> getCopyFactory() {
-		return new ICopyFactory<IToken>() {
+	public ICopyFactory<ITokenDeprecated> getCopyFactory() {
+		return new ICopyFactory<ITokenDeprecated>() {
 
 			@Override
-			public IToken copy(IToken object) {
+			public ITokenDeprecated copy(ITokenDeprecated object) {
 				return new SimpleToken();
 			}
 
 			@Override
-			public IToken copy() {
+			public ITokenDeprecated copy() {
 				return copy(SimpleToken.this);
 			}
 		};

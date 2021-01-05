@@ -19,7 +19,7 @@ public class SimpleColouredNet implements IColouredNet {
 	private final INet net;
 
 	private final Map<String, String> tokenToNodeMapping = new HashMap<>();
-	private final Map<String, IToken> tokens = new HashMap<>();
+	private final Map<String, ITokenDeprecated> tokens = new HashMap<>();
 
 	public SimpleColouredNet(String id, INet net) {
 		super();
@@ -54,7 +54,7 @@ public class SimpleColouredNet implements IColouredNet {
 	}
 
 	@Override
-	public synchronized void putToken(String nodeId, String tokenId, IToken token) {
+	public synchronized void putToken(String nodeId, String tokenId, ITokenDeprecated token) {
 		preconditionContainsNode(nodeId);
 		Precondition.isNotEmpty(tokenId);
 		Precondition.isNotNull(token);
@@ -112,12 +112,12 @@ public class SimpleColouredNet implements IColouredNet {
 	}
 
 	@Override
-	public Map<String, IToken> getAllToken() {
+	public Map<String, ITokenDeprecated> getAllToken() {
 		return Collections.unmodifiableMap(tokens);
 	}
 
 	@Override
-	public IToken getToken(String tokenId) {
+	public ITokenDeprecated getToken(String tokenId) {
 		return tokens.get(tokenId);
 	}
 
