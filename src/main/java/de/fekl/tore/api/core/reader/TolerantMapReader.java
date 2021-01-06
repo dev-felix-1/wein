@@ -39,6 +39,11 @@ public class TolerantMapReader extends AbstractTolerantReader<Map<String, Object
 	}
 
 	@Override
+	public List<?> getList() {
+		return new ArrayList<>(getObjectToRead().entrySet());
+	}
+
+	@Override
 	protected Object readPropertyRegular(String propertyname) {
 		return getObjectToRead().get(propertyname);
 	}

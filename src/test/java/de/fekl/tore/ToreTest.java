@@ -44,7 +44,7 @@ public class ToreTest {
 	@Test
 	public void testRegistry() {
 
-		TolerantReaderRegistry tolerantReaderRegistry = new TolerantReaderRegistry();
+		TolerantReaderRegistry tolerantReaderRegistry = new TolerantReaderRegistry(null);
 		tolerantReaderRegistry.getTolerantReaderFactory(Object.class);
 
 		tolerantReaderRegistry.registerTolerantReaderFactory(Object.class, new ITolerantReaderFactory<Object>() {
@@ -143,7 +143,6 @@ public class ToreTest {
 		Assertions.assertEquals("hello2", tolerantObjectReader.getProperty("layer2prop").getStringValue());
 		Assertions.assertEquals("hello3", tolerantObjectReader.getProperty("layer3propDup").getStringValue());
 
-		TolerantReaderContext.DEFAULT.registerTolerantReaderFactory(Map.class, new TolerantMapReaderFactory());
 		ITolerantReader defaultTolerantReader = TolerantReaderContext.DEFAULT.createTolerantReader(map);
 
 		Assertions.assertEquals("hello4", defaultTolerantReader.getProperty("nestedMap").getProperty("nestedMap")

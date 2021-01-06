@@ -1,17 +1,26 @@
 package de.fekl.tore.api.core;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import de.fekl.tore.api.core.reader.TolerantMapReaderFactory;
 import de.fekl.tore.api.core.reader.TolerantObjectReaderFactory;
 
+@SuppressWarnings("unchecked")
 public class TolerantReaderContext {
 
-	public static final TolerantReaderContext DEFAULT;
+	public static final TolerantReaderContext DEFAULT = new TolerantReaderContext();
+	@SuppressWarnings("rawtypes")
+	public static final Map<Class, ITolerantReaderFactory> DEFAULT_FACTORIES = new HashMap<>();
+
 	static {
-		DEFAULT = new TolerantReaderContext();
-		DEFAULT.getRegistry().setContext(DEFAULT);
-		DEFAULT.getRegistry().registerTolerantReaderFactory(Object.class, new TolerantObjectReaderFactory());
+		DEFAULT_FACTORIES.put(Object.class, new TolerantObjectReaderFactory());
+		DEFAULT_FACTORIES.put(Map.class, new TolerantMapReaderFactory());
+
+		DEFAULT_FACTORIES.forEach((k, v) -> DEFAULT.getRegistry().registerTolerantReaderFactory(k, v));
 	}
 
-	private TolerantReaderRegistry registry = new TolerantReaderRegistry();
+	private TolerantReaderRegistry registry = new TolerantReaderRegistry(this);
 
 	public TolerantReaderRegistry getRegistry() {
 		return registry;
@@ -22,7 +31,6 @@ public class TolerantReaderContext {
 	}
 
 	public <T> ITolerantReader createTolerantReader(T objectToRead) {
-		@SuppressWarnings("unchecked")
 		ITolerantReaderFactory<Object> tolerantReaderFactory = (ITolerantReaderFactory<Object>) registry
 				.getTolerantReaderFactory(objectToRead.getClass());
 		return tolerantReaderFactory.createTolerantReader(objectToRead);

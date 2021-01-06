@@ -1,5 +1,7 @@
 package de.fekl.tore.api.core;
 
+import java.util.List;
+
 public interface ITolerantReader {
 
 	ITolerantReader getProperty(String propertyName);
@@ -17,5 +19,7 @@ public interface ITolerantReader {
 	public Boolean getBooleanValue();
 
 	public Object getValue();
+	
+	public List<?> getList();
 
 }

@@ -2,7 +2,9 @@ package de.fekl.tore.api.core.reader;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,5 +84,13 @@ public class TolerantObjectReader extends AbstractTolerantReader<Object> {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public List<?> getList() {
+		if (getObjectToRead() instanceof Collection) {
+			return new ArrayList<>((Collection<?>) getObjectToRead());
+		}
+		throw new IllegalStateException("not a list");
 	}
 }
