@@ -1,12 +1,14 @@
 package de.fekl.wein.api.core.builder;
 
 import de.fekl.baut.AlphabeticalNames;
-import de.fekl.dine.api.core.INet;
-import de.fekl.dine.api.core.INodeDeprecated;
 import de.fekl.dine.api.core.NodeNames;
 import de.fekl.dine.api.core.NodeRoles;
-import de.fekl.dine.api.core.SimpleNet;
-import de.fekl.dine.api.core.SimpleNodeDeprecated;
+import de.fekl.dine.api.core.SimpleNode;
+import de.fekl.dine.api.graph.DirectedGraphBuilder;
+import de.fekl.dine.api.graph.INode;
+import de.fekl.dine.api.tree.ISpongeNet;
+import de.fekl.dine.api.tree.SimpleSpongeNet;
+import de.fekl.dine.api.tree.SpongeNetBuilder;
 
 public class NetBuilder {
 
@@ -47,21 +49,28 @@ public class NetBuilder {
 		return this;
 	}
 
-	public INet buildNet() {
-		SimpleNet simpleNet = new SimpleNet(id);
-		nodesBuilder.getNodeBuilders().forEach(nodeBuilder -> buildNode(simpleNet, nodeBuilder));
+	public ISpongeNet buildNet() {
+		SpongeNetBuilder spongeNetBuilder = new SpongeNetBuilder();
+		DirectedGraphBuilder graphBuilder = new DirectedGraphBuilder();
+		nodesBuilder.getNodeBuilders().forEach(nodeBuilder -> {
+			buildNode(graphBuilder, nodeBuilder);
+			if (nodeBuilder.getRole().equals(NodeRoles.START)) {
+				spongeNetBuilder.setStartNode(nodeBuilder.getId());
+			}
+		});
 		if (edgesBuilder != null) {
 			edgesBuilder.getOutgoing().forEach(out -> out.getTargets().forEach(target -> {
 				String source = out.getSource();
-				simpleNet.addEdge(source, target);
+				graphBuilder.addEdge(source, target);
 			}));
 		} else {
 			nodesBuilder.getNodeBuilders().forEach(nodeBuilder -> nodeBuilder.getConnections().forEach(target -> {
 				String source = nodeBuilder.getId();
-				simpleNet.addEdge(source, target);
+				graphBuilder.addEdge(source, target);
 			}));
 		}
-		return simpleNet;
+		spongeNetBuilder.setGraph(graphBuilder.build());
+		return spongeNetBuilder.build();
 	}
 
 	public NetBuilder withAlphabeticalNames() {
@@ -69,13 +78,13 @@ public class NetBuilder {
 		return this;
 	}
 
-	private void buildNode(SimpleNet simpleNet, NodeBuilder nodeBuilder) {
+	private void buildNode(DirectedGraphBuilder simpleNet, NodeBuilder nodeBuilder) {
 		String nodeId = nodeBuilder.getId();
 		String role = nodeBuilder.getRole();
-		INodeDeprecated impl = nodeBuilder.getImpl();
+		INode impl = nodeBuilder.getImpl();
 		if (nodeId == null) {
 			if (withAlphabeticalNames) {
-				nodeId = AlphabeticalNames.getNextLetter(SimpleNet.class.getName() + simpleNet.getId());
+				nodeId = AlphabeticalNames.getNextLetter(ISpongeNet.class.getName() + simpleNet.hashCode());
 			} else {
 				nodeId = NodeNames.generateNodeName();
 			}
@@ -86,10 +95,10 @@ public class NetBuilder {
 			nodeBuilder.role(role);
 		}
 		if (impl == null) {
-			impl = new SimpleNodeDeprecated();
+			impl = new SimpleNode(nodeId);
 			nodeBuilder.impl(impl);
 		}
-		simpleNet.addNode(nodeId, role, impl);
+		simpleNet.addNode(impl);
 		nodeBuilder.getInlineNodes().forEach(inlineNodeBuilder -> {
 			buildNode(simpleNet, inlineNodeBuilder);
 			String source = nodeBuilder.getId();

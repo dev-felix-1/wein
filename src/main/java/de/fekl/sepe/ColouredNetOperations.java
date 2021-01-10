@@ -1,43 +1,47 @@
 package de.fekl.sepe;
 
-import java.util.Map;
-import java.util.UUID;
 import java.util.stream.IntStream;
 
-import de.fekl.cone.api.core.IColouredNet;
-import de.fekl.cone.api.core.ITokenDeprecated;
-import de.fekl.cone.api.core.SimpleColouredNet;
-import de.fekl.cone.api.core.TokenNames;
+import de.fekl.dine.api.state.IToken;
+import de.fekl.dine.api.state.ITokenFactory;
+import de.fekl.dine.api.state.ITokenStore;
+import de.fekl.dine.api.state.SimpleTokenStore;
 import de.fekl.esta.api.core.IStateChangeOperation;
 
 public class ColouredNetOperations {
 
-	static class PutToken implements IStateChangeOperation<IColouredNet> {
+	private static ITokenStore cloneTokenStore(ITokenStore toCopyFrom) {
+		ITokenStore newState = new SimpleTokenStore();
+		toCopyFrom.getTokenMapping().forEach((k, s) -> {
+			s.forEach(v -> newState.putToken(k, v));
+		});
+		return newState;
+	}
+
+	static class PutToken implements IStateChangeOperation<ITokenStore> {
 
 		private String nodeId;
-		private String tokenId;
-		private ITokenDeprecated token;
+		private IToken token;
 
-		PutToken(String sourceNodeId, String tokenId, ITokenDeprecated token) {
+		PutToken(String sourceNodeId, IToken token) {
 			this.nodeId = sourceNodeId;
-			this.tokenId = tokenId;
 			this.token = token;
 		}
 
 		@Override
 		public String toString() {
-			return String.format("Put Token %s(%s) on %s", tokenId, token, nodeId);
+			return String.format("Put Token %s on %s", token.getId(), nodeId);
 		}
 
 		@Override
-		public IColouredNet apply(IColouredNet state) {
-			IColouredNet newState = new SimpleColouredNet(state);
-			newState.putToken(nodeId, tokenId, token);
+		public ITokenStore apply(ITokenStore state) {
+			ITokenStore newState = cloneTokenStore(state);
+			newState.putToken(nodeId, token);
 			return newState;
 		}
 	}
 
-	static class RemoveToken implements IStateChangeOperation<IColouredNet> {
+	static class RemoveToken implements IStateChangeOperation<ITokenStore> {
 
 		private String sourceNodeId;
 		private String tokenId;
@@ -53,14 +57,14 @@ public class ColouredNetOperations {
 		}
 
 		@Override
-		public IColouredNet apply(IColouredNet state) {
-			IColouredNet newState = new SimpleColouredNet(state);
+		public ITokenStore apply(ITokenStore state) {
+			ITokenStore newState = cloneTokenStore(state);
 			newState.removeToken(sourceNodeId, tokenId);
 			return newState;
 		}
 	}
 
-	static class MoveToken implements IStateChangeOperation<IColouredNet> {
+	static class MoveToken implements IStateChangeOperation<ITokenStore> {
 
 		private String sourceNodeId;
 		private String targetNodeId;
@@ -78,21 +82,23 @@ public class ColouredNetOperations {
 		}
 
 		@Override
-		public IColouredNet apply(IColouredNet state) {
-			ITokenDeprecated token = state.getToken(tokenId);
-			IColouredNet newState = new SimpleColouredNet(state);
+		public ITokenStore apply(ITokenStore state) {
+			IToken token = state.getToken(tokenId);
+			ITokenStore newState = cloneTokenStore(state);
 			newState.removeToken(sourceNodeId, tokenId);
-			newState.putToken(targetNodeId, tokenId, token);
+			newState.putToken(targetNodeId, token);
 			return newState;
 		}
 	}
 
-	static class CopyToken implements IStateChangeOperation<IColouredNet> {
+	static class CopyToken implements IStateChangeOperation<ITokenStore> {
 
+		private ITokenFactory factory;
 		private String tokenId;
 		private int numberOfCopies;
 
-		CopyToken(String tokenId, int numberOfCopies) {
+		CopyToken(String tokenId, int numberOfCopies, ITokenFactory factory) {
+			this.factory = factory;
 			this.tokenId = tokenId;
 			this.numberOfCopies = numberOfCopies;
 		}
@@ -103,13 +109,11 @@ public class ColouredNetOperations {
 		}
 
 		@Override
-		public IColouredNet apply(IColouredNet state) {
-			ITokenDeprecated token = state.getToken(tokenId);
-			IColouredNet newState = new SimpleColouredNet(state);
-			Map<String, String> tokenToNodeMapping = newState.getTokenToNodeMapping();
-			String nodeId = tokenToNodeMapping.get(tokenId);
-			IntStream.range(0, numberOfCopies).forEach(
-					i -> newState.putToken(nodeId, TokenNames.generateTokenName(), token.getCopyFactory().copy()));
+		public ITokenStore apply(ITokenStore state) {
+			IToken token = state.getToken(tokenId);
+			ITokenStore newState = cloneTokenStore(state);
+			String nodeId = newState.getPosition(tokenId);
+			IntStream.range(0, numberOfCopies).forEach(i -> newState.putToken(nodeId, factory.copyToken(token)));
 			return newState;
 		}
 	}
@@ -118,21 +122,22 @@ public class ColouredNetOperations {
 
 	}
 
-	public static IStateChangeOperation<IColouredNet> putToken(String nodeId, String tokenId, ITokenDeprecated token) {
-		return new PutToken(nodeId, tokenId, token);
+	public static IStateChangeOperation<ITokenStore> putToken(String nodeId, String tokenId, IToken token) {
+		return new PutToken(nodeId, token);
 	}
 
-	public static IStateChangeOperation<IColouredNet> removeToken(String nodeId, String tokenId) {
+	public static IStateChangeOperation<ITokenStore> removeToken(String nodeId, String tokenId) {
 		return new RemoveToken(nodeId, tokenId);
 	}
 
-	public static IStateChangeOperation<IColouredNet> moveToken(String sourceNodeId, String targetNodeId,
+	public static IStateChangeOperation<ITokenStore> moveToken(String sourceNodeId, String targetNodeId,
 			String tokenId) {
 		return new MoveToken(sourceNodeId, targetNodeId, tokenId);
 	}
 
-	public static IStateChangeOperation<IColouredNet> copyToken(String tokenId, int numberOfCopies) {
-		return new CopyToken(tokenId, numberOfCopies);
+	public static IStateChangeOperation<ITokenStore> copyToken(String tokenId, int numberOfCopies,
+			ITokenFactory factory) {
+		return new CopyToken(tokenId, numberOfCopies, factory);
 	}
 
 }

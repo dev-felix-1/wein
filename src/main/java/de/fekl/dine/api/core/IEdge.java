@@ -6,6 +6,4 @@ public interface IEdge {
 
 	String getTarget();
 	
-	String print();
-
 }

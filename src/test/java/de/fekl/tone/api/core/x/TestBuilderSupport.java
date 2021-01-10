@@ -25,7 +25,7 @@ public class TestBuilderSupport {
 							.role(NodeRoles.END))
 			)
 			.edges(
-					new EdgesBuilder().outgoing(new OutgoingEdgesBuilder().source("A").target("B"))).buildNet().print());
+					new EdgesBuilder().outgoing(new OutgoingEdgesBuilder().source("A").target("B"))).buildNet());
 
 	}
 	
@@ -43,7 +43,7 @@ public class TestBuilderSupport {
 						.from(new OutgoingEdgesBuilder().source("A")
 								.target("B")
 							 )
-						.buildNet().print());
+						.buildNet());
 		
 	}
 	
@@ -55,7 +55,7 @@ public class TestBuilderSupport {
 						.role(NodeRoles.START)
 						.to(new NodeBuilder()
 								.role(NodeRoles.END)))
-				.buildNet().print());
+				.buildNet());
 		
 	}
 }

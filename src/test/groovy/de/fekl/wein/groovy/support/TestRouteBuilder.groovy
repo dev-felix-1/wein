@@ -1,8 +1,9 @@
 package de.fekl.wein.groovy.support
 
-import de.fekl.dine.api.core.INet
-import de.fekl.dine.api.core.INodeDeprecated
+import de.fekl.dine.api.core.SimpleNode
+import de.fekl.dine.api.graph.INode
 import de.fekl.wein.api.core.builder.NetBuilder
+import groovy.transform.CompileStatic
 
 class TestRouteBuilder {
 
@@ -17,11 +18,13 @@ class TestRouteBuilder {
 	//		}
 	//	}
 
-	class NodeImpl implements INodeDeprecated {
-		String print() { 'nodeImpl' }
+	class NodeImpl extends SimpleNode implements INode {
+		NodeImpl(String s){super(s)}
+		String toString() { 'nodeImpl' }
 	}
-	class NodeImpl2 implements INodeDeprecated {
-		String print() { 'nodeImpl2' }
+	class NodeImpl2 extends SimpleNode implements INode {
+		NodeImpl2(String s){super(s)}
+		String toString() { 'nodeImpl2' }
 	}
 
 	public NetBuilder testClosureBuilder() {
@@ -32,13 +35,17 @@ class TestRouteBuilder {
 					role ('START')
 				}
 				node ('b') {
-					impl new NodeImpl()
+					impl new NodeImpl('b')
 				}
 				node ('c') {
 					role ('END')
 				}
-				node ('d')
-				node ('e')
+				node ('d') {
+			
+				}
+				node ('e') {
+					
+				}
 			}
 
 			edges {
@@ -49,6 +56,8 @@ class TestRouteBuilder {
 				from ('b') {
 					to ('c')
 				}
+				from ('c') { to ('d') }
+				from ('d') { to ('e') }
 			}
 		}
 	}
@@ -60,17 +69,14 @@ class TestRouteBuilder {
 				role ('START')
 			}
 			node ('b') {
-				impl new NodeImpl()
+				impl new NodeImpl('b')
 			}
 			node ('c') {
 				role ('END')
 			}
-			node ('d')
-			node ('e')
 
 			from ('a') {
 				to ('b')
-				to ('d')
 			}
 			from ('b') {
 				to ('c')
@@ -87,14 +93,15 @@ class TestRouteBuilder {
 				to ('d')
 			}
 			node ('b') {
-				impl new NodeImpl()
+				impl new NodeImpl('b')
 				to ('c')
 			}
 			node ('c') {
 				role ('END')
 			}
-			node ('d')
-			node ('e')
+			node ('d') {
+				
+			}
 		}
 	}
 
@@ -105,7 +112,7 @@ class TestRouteBuilder {
 				role ('START')
 
 				to {
-					impl new NodeImpl()
+					impl new NodeImpl('b')
 					to {
 						role ('END')
 					}
@@ -115,7 +122,6 @@ class TestRouteBuilder {
 
 				}
 			}
-			node {}
 		}
 	}
 
@@ -124,11 +130,11 @@ class TestRouteBuilder {
 		def converters = [new NodeImpl(), new NodeImpl2()]
 
 		def getConverterImpl = {
-			return new NodeImpl2()
+			return new NodeImpl2('v')
 		}
 
 		def getTransformer1 = {
-			return new NodeImpl2()
+			return new NodeImpl2('w')
 		}
 
 		converters.collect { converter ->

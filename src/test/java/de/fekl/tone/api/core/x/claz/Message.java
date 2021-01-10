@@ -1,9 +1,13 @@
 package de.fekl.tone.api.core.x.claz;
 
-import de.fekl.cone.api.core.ITokenDeprecated;
-import de.fekl.cone.api.core.SimpleToken;
+import de.fekl.dine.api.state.IToken;
+import de.fekl.dine.api.state.SimpleToken;
 
-public class Message extends SimpleToken implements ITokenDeprecated {
+public class Message extends SimpleToken implements IToken {
+
+	public Message(String id) {
+		super(id);
+	}
 
 	private String value;
 

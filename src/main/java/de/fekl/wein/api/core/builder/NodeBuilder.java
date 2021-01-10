@@ -3,13 +3,13 @@ package de.fekl.wein.api.core.builder;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.fekl.dine.api.core.INodeDeprecated;
+import de.fekl.dine.api.graph.INode;
 
 public class NodeBuilder {
 
 	private String id;
 	private String role;
-	private INodeDeprecated impl;
+	private INode impl;
 	private List<String> connections = new ArrayList<>();
 	private List<NodeBuilder> inlineNodes = new ArrayList<>();
 
@@ -31,11 +31,11 @@ public class NodeBuilder {
 		return this;
 	}
 
-	public INodeDeprecated getImpl() {
+	public INode getImpl() {
 		return impl;
 	}
 
-	public NodeBuilder impl(INodeDeprecated impl) {
+	public NodeBuilder impl(INode impl) {
 		this.impl = impl;
 		return this;
 	}

@@ -23,7 +23,7 @@ public class SimpleSpongeNet implements ISpongeNet {
 			throw new IllegalArgumentException("startNode is not part of the graph");
 		}
 		if (!isConnected(graph)) {
-			throw new IllegalArgumentException("graph is not fully connected");
+			throw new IllegalArgumentException("graph is not fully connected :\n" + graph.toString());
 		}
 		if (isCyclic(graph)) {
 			throw new IllegalArgumentException("graph is cyclic");

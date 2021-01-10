@@ -4,18 +4,19 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import java.lang.annotation.*;
-
-import de.fekl.dine.api.core.INet;
+import de.fekl.dine.api.tree.ISpongeNet
 import de.fekl.wein.api.core.ITransformer;
 import de.fekl.wein.api.core.IWsEndpointIdentifier;
 import de.fekl.wein.api.core.IWsOperationIdentifier;
 import de.fekl.wein.api.core.SimpleMessage;
 import de.fekl.wein.api.core.builder.NetBuilder;
+import groovy.transform.CompileStatic
 //import de.fekl.wein.groovy.support.TestEndpointBuilder;
 //import de.fekl.wein.groovy.support.TestOperationBuilder;
 //import de.fekl.wein.groovy.support.TestRouteBuilder;
 //import de.fekl.wein.groovy.support.TestTransformerBuilder;
 
+@CompileStatic
 public class TestGroovySupport {
 
 	@Test
@@ -24,21 +25,21 @@ public class TestGroovySupport {
 //		INet test = new TestRouteBuilder().testListBuilder();
 //		System.err.println(test.print());
 
-		INet test2 = new TestRouteBuilder().testClosureBuilder().buildNet();
-		System.err.println(test2.print());
-		INet test3 = new TestRouteBuilder().testShortcutClosureBuilder().buildNet();
-		System.err.println(test3.print());
-		INet test4 = new TestRouteBuilder().testSuperShortcutClosureBuilder().buildNet();
-		System.err.println(test4.print());
-		INet test5 = new TestRouteBuilder().testInlineNodeBuilder().withAlphabeticalNames().buildNet();
-		System.err.println(test5.print());
+		ISpongeNet test2 = new TestRouteBuilder().testClosureBuilder().buildNet();
+		System.err.println(test2);
+		ISpongeNet test3 = new TestRouteBuilder().testShortcutClosureBuilder().buildNet();
+		System.err.println(test3);
+		ISpongeNet test4 = new TestRouteBuilder().testSuperShortcutClosureBuilder().buildNet();
+		System.err.println(test4);
+		ISpongeNet test5 = new TestRouteBuilder().testInlineNodeBuilder().withAlphabeticalNames().buildNet();
+		System.err.println(test5);
 		List<NetBuilder> test6 = new TestRouteBuilder().testIntegrationRouteBuilder();
 		test6.stream().forEach({ b ->
-			INet buildNet = b.withAlphabeticalNames().buildNet();
-			System.err.println(buildNet.print());
+			ISpongeNet buildNet = b.withAlphabeticalNames().buildNet();
+			System.err.println(buildNet);
 		});
-		INet test7 = new TestRouteBuilder().testCodeInjectedBuilder().buildNet();
-		System.err.println(test7.print());
+		ISpongeNet test7 = new TestRouteBuilder().testCodeInjectedBuilder().buildNet();
+		System.err.println(test7);
 
 	}
 	
@@ -64,10 +65,10 @@ public class TestGroovySupport {
 	@Test
 	public void testTransformerBuilder() {
 		ITransformer test2 = new TestTransformerBuilder().testClosureBuilder().buildTransformer();
-		System.err.println(test2.transform(new SimpleMessage("hello")));
+		System.err.println(test2.transform(new SimpleMessage("msg1","hello")));
 		System.err.println(test2);
 		ITransformer test3 = new TestTransformerBuilder().testClosureBuilderShort().buildTransformer();
-		System.err.println(test3.transform(new SimpleMessage("hello")));
+		System.err.println(test3.transform(new SimpleMessage("msg2","hello")));
 		System.err.println(test3);
 	}
 

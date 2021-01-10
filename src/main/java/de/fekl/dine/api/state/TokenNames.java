@@ -1,4 +1,4 @@
-package de.fekl.cone.api.core;
+package de.fekl.dine.api.state;
 
 import de.fekl.baut.RandomNames;
 

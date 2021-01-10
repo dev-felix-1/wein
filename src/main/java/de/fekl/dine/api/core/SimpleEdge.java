@@ -28,7 +28,7 @@ public class SimpleEdge implements IEdge {
 	}
 
 	@Override
-	public String print() {
+	public String toString() {
 		return String.format("{%s -> %s}", source, target);
 	}
 
@@ -46,7 +46,5 @@ public class SimpleEdge implements IEdge {
 		return false;
 
 	}
-	
-	
 
 }

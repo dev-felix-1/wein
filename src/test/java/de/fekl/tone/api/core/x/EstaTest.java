@@ -3,12 +3,9 @@ package de.fekl.tone.api.core.x;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import de.fekl.cone.api.core.SimpleColouredNet;
-import de.fekl.cone.api.core.SimpleToken;
-import de.fekl.dine.api.core.INet;
-import de.fekl.dine.api.core.NodeRoles;
-import de.fekl.dine.api.core.SimpleNet;
-import de.fekl.dine.api.core.SimpleNodeDeprecated;
+import de.fekl.dine.api.state.ITokenStore;
+import de.fekl.dine.api.state.SimpleToken;
+import de.fekl.dine.api.state.SimpleTokenStore;
 import de.fekl.esta.api.core.IStateHasChangedEvent;
 import de.fekl.esta.api.core.SimpleStateContainer;
 
@@ -16,43 +13,34 @@ public class EstaTest {
 
 	private static final String NID_A = "A";
 	private static final String NID_B = "B";
-	private static final String NID_C = "C";
-	private static final String NID_D = "D";
-
-	private static INet createSimpleABCNet() {
-		INet simpleNet = new SimpleNet("hello");
-		simpleNet.addNode(NID_A, NodeRoles.START, new SimpleNodeDeprecated());
-		simpleNet.addNode(NID_B, NodeRoles.INTERMEDIATE, new SimpleNodeDeprecated());
-		simpleNet.addNode(NID_C, NodeRoles.END, new SimpleNodeDeprecated());
-		simpleNet.addEdge(NID_A, NID_B);
-		simpleNet.addEdge(NID_B, NID_C);
-		return simpleNet;
-	}
 
 	@Test
 	public void testStateContainerWithNet() {
-		INet simpleNet = createSimpleABCNet();
-		SimpleColouredNet simpleColouredNet = new SimpleColouredNet("colouredHello", simpleNet);
-		System.err.println(simpleColouredNet.print());
-		
-		SimpleStateContainer<SimpleColouredNet> simpleStateContainer = new SimpleStateContainer<>(simpleColouredNet);
+		ITokenStore tokenState = new SimpleTokenStore();
+		System.err.println(ITokenStore.print(tokenState));
+
+		SimpleStateContainer<ITokenStore> simpleStateContainer = new SimpleStateContainer<>(tokenState);
 		simpleStateContainer.changeState(current -> {
-			SimpleColouredNet newState = new SimpleColouredNet(current);
-			newState.putToken(NID_A, "token1", new SimpleToken());
+			ITokenStore newState = new SimpleTokenStore();
+			current.getTokenMapping().forEach((k, s) -> {
+				s.forEach(v -> newState.putToken(k, v));
+			});
+			newState.putToken(NID_A, new SimpleToken("token1"));
 			return newState;
 		});
-		
-		IStateHasChangedEvent<SimpleColouredNet> poll = simpleStateContainer.getStateChangedEvents().poll();
-		
-		System.err.println(simpleStateContainer.getCurrentState().print());
-		System.err.println(poll.getSourceState().print());
-		System.err.println(poll.getTargetState().print());
-		
-		simpleColouredNet.putToken(NID_A, "token1", new SimpleToken());
-		simpleColouredNet.putToken(NID_A, "token2", new SimpleToken());
-		simpleColouredNet.putToken(NID_B, "token3", new SimpleToken());
-		simpleColouredNet.putToken(NID_B, "token4", new SimpleToken());
-		simpleColouredNet.removeToken(NID_B, "token4");
+
+		IStateHasChangedEvent<ITokenStore> poll = simpleStateContainer.getStateChangedEvents().poll();
+
+		System.err.println(ITokenStore.print(simpleStateContainer.getCurrentState()));
+		System.err.println(ITokenStore.print(poll.getSourceState()));
+		System.err.println(ITokenStore.print(poll.getTargetState()));
+
+		tokenState.putToken(NID_A, new SimpleToken("t1"));
+		tokenState.putToken(NID_A, new SimpleToken("t2"));
+		tokenState.putToken(NID_B, new SimpleToken("t3"));
+		tokenState.putToken(NID_B, new SimpleToken("t4"));
+		tokenState.removeToken(NID_B, "token4");
+		System.err.println(ITokenStore.print(tokenState));
 
 	}
 
@@ -65,7 +53,7 @@ public class EstaTest {
 		IStateHasChangedEvent<String> poll = simpleStateContainer.getStateChangedEvents().poll();
 		Assertions.assertEquals("init", poll.getSourceState());
 		Assertions.assertEquals("init-changed", poll.getTargetState());
-		
+
 	}
 
 }

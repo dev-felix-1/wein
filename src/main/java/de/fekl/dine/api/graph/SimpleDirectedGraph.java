@@ -19,7 +19,18 @@ public class SimpleDirectedGraph implements IDirectedGraph {
 	public SimpleDirectedGraph(Set<INode> nodes, List<IEdge> edges) {
 		Precondition.isNotEmpty(nodes);
 		Precondition.isNotNull(edges);
-		this.nodes = nodes.stream().collect(Collectors.toUnmodifiableMap(n -> n.getId(), n -> n));
+		Map<String, INode> nodeNamesMap = nodes.stream().collect(Collectors.toUnmodifiableMap(n -> n.getId(), n -> n));
+		for (IEdge edge : edges) {
+			if (!nodeNamesMap.containsKey(edge.getSource())) {
+				throw new IllegalArgumentException(String.format("Edge Source %s is not part of the nodes set %s",
+						edge.getSource(), nodeNamesMap.keySet().stream().collect(Collectors.joining(", "))));
+			}
+			if (!nodeNamesMap.containsKey(edge.getTarget())) {
+				throw new IllegalArgumentException(String.format("Edge Target %s is not part of the nodes set %s",
+						edge.getTarget(), nodeNamesMap.keySet().stream().collect(Collectors.joining(", "))));
+			}
+		}
+		this.nodes = nodeNamesMap;
 		this.edges = Collections.unmodifiableList(new ArrayList<>(edges));
 	}
 
@@ -61,7 +72,7 @@ public class SimpleDirectedGraph implements IDirectedGraph {
 		""";
 		return String.format(printTemplate, this.getClass().getSimpleName(), 
 				nodes.keySet().stream().collect(Collectors.joining(", ")),
-				edges.stream().map(IEdge::print).collect(Collectors.joining(", ")));
+				edges.stream().map(IEdge::toString).collect(Collectors.joining(", ")));
 		//@formatter:on
 	}
 

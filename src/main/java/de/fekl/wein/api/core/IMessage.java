@@ -1,8 +1,8 @@
 package de.fekl.wein.api.core;
 
-import de.fekl.cone.api.core.ITokenDeprecated;
+import de.fekl.dine.api.state.IToken;
 
-public interface IMessage<T> extends ITokenDeprecated {
+public interface IMessage<T> extends IToken {
 
 	T getValue();
 
