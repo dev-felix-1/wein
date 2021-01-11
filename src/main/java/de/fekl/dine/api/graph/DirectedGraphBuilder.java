@@ -9,53 +9,52 @@ import de.fekl.dine.api.core.IEdge;
 import de.fekl.dine.api.core.IEdgeFactory;
 import de.fekl.dine.api.core.INodeFactory;
 import de.fekl.dine.api.core.SimpleEdgeFactory;
-import de.fekl.dine.api.core.SimpleNodeFactory;
 
-public class DirectedGraphBuilder {
+public class DirectedGraphBuilder<N extends INode> {
 
-	private final Set<INode> nodes = new HashSet<>();
+	private final Set<N> nodes = new HashSet<>();
 	private final List<IEdge> edges = new ArrayList<>();
 
-	private IDirectedGraphFactory directedGraphFactory = new SimpleDirectedGraphFactory();
+	private IDirectedGraphFactory<N> directedGraphFactory = new SimpleDirectedGraphFactory<N>();
 	private IEdgeFactory edgeFactory = new SimpleEdgeFactory();
-	private INodeFactory nodeFactory = new SimpleNodeFactory();
+	private INodeFactory<N> nodeFactory;
 
-	public DirectedGraphBuilder setGraphFactory(IDirectedGraphFactory factory) {
+	public DirectedGraphBuilder<N> setGraphFactory(IDirectedGraphFactory<N> factory) {
 		directedGraphFactory = factory;
 		return this;
 	}
 
-	public DirectedGraphBuilder setEdgeFactory(IEdgeFactory factory) {
+	public DirectedGraphBuilder<N> setEdgeFactory(IEdgeFactory factory) {
 		edgeFactory = factory;
 		return this;
 	}
 
-	public DirectedGraphBuilder setNodeFactory(INodeFactory factory) {
+	public DirectedGraphBuilder<N> setNodeFactory(INodeFactory<N> factory) {
 		nodeFactory = factory;
 		return this;
 	}
 
-	public DirectedGraphBuilder addNode(String name) {
-		INode node = nodeFactory.createNode(name);
+	public DirectedGraphBuilder<N> addNode(String name) {
+		N node = nodeFactory.createNode(name);
 		return addNode(node);
 	}
 
-	public DirectedGraphBuilder addNode(INode node) {
+	public DirectedGraphBuilder<N> addNode(N node) {
 		nodes.add(node);
 		return this;
 	}
 
-	public DirectedGraphBuilder addEdge(IEdge edge) {
+	public DirectedGraphBuilder<N> addEdge(IEdge edge) {
 		edges.add(edge);
 		return this;
 	}
 
-	public DirectedGraphBuilder addEdge(String sourceNode, String targetNode) {
+	public DirectedGraphBuilder<N> addEdge(String sourceNode, String targetNode) {
 		edges.add(edgeFactory.createEdge(sourceNode, targetNode));
 		return this;
 	}
 
-	public IDirectedGraph build() {
+	public IDirectedGraph<N> build() {
 		return directedGraphFactory.createDirectedGraph(nodes, edges);
 	}
 

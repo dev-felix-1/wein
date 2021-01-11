@@ -4,12 +4,12 @@ public class SimpleMessageFactory implements IMessageFactory {
 
 	@Override
 	public <T> IMessage<T> createMessage(T value) {
-		return new SimpleMessage<T>(MessageNames.generateMessageName(), value);
+		return new SimpleMessage<T>(value);
 	}
 
 	@Override
 	public <T> IMessage<T> copyMessage(IMessage<T> msg) {
-		return new SimpleMessage<T>(MessageNames.generateMessageName(), msg.getValue());
+		return new SimpleMessage<T>(msg.getValue());
 	}
 
 }

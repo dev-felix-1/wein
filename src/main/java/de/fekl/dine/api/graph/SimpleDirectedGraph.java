@@ -11,15 +11,15 @@ import java.util.stream.Collectors;
 import de.fekl.baut.Precondition;
 import de.fekl.dine.api.core.IEdge;
 
-public class SimpleDirectedGraph implements IDirectedGraph {
+public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 
-	private final Map<String, INode> nodes;
+	private final Map<String, N> nodes;
 	private final List<IEdge> edges;
 
-	public SimpleDirectedGraph(Set<INode> nodes, List<IEdge> edges) {
+	public SimpleDirectedGraph(Set<N> nodes, List<IEdge> edges) {
 		Precondition.isNotEmpty(nodes);
 		Precondition.isNotNull(edges);
-		Map<String, INode> nodeNamesMap = nodes.stream().collect(Collectors.toUnmodifiableMap(n -> n.getId(), n -> n));
+		Map<String, N> nodeNamesMap = nodes.stream().collect(Collectors.toUnmodifiableMap(n -> n.getId(), n -> n));
 		for (IEdge edge : edges) {
 			if (!nodeNamesMap.containsKey(edge.getSource())) {
 				throw new IllegalArgumentException(String.format("Edge Source %s is not part of the nodes set %s",
@@ -35,7 +35,7 @@ public class SimpleDirectedGraph implements IDirectedGraph {
 	}
 
 	@Override
-	public Collection<INode> getNodes() {
+	public Collection<N> getNodes() {
 		return nodes.values();
 	}
 
@@ -77,12 +77,12 @@ public class SimpleDirectedGraph implements IDirectedGraph {
 	}
 
 	@Override
-	public boolean contains(INode node) {
+	public boolean contains(N node) {
 		return nodes.containsValue(node);
 	}
 
 	@Override
-	public INode getNode(String nodeId) {
+	public N getNode(String nodeId) {
 		return nodes.get(nodeId);
 	}
 }

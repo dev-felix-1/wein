@@ -11,14 +11,14 @@ import de.fekl.dine.api.graph.INode;
  * @author felix
  *
  */
-public interface ISpongeNet extends IDirectedGraph {
+public interface ISpongeNet<N extends INode> extends IDirectedGraph<N> {
 
 	INode getRoot();
 
-	boolean isRoot(INode node);
+	boolean isRoot(N node);
 
-	Set<INode> getLeafs();
+	Set<N> getLeafs();
 
-	boolean isLeaf(INode node);
+	boolean isLeaf(N node);
 
 }

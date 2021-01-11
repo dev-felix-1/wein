@@ -4,25 +4,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import de.fekl.dine.api.core.IEdge;
-
-public interface ITokenStore {
+public interface ITokenStore<T extends IToken> {
 	
-	void putToken(String nodeId, IToken token);
+	void putToken(String nodeId, T token);
 	
 	void removeToken(String nodeId, String tokenId);
 
-	Set<IToken> getTokens(String nodeId);
+	Set<T> getTokens(String nodeId);
 
-	Map<String, Set<IToken>> getTokenMapping();
+	Map<String, Set<T>> getTokenMapping();
 	
 	String getPosition(String tokenId);
 	
 	Map<String, String> getTokenPositions();
 	
-	IToken getToken(String tokenId);
+	T getToken(String tokenId);
 	
-	public static String print(ITokenStore store) {
+	public static String print(ITokenStore<?> store) {
 		//@formatter:off
 		var printTemplate = """
 		%s {

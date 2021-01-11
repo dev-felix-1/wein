@@ -5,11 +5,11 @@ import java.util.Set;
 
 import de.fekl.dine.api.core.IEdge;
 
-public class SimpleDirectedGraphFactory implements IDirectedGraphFactory {
+public class SimpleDirectedGraphFactory<N extends INode> implements IDirectedGraphFactory<N> {
 
 	@Override
-	public IDirectedGraph createDirectedGraph(Set<INode> nodes, List<IEdge> edges) {
-		return new SimpleDirectedGraph(nodes, edges);
+	public IDirectedGraph<N> createDirectedGraph(Set<N> nodes, List<IEdge> edges) {
+		return new SimpleDirectedGraph<N>(nodes, edges);
 	}
 
 }

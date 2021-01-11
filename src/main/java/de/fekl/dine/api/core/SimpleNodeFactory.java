@@ -1,12 +1,15 @@
 package de.fekl.dine.api.core;
 
-import de.fekl.dine.api.graph.INode;
-
-public class SimpleNodeFactory implements INodeFactory {
+public class SimpleNodeFactory implements INodeFactory<SimpleNode> {
 
 	@Override
-	public INode createNode(String nodeId) {
+	public SimpleNode createNode(String nodeId) {
 		return new SimpleNode(nodeId);
+	}
+
+	@Override
+	public SimpleNode createNode() {
+		return new SimpleNode(NodeNames.generateNodeName());
 	}
 
 }

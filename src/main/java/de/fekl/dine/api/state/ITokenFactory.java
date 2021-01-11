@@ -1,9 +1,9 @@
 package de.fekl.dine.api.state;
 
-public interface ITokenFactory {
+public interface ITokenFactory<T extends IToken> {
 
-	IToken createToken(String id);
+	T createToken(String id);
 
-	IToken copyToken(IToken token);
+	T copyToken(IToken token);
 
 }

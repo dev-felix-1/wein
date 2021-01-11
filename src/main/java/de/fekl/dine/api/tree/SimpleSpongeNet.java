@@ -11,12 +11,12 @@ import de.fekl.dine.api.core.IEdge;
 import de.fekl.dine.api.graph.IDirectedGraph;
 import de.fekl.dine.api.graph.INode;
 
-public class SimpleSpongeNet implements ISpongeNet {
+public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 
-	private final IDirectedGraph graph;
+	private final IDirectedGraph<N> graph;
 	private final String startNode;
 
-	public SimpleSpongeNet(IDirectedGraph graph, String startNode) {
+	public SimpleSpongeNet(IDirectedGraph<N> graph, String startNode) {
 		Precondition.isNotNull(graph);
 		Precondition.isNotEmpty(startNode);
 		if (!graph.contains(startNode)) {
@@ -32,13 +32,14 @@ public class SimpleSpongeNet implements ISpongeNet {
 		this.startNode = startNode;
 	}
 
-	private static boolean isConnected(IDirectedGraph graph) {
-		INode next = graph.getNodes().iterator().next();
+	private static <N extends INode> boolean isConnected(IDirectedGraph<N> graph) {
+		N next = graph.getNodes().iterator().next();
 		Set<String> collectChildren = collectChildrenUndirected(graph, next.getId());
 		return collectChildren.size() == graph.getNodes().size();
 	}
 
-	private static void collectChildrenUndirected(IDirectedGraph graph, String startNode, Set<String> visited) {
+	private static <N extends INode> void collectChildrenUndirected(IDirectedGraph<N> graph, String startNode,
+			Set<String> visited) {
 		visited.add(startNode);
 		for (IEdge edge : graph.getOutgoingEdges(startNode)) {
 			if (!visited.contains(edge.getTarget())) {
@@ -52,13 +53,13 @@ public class SimpleSpongeNet implements ISpongeNet {
 		}
 	}
 
-	private static Set<String> collectChildrenUndirected(IDirectedGraph graph, String startNode) {
+	private static <N extends INode> Set<String> collectChildrenUndirected(IDirectedGraph<N> graph, String startNode) {
 		Set<String> children = new HashSet<>();
 		collectChildrenUndirected(graph, startNode, children);
 		return children;
 	}
 
-	private static void collectLeafs(IDirectedGraph graph, INode startNode, Set<INode> visited) {
+	private static <N extends INode> void collectLeafs(IDirectedGraph<N> graph, N startNode, Set<N> visited) {
 		List<IEdge> outgoingEdges = graph.getOutgoingEdges(startNode.getId());
 		if (outgoingEdges.isEmpty()) {
 			visited.add(startNode);
@@ -69,18 +70,18 @@ public class SimpleSpongeNet implements ISpongeNet {
 		}
 	}
 
-	private static Set<INode> collectLeafs(IDirectedGraph graph, String startNode) {
-		Set<INode> leafs = new HashSet<>();
+	private static <N extends INode> Set<N> collectLeafs(IDirectedGraph<N> graph, String startNode) {
+		Set<N> leafs = new HashSet<>();
 		collectLeafs(graph, graph.getNode(startNode), leafs);
 		return leafs;
 	}
 
-	private static boolean isCyclic(IDirectedGraph graph) {
+	private static <N extends INode> boolean isCyclic(IDirectedGraph<N> graph) {
 		String next = graph.getNodes().iterator().next().getId();
 		return hasCycle(graph, next);
 	}
 
-	private static boolean hasCycle(IDirectedGraph graph, String startNode, Set<String> visited) {
+	private static <N extends INode> boolean hasCycle(IDirectedGraph<N> graph, String startNode, Set<String> visited) {
 		visited.add(startNode);
 		for (IEdge edge : graph.getOutgoingEdges(startNode)) {
 			if (visited.contains(edge.getTarget())) {
@@ -92,12 +93,12 @@ public class SimpleSpongeNet implements ISpongeNet {
 		return false;
 	}
 
-	private static boolean hasCycle(IDirectedGraph graph, String startNode) {
+	private static <N extends INode> boolean hasCycle(IDirectedGraph<N> graph, String startNode) {
 		return hasCycle(graph, startNode, new HashSet<>());
 	}
 
 	@Override
-	public Collection<INode> getNodes() {
+	public Collection<N> getNodes() {
 		return graph.getNodes();
 	}
 
@@ -122,17 +123,17 @@ public class SimpleSpongeNet implements ISpongeNet {
 	}
 
 	@Override
-	public boolean isRoot(INode node) {
+	public boolean isRoot(N node) {
 		return startNode.equals(node.getId());
 	}
 
 	@Override
-	public Set<INode> getLeafs() {
+	public Set<N> getLeafs() {
 		return collectLeafs(graph, startNode);
 	}
 
 	@Override
-	public boolean isLeaf(INode node) {
+	public boolean isLeaf(N node) {
 		return collectLeafs(graph, startNode).contains(node);
 	}
 
@@ -151,7 +152,7 @@ public class SimpleSpongeNet implements ISpongeNet {
 		//@formatter:on
 	}
 
-	private String printNode(INode node) {
+	private String printNode(N node) {
 		return printNode(node.getId());
 	}
 
@@ -170,17 +171,17 @@ public class SimpleSpongeNet implements ISpongeNet {
 	}
 
 	@Override
-	public boolean contains(INode node) {
+	public boolean contains(N node) {
 		return graph.contains(node);
 	}
 
 	@Override
-	public INode getNode(String nodeId) {
+	public N getNode(String nodeId) {
 		return graph.getNode(nodeId);
 	}
 
 	@Override
-	public INode getRoot() {
+	public N getRoot() {
 		return getNode(startNode);
 	}
 

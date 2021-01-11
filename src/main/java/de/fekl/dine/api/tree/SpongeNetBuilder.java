@@ -1,29 +1,30 @@
 package de.fekl.dine.api.tree;
 
 import de.fekl.dine.api.graph.IDirectedGraph;
+import de.fekl.dine.api.graph.INode;
 
-public class SpongeNetBuilder {
+public class SpongeNetBuilder<N extends INode> {
 
-	private IDirectedGraph graph;
+	private IDirectedGraph<N> graph;
 	private String startNode;
 	private ISpongeNetFactory spongeNetFactory = new SimpleSpongeNetFactory();
 
-	public SpongeNetBuilder setSpongeNetFactory(ISpongeNetFactory factory) {
+	public SpongeNetBuilder<N> setSpongeNetFactory(ISpongeNetFactory factory) {
 		spongeNetFactory = factory;
 		return this;
 	}
 
-	public SpongeNetBuilder setGraph(IDirectedGraph graph) {
+	public SpongeNetBuilder<N> setGraph(IDirectedGraph<N> graph) {
 		this.graph = graph;
 		return this;
 	}
 
-	public SpongeNetBuilder setStartNode(String startNode) {
+	public SpongeNetBuilder<N> setStartNode(String startNode) {
 		this.startNode = startNode;
 		return this;
 	}
 
-	public ISpongeNet build() {
+	public ISpongeNet<N> build() {
 		return spongeNetFactory.createSpongeNet(startNode, graph);
 	}
 

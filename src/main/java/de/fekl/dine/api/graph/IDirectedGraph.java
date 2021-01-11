@@ -5,19 +5,19 @@ import java.util.List;
 
 import de.fekl.dine.api.core.IEdge;
 
-public interface IDirectedGraph {
+public interface IDirectedGraph<N extends INode> {
 
-	Collection<INode> getNodes();
+	Collection<N> getNodes();
 
 	List<IEdge> getEdges();
 
 	boolean contains(String nodeId);
-	
-	boolean contains(INode node);
-	
+
+	boolean contains(N node);
+
 	List<IEdge> getIncomingEdges(String nodeId);
 
 	List<IEdge> getOutgoingEdges(String nodeId);
-	
-	INode getNode(String nodeId);
+
+	N getNode(String nodeId);
 }

@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
 
 import de.fekl.baut.Precondition;
 
-public class SimpleTokenStore implements ITokenStore {
+public class SimpleTokenStore<T extends IToken> implements ITokenStore<T> {
 
-	private final Map<String, Set<IToken>> tokenMapping;
-	private final Map<String, IToken> tokens;
+	private final Map<String, Set<T>> tokenMapping;
+	private final Map<String, T> tokens;
 
-	public SimpleTokenStore(SimpleTokenStore toCopyFrom) {
+	public SimpleTokenStore(SimpleTokenStore<T> toCopyFrom) {
 		super();
 		tokenMapping = new HashMap<>(toCopyFrom.tokenMapping);
 		tokens = new HashMap<>(toCopyFrom.tokens);
@@ -30,7 +30,7 @@ public class SimpleTokenStore implements ITokenStore {
 	}
 
 	@Override
-	public synchronized void putToken(String nodeId, IToken token) {
+	public synchronized void putToken(String nodeId, T token) {
 		Precondition.isNotEmpty(nodeId);
 		Precondition.isNotNull(token);
 		Precondition.isNotEmpty(token.getId());
@@ -38,18 +38,18 @@ public class SimpleTokenStore implements ITokenStore {
 			throw new IllegalArgumentException(String.format("TokenId %s already taken", token.getId()));
 		}
 		tokens.put(token.getId(), token);
-		Set<IToken> tokenSet = tokenMapping.computeIfAbsent(nodeId, (id) -> new HashSet<>());
+		Set<T> tokenSet = tokenMapping.computeIfAbsent(nodeId, (id) -> new HashSet<>());
 		tokenSet.add(token);
 	}
 
 	@Override
-	public Set<IToken> getTokens(String nodeId) {
+	public Set<T> getTokens(String nodeId) {
 		Precondition.isNotEmpty(nodeId);
 		return Collections.unmodifiableSet(tokenMapping.get(nodeId));
 	}
 
 	@Override
-	public Map<String, Set<IToken>> getTokenMapping() {
+	public Map<String, Set<T>> getTokenMapping() {
 		return Collections.unmodifiableMap(tokenMapping);
 	}
 
@@ -58,9 +58,9 @@ public class SimpleTokenStore implements ITokenStore {
 		Precondition.isNotEmpty(nodeId);
 		Precondition.isNotEmpty(nodeId);
 		tokens.remove(tokenId);
-		Set<IToken> set = tokenMapping.get(nodeId);
+		Set<T> set = tokenMapping.get(nodeId);
 		if (set != null) {
-			Optional<IToken> token = set.stream().filter(t -> t.getId().equals(tokenId)).findFirst();
+			Optional<T> token = set.stream().filter(t -> t.getId().equals(tokenId)).findFirst();
 			if (token.isPresent()) {
 				set.remove(token.get());
 			}
@@ -68,14 +68,14 @@ public class SimpleTokenStore implements ITokenStore {
 	}
 
 	@Override
-	public IToken getToken(String tokenId) {
+	public T getToken(String tokenId) {
 		return tokens.get(tokenId);
 	}
 
 	@Override
 	public String getPosition(String tokenId) {
 		Precondition.isNotEmpty(tokenId);
-		List<Entry<String, Set<IToken>>> collect = tokenMapping.entrySet().stream()
+		List<Entry<String, Set<T>>> collect = tokenMapping.entrySet().stream()
 				.filter(entry -> entry.getValue().stream().anyMatch(t -> t.getId().equals(tokenId)))
 				.collect(Collectors.toList());
 		if (collect.size() > 1) {
@@ -88,7 +88,7 @@ public class SimpleTokenStore implements ITokenStore {
 
 	@Override
 	public Map<String, String> getTokenPositions() {
-		return tokens.entrySet().stream().collect(Collectors
-				.<Entry<String, IToken>, String, String>toMap(e -> e.getKey(), e -> getPosition(e.getValue().getId())));
+		return tokens.entrySet().stream().collect(Collectors.<Entry<String, T>, String, String>toMap(e -> e.getKey(),
+				e -> getPosition(e.getValue().getId())));
 	}
 }

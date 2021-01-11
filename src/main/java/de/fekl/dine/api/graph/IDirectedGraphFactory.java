@@ -5,8 +5,8 @@ import java.util.Set;
 
 import de.fekl.dine.api.core.IEdge;
 
-public interface IDirectedGraphFactory {
+public interface IDirectedGraphFactory<N extends INode> {
 
-	IDirectedGraph createDirectedGraph(Set<INode> nodes, List<IEdge> edges);
+	IDirectedGraph<N> createDirectedGraph(Set<N> nodes, List<IEdge> edges);
 
 }
