@@ -3,6 +3,7 @@ package de.fekl.dine.api.graph;
 import java.util.List;
 
 import de.fekl.dine.api.core.IEdge;
+import de.fekl.dine.api.core.INode;
 
 public interface IDirectedGraph<N extends INode> extends IGraph<N> {
 

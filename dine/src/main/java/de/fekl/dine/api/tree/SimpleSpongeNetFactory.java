@@ -1,7 +1,7 @@
 package de.fekl.dine.api.tree;
 
+import de.fekl.dine.api.core.INode;
 import de.fekl.dine.api.graph.IDirectedGraph;
-import de.fekl.dine.api.graph.INode;
 
 public class SimpleSpongeNetFactory<N extends INode> implements ISpongeNetFactory<N> {
 
