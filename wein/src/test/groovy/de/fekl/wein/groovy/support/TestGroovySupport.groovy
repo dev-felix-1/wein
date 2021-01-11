@@ -33,13 +33,13 @@ public class TestGroovySupport {
 		System.err.println(test4);
 		ISpongeNet test5 = new TestRouteBuilder().testInlineNodeBuilder().withAlphabeticalNames().buildNet();
 		System.err.println(test5);
-		List<NetBuilder> test6 = new TestRouteBuilder().testIntegrationRouteBuilder();
-		test6.stream().forEach({ b ->
-			ISpongeNet buildNet = b.withAlphabeticalNames().buildNet();
-			System.err.println(buildNet);
-		});
-		ISpongeNet test7 = new TestRouteBuilder().testCodeInjectedBuilder().buildNet();
-		System.err.println(test7);
+//		List<NetBuilder> test6 = new TestRouteBuilder().testIntegrationRouteBuilder();
+//		test6.stream().forEach({ b ->
+//			ISpongeNet buildNet = b.withAlphabeticalNames().buildNet();
+//			System.err.println(buildNet);
+//		});
+//		ISpongeNet test7 = new TestRouteBuilder().testCodeInjectedBuilder().buildNet();
+//		System.err.println(test7);
 
 	}
 	
