@@ -2,7 +2,6 @@ package de.fekl.tone.api.core.x;
 
 import org.junit.jupiter.api.Test;
 
-import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.wein.api.core.builder.EdgesBuilder;
 import de.fekl.wein.api.core.builder.NetBuilder;
 import de.fekl.wein.api.core.builder.NodeBuilder;
@@ -19,10 +18,10 @@ public class TestBuilderSupport {
 				new NodesBuilder()
 					.node(new NodeBuilder()
 							.id("A")
-							.role(NodeRoles.START))
+							.role("START"))
 					.node(new NodeBuilder()
 							.id("B")
-							.role(NodeRoles.END))
+							.role("END"))
 			)
 			.edges(
 					new EdgesBuilder().outgoing(new OutgoingEdgesBuilder().source("A").target("B"))).buildNet());
@@ -35,10 +34,10 @@ public class TestBuilderSupport {
 		System.err.println(new NetBuilder()
 						.node(new NodeBuilder()
 								.id("A")
-								.role(NodeRoles.START))
+								.role("START"))
 						.node(new NodeBuilder()
 								.id("B")
-								.role(NodeRoles.END)
+								.role("END")
 								)
 						.from(new OutgoingEdgesBuilder().source("A")
 								.target("B")
@@ -52,9 +51,9 @@ public class TestBuilderSupport {
 		//@formatter:off
 		System.err.println(new NetBuilder()
 				.node(new NodeBuilder()
-						.role(NodeRoles.START)
+						.role("START")
 						.to(new NodeBuilder()
-								.role(NodeRoles.END)))
+								.role("END")))
 				.buildNet());
 		
 	}

@@ -3,7 +3,7 @@ package de.fekl.wein.api.core.builder;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.fekl.dine.api.graph.INode;
+import de.fekl.dine.api.core.INode;
 
 public class NodeBuilder {
 

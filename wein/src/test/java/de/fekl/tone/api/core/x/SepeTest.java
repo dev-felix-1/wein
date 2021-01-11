@@ -1,7 +1,6 @@
 package de.fekl.tone.api.core.x;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -9,9 +8,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import de.fekl.dine.api.core.IEdge;
-import de.fekl.dine.api.core.SimpleNode;
+import de.fekl.dine.api.core.INode;
+import de.fekl.dine.api.core.SimpleNodeFactory;
 import de.fekl.dine.api.graph.DirectedGraphBuilder;
-import de.fekl.dine.api.graph.INode;
 import de.fekl.dine.api.state.IToken;
 import de.fekl.dine.api.state.ITokenStore;
 import de.fekl.dine.api.state.SimpleToken;
@@ -42,6 +41,7 @@ public class SepeTest {
 		//@formatter:off
 			new SpongeNetBuilder<INode>()
 				.setGraph(new DirectedGraphBuilder<INode>()
+					.setNodeFactory(new SimpleNodeFactory())
 					.addNode(NID_A)
 					.addNode(NID_B)
 					.addNode(NID_B2)
@@ -62,6 +62,7 @@ public class SepeTest {
 		//@formatter:off
 			new SpongeNetBuilder<INode>()
 				.setGraph(new DirectedGraphBuilder<INode>()
+					.setNodeFactory(new SimpleNodeFactory())	
 					.addNode(new TokenCopyNode(NID_A))
 					.addNode(NID_B)
 					.addNode(NID_B2)
@@ -70,7 +71,7 @@ public class SepeTest {
 					.addEdge(NID_A, NID_B)
 					.addEdge(NID_A, NID_B2)
 					.addEdge(NID_B, NID_C)
-					.addEdge(NID_B, NID_D)
+					.addEdge(NID_B, NID_D)					
 					.build())
 				.setStartNode(NID_A)
 				.build();
@@ -82,6 +83,7 @@ public class SepeTest {
 		//@formatter:off
 			new SpongeNetBuilder<INode>()
 				.setGraph(new DirectedGraphBuilder<INode>()
+					.setNodeFactory(new SimpleNodeFactory())	
 					.addNode(new RequestTransformer(NID_A))
 					.addNode(new ResponseTransformer(NID_B))
 					.addNode(NID_C)
@@ -110,8 +112,8 @@ public class SepeTest {
 	public void testSplit() {
 		ISpongeNet<INode> simpleNet = createSimpleSplitterABCNet();
 
-		ColouredNetProcessingContainer<INode,IToken> colouredNetProcessingContainer = new ColouredNetProcessingContainer<>(
-				simpleNet, new SimpleTokenStore<>(),null) {
+		ColouredNetProcessingContainer<INode, IToken> colouredNetProcessingContainer = new ColouredNetProcessingContainer<>(
+				simpleNet, new SimpleTokenStore<>(), null) {
 
 			protected <C extends IStateContainer<ITokenStore<IToken>>> void handleToken(C currentState, String tokenId,
 					String nodeId) {
@@ -122,20 +124,19 @@ public class SepeTest {
 
 					int size = outgoingEdges.size();
 					if (size > 1) {
-						IStateChangeOperation<ITokenStore<IToken>> copyTokenOperation = ColouredNetOperations.copyToken(tokenId,
-								size - 1, new SimpleTokenFactory());
+						IStateChangeOperation<ITokenStore<IToken>> copyTokenOperation = ColouredNetOperations
+								.copyToken(tokenId, size - 1, new SimpleTokenFactory());
 						System.err.println(copyTokenOperation);
 						currentState.changeState(copyTokenOperation);
 					}
 
 					List<IToken> tokensOnNode = new ArrayList<>(currentState.getCurrentState().getTokens(nodeId));
 					Assertions.assertEquals(tokensOnNode.size(), outgoingEdges.size());
-					Iterator<IToken> iterator = tokensOnNode.iterator();
 					IntStream.range(0, tokensOnNode.size()).forEach(i -> {
 						String tId = tokensOnNode.get(i).getId();
 						String nId = outgoingEdges.get(i).getTarget();
-						IStateChangeOperation<ITokenStore<IToken>> moveTokenOperation = ColouredNetOperations.moveToken(nodeId,
-								nId, tId);
+						IStateChangeOperation<ITokenStore<IToken>> moveTokenOperation = ColouredNetOperations
+								.moveToken(nodeId, nId, tId);
 						System.err.println(moveTokenOperation);
 						currentState.changeState(moveTokenOperation);
 					});
@@ -144,8 +145,8 @@ public class SepeTest {
 					if (!outgoingEdges.isEmpty()) {
 						IEdge iEdge = outgoingEdges.get(0);
 						String target = iEdge.getTarget();
-						IStateChangeOperation<ITokenStore<IToken>> moveTokenOperation = ColouredNetOperations.moveToken(nodeId,
-								target, tokenId);
+						IStateChangeOperation<ITokenStore<IToken>> moveTokenOperation = ColouredNetOperations
+								.moveToken(nodeId, target, tokenId);
 						System.err.println(moveTokenOperation);
 						currentState.changeState(moveTokenOperation);
 					}
@@ -162,8 +163,8 @@ public class SepeTest {
 	public void testTransformerNet() {
 		ISpongeNet<INode> simpleNet = createSimpleTransformerABCNet();
 
-		ColouredNetProcessingContainer<INode,IToken> colouredNetProcessingContainer = new ColouredNetProcessingContainer<>(
-				simpleNet, new SimpleTokenStore<>(),null) {
+		ColouredNetProcessingContainer<INode, IToken> colouredNetProcessingContainer = new ColouredNetProcessingContainer<>(
+				simpleNet, new SimpleTokenStore<>(), null) {
 
 			protected <C extends IStateContainer<ITokenStore<IToken>>> void handleToken(C currentState, String tokenId,
 					String nodeId) {

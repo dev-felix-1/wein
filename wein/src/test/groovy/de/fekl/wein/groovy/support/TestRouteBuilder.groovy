@@ -1,9 +1,8 @@
 package de.fekl.wein.groovy.support
 
+import de.fekl.dine.api.core.INode
 import de.fekl.dine.api.core.SimpleNode
-import de.fekl.dine.api.graph.INode
 import de.fekl.wein.api.core.builder.NetBuilder
-import groovy.transform.CompileStatic
 
 class TestRouteBuilder {
 
@@ -127,7 +126,7 @@ class TestRouteBuilder {
 
 	public List<NetBuilder> testIntegrationRouteBuilder() {
 
-		def converters = [new NodeImpl(), new NodeImpl2()]
+		def converters = [new NodeImpl('converter1'), new NodeImpl2('converter2')]
 
 		def getConverterImpl = {
 			return new NodeImpl2('v')
@@ -138,7 +137,7 @@ class TestRouteBuilder {
 		}
 
 		converters.collect { converter ->
-			new RouteBuilder().route("integRoute[${converter.print()}]") {
+			new RouteBuilder().route("integRoute[${converter}]") {
 				node {
 					role ('START')
 

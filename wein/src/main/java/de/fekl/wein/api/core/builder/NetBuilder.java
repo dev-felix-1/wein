@@ -1,13 +1,11 @@
 package de.fekl.wein.api.core.builder;
 
 import de.fekl.baut.AlphabeticalNames;
+import de.fekl.dine.api.core.INode;
 import de.fekl.dine.api.core.NodeNames;
-import de.fekl.dine.api.core.NodeRoles;
 import de.fekl.dine.api.core.SimpleNode;
 import de.fekl.dine.api.graph.DirectedGraphBuilder;
-import de.fekl.dine.api.graph.INode;
 import de.fekl.dine.api.tree.ISpongeNet;
-import de.fekl.dine.api.tree.SimpleSpongeNet;
 import de.fekl.dine.api.tree.SpongeNetBuilder;
 
 public class NetBuilder {
@@ -54,7 +52,7 @@ public class NetBuilder {
 		DirectedGraphBuilder graphBuilder = new DirectedGraphBuilder();
 		nodesBuilder.getNodeBuilders().forEach(nodeBuilder -> {
 			buildNode(graphBuilder, nodeBuilder);
-			if (nodeBuilder.getRole().equals(NodeRoles.START)) {
+			if (nodeBuilder.getRole().equals("START")) {
 				spongeNetBuilder.setStartNode(nodeBuilder.getId());
 			}
 		});
@@ -91,7 +89,7 @@ public class NetBuilder {
 			nodeBuilder.id(nodeId);
 		}
 		if (role == null) {
-			role = NodeRoles.INTERMEDIATE;
+			role = "INTERMEDIATE";
 			nodeBuilder.role(role);
 		}
 		if (impl == null) {

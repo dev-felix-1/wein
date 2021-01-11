@@ -1,6 +1,6 @@
 package de.fekl.wein.api.core;
 
-import de.fekl.dine.api.graph.INode;
+import de.fekl.dine.api.core.INode;
 
 public interface ITransformer<S, T> extends INode {
 

@@ -10,7 +10,7 @@ import de.fekl.baut.ILogger;
 import de.fekl.baut.LogManager;
 import de.fekl.baut.RandomNames;
 import de.fekl.dine.api.core.IEdge;
-import de.fekl.dine.api.graph.INode;
+import de.fekl.dine.api.core.INode;
 import de.fekl.dine.api.state.IToken;
 import de.fekl.dine.api.state.ITokenFactory;
 import de.fekl.dine.api.state.ITokenStore;

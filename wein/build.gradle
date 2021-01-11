@@ -14,7 +14,6 @@ publishing {
 
 	repositories {
 		if (project.hasProperty('maven_local_repo')) {
-		println maven_local_repo
 		maven {
 			url maven_local_repo
 		}
@@ -49,7 +48,8 @@ repositories {
 
 dependencies {
     implementation 'org.codehaus.groovy:groovy:3.0.7'
-    implementation 'de.fekl:baut:1.0.0'
+    implementation 'de.fekl:baut:1.0.2'
+    implementation 'de.fekl:dine:1.0.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }

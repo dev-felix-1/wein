@@ -14,9 +14,9 @@ public class NodeFactoryTest {
 	// DEFAULT IMPL
 	@Test
 	public void testCreateValidSimpleNode() {
-		SimpleNode node = new SimpleNodeFactory().createNode("A");
+		INode node = new SimpleNodeFactory().createNode("A");
 		Assertions.assertNotNull(node);
-		SimpleNode nodeWithGeneratedName = new SimpleNodeFactory().createNode();
+		INode nodeWithGeneratedName = new SimpleNodeFactory().createNode();
 		Assertions.assertNotNull(nodeWithGeneratedName);
 	}
 

@@ -5,6 +5,16 @@ plugins {
 	id 'eclipse'
 }
 
+java {
+	withJavadocJar()
+	withSourcesJar()
+}
+
+javadoc.options {
+	addBooleanOption('-enable-preview', true)
+	addStringOption('-release', '15')
+}
+
 publishing {
 	publications {
 		dine(MavenPublication) {
