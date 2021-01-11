@@ -1,0 +1,5 @@
+rootProject.name = 'fe-root'
+
+include 'baut'
+include 'dine'
+//include 'wein'
