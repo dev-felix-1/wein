@@ -2,11 +2,11 @@ package de.fekl.wein.groovy.support
 
 import org.codehaus.groovy.runtime.InvokerHelper
 
-import de.fekl.wein.api.core.IContentType
-import de.fekl.wein.api.core.ITransformation
+import de.fekl.tran.IContentType
+import de.fekl.tran.ITransformation
+import de.fekl.tran.StandardContentTypes
 import de.fekl.wein.api.core.IWsEndpointIdentifier
 import de.fekl.wein.api.core.IWsOperationIdentifier
-import de.fekl.wein.api.core.StandardContentTypes
 import de.fekl.wein.api.core.builder.WsEndpointIdentifierBuilder
 import groovy.transform.CompileStatic
 

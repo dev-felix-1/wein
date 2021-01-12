@@ -3,6 +3,7 @@ package de.fekl.wein.api.core.builder;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class EdgesBuilder {
 	
 	private List<OutgoingEdgesBuilder> outgoing = new ArrayList<>();

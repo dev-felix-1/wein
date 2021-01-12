@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 
 import de.fekl.baut.Precondition;
 import de.fekl.dine.api.core.IEdge;
-import de.fekl.dine.api.core.INode;
 import de.fekl.dine.api.graph.IDirectedGraph;
+import de.fekl.dine.api.node.INode;
 
 public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 
@@ -183,6 +183,11 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 	@Override
 	public N getRoot() {
 		return getNode(startNode);
+	}
+
+	@Override
+	public boolean isLeaf(String nodeId) {
+		return collectLeafs(graph, startNode).stream().anyMatch(l -> l.getId().equals(nodeId));
 	}
 
 }

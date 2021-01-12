@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 
-import de.fekl.dine.api.core.INode;
-import de.fekl.dine.api.core.SimpleNode;
+import de.fekl.dine.api.node.INode;
+import de.fekl.dine.api.node.SimpleNode;
 
 public class NodeTest {
 

@@ -6,9 +6,9 @@ import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import de.fekl.dine.api.core.SimpleNode;
 import de.fekl.dine.api.graph.SimpleDirectedGraph;
 import de.fekl.dine.api.graph.SimpleDirectedGraphFactory;
+import de.fekl.dine.api.node.SimpleNode;
 
 public class DirectedGraphFactoryTest {
 

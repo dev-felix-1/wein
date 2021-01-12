@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.fekl.dine.api.core.IEdge;
-import de.fekl.dine.api.core.INode;
+import de.fekl.dine.api.node.INode;
 
 public class SimpleDirectedGraphFactory<N extends INode> implements IDirectedGraphFactory<N> {
 

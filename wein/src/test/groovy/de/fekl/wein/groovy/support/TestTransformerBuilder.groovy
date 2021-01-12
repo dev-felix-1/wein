@@ -1,7 +1,7 @@
 package de.fekl.wein.groovy.support
 
-import de.fekl.wein.api.core.ITransformation
-import de.fekl.wein.api.core.StandardContentTypes
+import de.fekl.tran.ITransformation
+import de.fekl.tran.StandardContentTypes
 
 class TestTransformerBuilder {
 

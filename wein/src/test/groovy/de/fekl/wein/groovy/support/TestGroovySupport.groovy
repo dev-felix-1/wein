@@ -5,10 +5,10 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import java.lang.annotation.*;
 import de.fekl.dine.api.tree.ISpongeNet
-import de.fekl.wein.api.core.ITransformer;
+import de.fekl.tran.ITransformer
+import de.fekl.tran.SimpleMessage
 import de.fekl.wein.api.core.IWsEndpointIdentifier;
 import de.fekl.wein.api.core.IWsOperationIdentifier;
-import de.fekl.wein.api.core.SimpleMessage;
 import de.fekl.wein.api.core.builder.NetBuilder;
 import groovy.transform.CompileStatic
 //import de.fekl.wein.groovy.support.TestEndpointBuilder;

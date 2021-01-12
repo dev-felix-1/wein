@@ -2,8 +2,8 @@ package de.fekl.dine.api.tree;
 
 import java.util.Set;
 
-import de.fekl.dine.api.core.INode;
 import de.fekl.dine.api.graph.IDirectedGraph;
+import de.fekl.dine.api.node.INode;
 
 /**
  * Directed acyclic graph with one root node and n leafs
@@ -13,12 +13,14 @@ import de.fekl.dine.api.graph.IDirectedGraph;
  */
 public interface ISpongeNet<N extends INode> extends IDirectedGraph<N> {
 
-	INode getRoot();
+	N getRoot();
 
 	boolean isRoot(N node);
 
 	Set<N> getLeafs();
 
 	boolean isLeaf(N node);
+	
+	boolean isLeaf(String nodeId);
 
 }

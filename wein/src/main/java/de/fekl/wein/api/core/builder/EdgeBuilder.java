@@ -1,5 +1,6 @@
 package de.fekl.wein.api.core.builder;
 
+@Deprecated
 public class EdgeBuilder {
 	
 	private String source;

@@ -1,11 +1,11 @@
 package de.fekl.wein.api.core.builder;
 
-import de.fekl.wein.api.core.IContentType;
-import de.fekl.wein.api.core.ITransformation;
-import de.fekl.wein.api.core.ITransformer;
+import de.fekl.tran.IContentType;
+import de.fekl.tran.ITransformation;
+import de.fekl.tran.ITransformer;
+import de.fekl.tran.SimpleTransformer;
+import de.fekl.tran.TransformerNames;
 import de.fekl.wein.api.core.IWsOperationIdentifier;
-import de.fekl.wein.api.core.SimpleTransformer;
-import de.fekl.wein.api.core.TransformerNames;
 
 public class TransformerBuilder<S, T> {
 
@@ -53,7 +53,7 @@ public class TransformerBuilder<S, T> {
 	}
 
 	public ITransformer<S, T> buildTransformer() {
-		return new SimpleTransformer<>(sourceContentType, targetContentType, operation, TransformerNames.generateTransformerName(), transformation);
+		return new SimpleTransformer<>(sourceContentType, targetContentType, transformation,TransformerNames.generateTransformerName());
 
 	}
 

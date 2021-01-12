@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.fekl.baut.Precondition;
-import de.fekl.dine.api.core.INode;
+import de.fekl.dine.api.node.INode;
 
 public class SimpleGraphRegistry<N extends INode, G extends IGraph<N>> implements IGraphRegistry<N, G> {
 

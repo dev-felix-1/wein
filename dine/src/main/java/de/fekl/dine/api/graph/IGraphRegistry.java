@@ -2,7 +2,7 @@ package de.fekl.dine.api.graph;
 
 import java.util.Map;
 
-import de.fekl.dine.api.core.INode;
+import de.fekl.dine.api.node.INode;
 
 public interface IGraphRegistry<N extends INode, G extends IGraph<N>> {
 

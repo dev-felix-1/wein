@@ -16,7 +16,10 @@ import de.fekl.dine.api.state.ITokenFactory;
 import de.fekl.dine.api.state.ITokenStore;
 import de.fekl.dine.api.state.TokenNames;
 import de.fekl.dine.api.tree.ISpongeNet;
+import de.fekl.esta.api.core.IEvent;
+import de.fekl.esta.api.core.IEventQueue;
 import de.fekl.esta.api.core.IStateContainer;
+import de.fekl.esta.api.core.SimpleEventQueue;
 import de.fekl.esta.api.core.SimpleStateContainer;
 
 public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
@@ -31,6 +34,8 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 	private ITokenFactory<T> tokenFactory;
 	private boolean running;
 	private long stepCounter;
+
+	private final IEventQueue<IEndNodeReachedEvent> endNodesReachedEvents = new SimpleEventQueue<>(32);
 
 	public ColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
 			ITokenFactory<T> tokenFactory) {
@@ -76,15 +81,20 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 	}
 
 	protected boolean isEndNodeReached() {
+		boolean endNodeReached = endNodesReachedEvents.size() > 0;
+		if (endNodeReached) {
+			Set<String> reachedEndNodes = getReachedEndNodes();
+			LOG.debug("End-Nodes reached %s", reachedEndNodes);
+		}
+		return endNodeReached;
+	}
+
+	protected Set<String> getReachedEndNodes() {
 		ITokenStore<T> currentState = stateContainer.getCurrentState();
 		Set<String> endNodes = net.getLeafs().stream().map(l -> l.getId()).collect(Collectors.toSet());
 		Set<String> reachedEndNodes = currentState.getTokenPositions().values().stream().distinct()
 				.filter(endNodes::contains).collect(Collectors.toSet());
-		boolean endNodeReadched = !reachedEndNodes.isEmpty();
-		if (endNodeReadched) {
-			LOG.debug("End-Nodes reached %s", reachedEndNodes);
-		}
-		return endNodeReadched;
+		return reachedEndNodes;
 	}
 
 	protected <C extends IStateContainer<ITokenStore<T>>> void handleToken(C stateContainer, String tokenId,
@@ -95,11 +105,21 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 			IEdge firstEdge = outgoingEdges.get(0);
 			String targetNodeId = firstEdge.getTarget();
 			stateContainer.changeState(ColouredNetOperations.moveToken(sourceNodeId, targetNodeId, tokenId));
+		} else {
+			endNodesReachedEvents.add(new EndNodeReachedEvent(sourceNodeId, tokenId));
 		}
 	}
 
 	protected ISpongeNet<N> getNet() {
 		return net;
+	}
+
+	protected IEventQueue<IEndNodeReachedEvent> getEndNodesReachedEvents() {
+		return endNodesReachedEvents;
+	}
+	
+	protected IStateContainer<ITokenStore<T>> getStateContainer() {
+		return stateContainer;
 	}
 
 }

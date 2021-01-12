@@ -1,6 +1,6 @@
 package de.fekl.wein.groovy.support
 
-import de.fekl.wein.api.core.StandardContentTypes
+import de.fekl.tran.StandardContentTypes
 import de.fekl.wein.api.core.builder.NetBuilder
 import de.fekl.wein.api.core.builder.WsOperationIdentifierBuilder
 

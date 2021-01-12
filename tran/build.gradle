@@ -1,0 +1,71 @@
+
+plugins {
+    id 'java'
+	id 'groovy'
+	id 'maven-publish'
+}
+
+publishing {
+	publications {
+		tran(MavenPublication) {
+			from components.java
+		}
+	}
+
+	repositories {
+		if (project.hasProperty('maven_local_repo')) {
+		maven {
+			url maven_local_repo
+		}
+		}	 else {
+		mavenLocal()
+		}
+	}
+}
+
+repositories {
+	if (project.hasProperty('maven_local_repo')) {
+	    maven {
+			url maven_local_repo
+		} 
+	} else {
+		mavenLocal()
+	}
+	if (System.env.NEXUS_REPO_ALL_URL) {
+		maven {
+			credentials {
+				username System.env.NEXUS_USER
+				password System.env.NEXUS_PASSWORD
+			}
+			url = uri(System.env.NEXUS_REPO_ALL_URL)
+		}
+	} else {
+		maven {
+			url = uri('https://repo.maven.apache.org/maven2/')
+		}
+	}
+}
+
+dependencies {
+    implementation 'org.codehaus.groovy:groovy:3.0.7'
+    implementation 'de.fekl:baut:1.0.2'
+    implementation 'de.fekl:dine:1.0.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+group = 'de.fekl'
+version = '1.0.2'
+description = 'tran'
+java.sourceCompatibility = JavaVersion.VERSION_15
+
+compileJava {
+    options.compilerArgs += ['--enable-preview']
+}
+compileTestJava {
+	options.compilerArgs += ['--enable-preview']
+}
+test {
+	useJUnitPlatform()
+	jvmArgs(['--enable-preview'])
+}

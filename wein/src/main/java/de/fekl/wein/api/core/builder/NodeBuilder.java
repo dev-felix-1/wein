@@ -5,6 +5,7 @@ import java.util.List;
 
 import de.fekl.dine.api.core.INode;
 
+@Deprecated
 public class NodeBuilder {
 
 	private String id;

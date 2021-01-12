@@ -2,7 +2,7 @@ package de.fekl.wein.groovy.support
 
 import org.junit.jupiter.api.Test
 
-import de.fekl.wein.api.core.StandardContentTypes
+import de.fekl.tran.StandardContentTypes
 
 class TestIpService {
 	

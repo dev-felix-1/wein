@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import de.fekl.baut.Precondition;
 import de.fekl.dine.api.core.IEdge;
-import de.fekl.dine.api.core.INode;
+import de.fekl.dine.api.node.INode;
 
 public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 

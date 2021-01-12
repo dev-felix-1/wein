@@ -8,6 +8,7 @@ import de.fekl.dine.api.graph.DirectedGraphBuilder;
 import de.fekl.dine.api.tree.ISpongeNet;
 import de.fekl.dine.api.tree.SpongeNetBuilder;
 
+@Deprecated
 public class NetBuilder {
 
 	private String id;

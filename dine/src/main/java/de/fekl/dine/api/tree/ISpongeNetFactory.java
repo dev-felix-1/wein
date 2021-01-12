@@ -1,7 +1,7 @@
 package de.fekl.dine.api.tree;
 
-import de.fekl.dine.api.core.INode;
 import de.fekl.dine.api.graph.IDirectedGraph;
+import de.fekl.dine.api.node.INode;
 
 public interface ISpongeNetFactory<N extends INode> {
 
