@@ -1,11 +1,10 @@
 package de.fekl.wein.groovy.support
 
-import de.fekl.tran.StandardContentTypes
-import de.fekl.wein.api.core.builder.NetBuilder
+import de.fekl.tran.impl.StandardContentTypes
 
 class TestModuleBuilder {
 
-	public NetBuilder testClosureBuilder() {
+	public ModuleBuilder testClosureBuilder() {
 
 		return new ModuleBuilder().module {
 			name ('test')
@@ -25,7 +24,7 @@ class TestModuleBuilder {
 		}
 	}
 
-	public NetBuilder testClosureBuilderWithExtEndpoint() {
+	public ModuleBuilder testClosureBuilderWithExtEndpoint() {
 
 		return new ModuleBuilder().module {
 			name ('test')
@@ -45,7 +44,7 @@ class TestModuleBuilder {
 		}
 	}
 
-	public NetBuilder testClosureBuilderWithExtEndpoint2() {
+	public ModuleBuilder testClosureBuilderWithExtEndpoint2() {
 
 		return new ModuleBuilder().module {
 			name ('test')
@@ -84,7 +83,7 @@ class TestModuleBuilder {
 		}
 	}
 
-	public NetBuilder testClosureBuilderWithExtEndpoint3() {
+	public ModuleBuilder testClosureBuilderWithExtEndpoint3() {
 
 		return new ModuleBuilder().module {
 			name ('test')
@@ -104,7 +103,7 @@ class TestModuleBuilder {
 		}
 	}
 
-	public NetBuilder testClosureBuilderWithExtEndpoint4() {
+	public ModuleBuilder testClosureBuilderWithExtEndpoint4() {
 
 		return new ModuleBuilder().module ('newIntegModule') {
 			route {
@@ -124,7 +123,7 @@ class TestModuleBuilder {
 		}
 	}
 	
-	public NetBuilder testClosureBuilderWithExtEndpoint5() {
+	public ModuleBuilder testClosureBuilderWithExtEndpoint5() {
 		
 		return new ModuleBuilder().module ('newIntegModule') {			
 			routes (inject: true)

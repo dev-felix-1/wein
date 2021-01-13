@@ -108,15 +108,21 @@ class GRouteBuilderTest {
 	
 	@Test
 	public void test6() {
+		def routeBuilder = new GRouteBuilder()
 		
-		TransformationRouteBuilder b = new GRouteBuilder().route {
-			transform ('xml') { it+'A'}
-			transform ('xml') { it+'B'}
-		}
+		def route1 = routeBuilder.route {
+			transform ('xml') { it+'A' }
+			transform ('xml') { it+'B' }
+		}.build()
 		
-		def route = b.build();
+		def route2 = routeBuilder.route {
+			transform ('xml') { it+'C' }
+			transform ('xml') { it+'D' }
+		}.build()
 		
-		def processed = new TransformationRouteProcessor().process('hello', route);
-		System.err.println(processed);
+		def processed1 = new TransformationRouteProcessor().process('hello1', route1);
+		def processed2 = new TransformationRouteProcessor().process('hello2', route2);
+		System.err.println(processed1);
+		System.err.println(processed2);
 	}
 }

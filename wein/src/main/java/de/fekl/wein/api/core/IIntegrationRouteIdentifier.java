@@ -1,6 +1,6 @@
 package de.fekl.wein.api.core;
 
-import de.fekl.tran.IContentType;
+import de.fekl.tran.api.core.IContentType;
 
 public interface IIntegrationRouteIdentifier<S, T> {
 

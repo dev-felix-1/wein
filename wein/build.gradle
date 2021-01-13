@@ -50,7 +50,7 @@ dependencies {
     implementation 'org.codehaus.groovy:groovy:3.0.7'
     implementation 'de.fekl:baut:1.0.2'
     implementation 'de.fekl:dine:1.0.2'
-//    implementation 'de.fekl:tran:1.0.2'
+    implementation 'de.fekl:tran:1.0.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }

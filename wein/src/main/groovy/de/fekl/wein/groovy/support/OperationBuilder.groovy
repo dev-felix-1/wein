@@ -1,10 +1,5 @@
 package de.fekl.wein.groovy.support
 
-import de.fekl.wein.api.core.builder.EdgesBuilder
-import de.fekl.wein.api.core.builder.NetBuilder
-import de.fekl.wein.api.core.builder.NodeBuilder
-import de.fekl.wein.api.core.builder.NodesBuilder
-import de.fekl.wein.api.core.builder.OutgoingEdgesBuilder
 import de.fekl.wein.api.core.builder.WsEndpointIdentifierBuilder
 import de.fekl.wein.api.core.builder.WsOperationIdentifierBuilder
 import groovy.transform.CompileDynamic
