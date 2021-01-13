@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import de.fekl.baut.ILogger;
 import de.fekl.baut.LogManager;
 import de.fekl.baut.RandomNames;
-import de.fekl.dine.api.core.IEdge;
+import de.fekl.dine.api.edge.IEdge;
 import de.fekl.dine.api.node.INode;
 import de.fekl.dine.api.state.IToken;
 import de.fekl.dine.api.state.ITokenFactory;

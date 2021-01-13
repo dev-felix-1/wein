@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.fekl.baut.Precondition;
-import de.fekl.dine.api.core.IEdge;
+import de.fekl.dine.api.edge.IEdge;
 import de.fekl.dine.api.graph.IDirectedGraph;
 import de.fekl.dine.api.node.INode;
 
@@ -17,8 +17,8 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 	private final String startNode;
 
 	public SimpleSpongeNet(IDirectedGraph<N> graph, String startNode) {
-		Precondition.isNotNull(graph);
-		Precondition.isNotEmpty(startNode);
+		Precondition.isNotNull(graph, "Parameter %s is null", "graph");
+		Precondition.isNotEmpty(startNode, "Parameter %s is null", "startNode");
 		if (!graph.contains(startNode)) {
 			throw new IllegalArgumentException("startNode is not part of the graph");
 		}

@@ -1,7 +1,7 @@
 package de.fekl.dine.api.node;
 
-public class SimpleNodeBuilder extends AbstractNodeBuilder<SimpleNode, SimpleNodeBuilder>
-		implements INodeBuilder<SimpleNode, SimpleNodeBuilder> {
+public class SimpleNodeBuilder extends AbstractNodeBuilder<SimpleNode, SimpleNodeFactory, SimpleNodeBuilder>
+		implements INodeBuilder<SimpleNode, SimpleNodeFactory, SimpleNodeBuilder> {
 
 	public SimpleNodeBuilder() {
 		super();
@@ -10,7 +10,6 @@ public class SimpleNodeBuilder extends AbstractNodeBuilder<SimpleNode, SimpleNod
 
 	@Override
 	public SimpleNode build() {
-		return getFactory().createNode(new SimpleNodeFactoryParams<SimpleNode>(getId()));
+		return getNodeFactory().createNode(getId());
 	}
-
 }

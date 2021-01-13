@@ -5,31 +5,28 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 
-import de.fekl.dine.api.node.AbstractNodeFactory;
-import de.fekl.dine.api.node.EmptyNodeFactoryParams;
 import de.fekl.dine.api.node.INode;
-import de.fekl.dine.api.node.INodeFactoryParams;
+import de.fekl.dine.api.node.INodeFactory;
+import de.fekl.dine.api.node.ISimpleNodeFactory;
 import de.fekl.dine.api.node.NodeNames;
 import de.fekl.dine.api.node.SimpleNode;
 import de.fekl.dine.api.node.SimpleNodeFactory;
-import de.fekl.dine.api.node.SimpleNodeFactoryParams;
 
 public class NodeFactoryTest {
 
 	// DEFAULT IMPL
 	@Test
 	public void testCreateValidSimpleNode() {
-		INode node = new SimpleNodeFactory().createNode(new SimpleNodeFactoryParams<SimpleNode>("A"));
+		INode node = new SimpleNodeFactory().createNode("A");
 		Assertions.assertNotNull(node);
-		INode nodeWithGeneratedName = new SimpleNodeFactory().createNode(new EmptyNodeFactoryParams<SimpleNode>());
+		INode nodeWithGeneratedName = new SimpleNodeFactory().createNode();
 		Assertions.assertNotNull(nodeWithGeneratedName);
 	}
 
 	@ParameterizedTest
 	@NullAndEmptySource
 	public void testCreateSimpleNodeWithEmptyAndNullId(String id) {
-		Assertions.assertDoesNotThrow(
-				() -> new SimpleNodeFactory().createNode(new SimpleNodeFactoryParams<SimpleNode>(id)));
+		Assertions.assertDoesNotThrow(() -> new SimpleNodeFactory().createNode(id));
 	}
 
 	// CUSTOM IMPL
@@ -40,25 +37,22 @@ public class NodeFactoryTest {
 		}
 	}
 
-	public static final class CustomNodeFactory
-			extends AbstractNodeFactory<CustomNode, SimpleNodeFactoryParams<CustomNode>> {
-
+	public static final class CustomNodeFactory implements ISimpleNodeFactory<CustomNode> {
 		@Override
-		public CustomNode createNode(SimpleNodeFactoryParams<CustomNode> params) {
-			if (params.id() == null || params.id().isBlank()) {
+		public CustomNode createNode(String id) {
+			if (id == null || id.isBlank()) {
 				return new CustomNode(NodeNames.generateNodeName());
 			} else {
-				return new CustomNode(params.id());
+				return new CustomNode(id);
 			}
 		}
-
 	}
 
 	@Test
 	public void testCreateValidCustomNode() {
-		INode node = new CustomNodeFactory().createNode(new SimpleNodeFactoryParams<CustomNode>("A"));
+		INode node = new CustomNodeFactory().createNode("A");
 		Assertions.assertNotNull(node);
-		INode nodeWithGeneratedName = new CustomNodeFactory().createNode(new SimpleNodeFactoryParams<CustomNode>(null));
+		INode nodeWithGeneratedName = new CustomNodeFactory().createNode();
 		Assertions.assertNotNull(nodeWithGeneratedName);
 	}
 
@@ -77,40 +71,25 @@ public class NodeFactoryTest {
 		}
 	}
 
-	public static final class ComplexCustomNodeFactory
-			extends AbstractNodeFactory<ComplexCustomNode, IComplexCustomNodeFactoryParams> {
+	public static final class ComplexCustomNodeFactory implements INodeFactory<ComplexCustomNode> {
 
-		@Override
-		public ComplexCustomNode createNode(IComplexCustomNodeFactoryParams params) {
-			if (params.id() == null || params.id().isBlank()) {
-				return new ComplexCustomNode(NodeNames.generateNodeName(), params.additionalProperty());
+		public ComplexCustomNode createNode(String id, String additionalProperty) {
+			if (id == null || id.isBlank()) {
+				return new ComplexCustomNode(NodeNames.generateNodeName(), id);
 			} else {
-				return new ComplexCustomNode(params.id(), params.additionalProperty());
+				return new ComplexCustomNode(id, additionalProperty);
 			}
 		}
 
 	}
 
-	public static interface IComplexCustomNodeFactoryParams extends INodeFactoryParams<ComplexCustomNode> {
-
-		String additionalProperty();
-
-	}
-
-	record ComplexCustomNodeFactoryParams(String id, String additionalProperty)
-			implements IComplexCustomNodeFactoryParams {
-
-	}
-
 	@Test
 	public void testCreateValidComplexCustomNode() {
-		ComplexCustomNode node = new ComplexCustomNodeFactory()
-				.createNode(new ComplexCustomNodeFactoryParams("nodeIdValue", "additionaPropValue"));
+		ComplexCustomNode node = new ComplexCustomNodeFactory().createNode("nodeIdValue", "additionaPropValue");
 		Assertions.assertNotNull(node);
 		Assertions.assertEquals("nodeIdValue", node.getId());
 		Assertions.assertEquals("additionaPropValue", node.getAdditionalProperty());
-		INode nodeWithGeneratedName = new ComplexCustomNodeFactory()
-				.createNode(new ComplexCustomNodeFactoryParams(null, "additionaPropValue"));
+		INode nodeWithGeneratedName = new ComplexCustomNodeFactory().createNode(null, "additionaPropValue");
 		Assertions.assertNotNull(nodeWithGeneratedName);
 		Assertions.assertEquals("additionaPropValue", node.getAdditionalProperty());
 	}

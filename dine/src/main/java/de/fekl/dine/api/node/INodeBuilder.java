@@ -1,11 +1,13 @@
 package de.fekl.dine.api.node;
 
-public interface INodeBuilder<N extends INode, B extends INodeBuilder<N, B>> {
+public interface INodeBuilder<N extends INode, F extends INodeFactory<N>, B extends INodeBuilder<N, F, B>> {
 
 	N build();
-	
+
 	B id(String id);
 
-	<P extends INodeFactoryParams<N>, F extends INodeFactory<N, P>> B setNodeFactory(F factory);
+	B setNodeFactory(F factory);
+
+	F getNodeFactory();
 
 }

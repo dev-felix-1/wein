@@ -1,10 +1,10 @@
 package de.fekl.dine.api.node;
 
-public abstract class AbstractNodeBuilder<N extends INode, A extends AbstractNodeBuilder<N, A>>
-		implements INodeBuilder<N, A> {
+public abstract class AbstractNodeBuilder<N extends INode, F extends INodeFactory<N>, A extends AbstractNodeBuilder<N, F, A>>
+		implements INodeBuilder<N, F, A> {
 
 	private String id;
-	private INodeFactory<N, INodeFactoryParams<N>> factory;
+	private F factory;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -15,8 +15,8 @@ public abstract class AbstractNodeBuilder<N extends INode, A extends AbstractNod
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <P extends INodeFactoryParams<N>, F extends INodeFactory<N, P>> A setNodeFactory(F factory) {
-		this.factory = (INodeFactory<N, INodeFactoryParams<N>>) factory;
+	public A setNodeFactory(F factory) {
+		this.factory = factory;
 		return (A) this;
 	}
 
@@ -24,7 +24,8 @@ public abstract class AbstractNodeBuilder<N extends INode, A extends AbstractNod
 		return id;
 	}
 
-	protected INodeFactory<N, INodeFactoryParams<N>> getFactory() {
+	@Override
+	public F getNodeFactory() {
 		return factory;
 	}
 

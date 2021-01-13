@@ -1,24 +1,19 @@
 package de.fekl.tone.api.core.x;
 
-import org.codehaus.groovy.control.messages.SimpleMessage;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import de.fekl.dine.api.graph.DirectedGraphBuilder;
 import de.fekl.dine.api.tree.ISpongeNet;
 import de.fekl.dine.api.tree.SpongeNetBuilder;
-import de.fekl.esta.api.core.IStateHasChangedEvent;
-import de.fekl.esta.api.core.SimpleStateContainer;
-import de.fekl.tran.IMessage;
-import de.fekl.tran.ITransformer;
-import de.fekl.tran.SimpleMessageFactory;
-import de.fekl.tran.SimpleTransformationRoute;
-import de.fekl.tran.SimpleTransformer;
-import de.fekl.tran.SimpleTransformerFactoryParams;
-import de.fekl.tran.StandardContentTypes;
-import de.fekl.tran.TransformationNetProcessingContainer;
-import de.fekl.tran.TransformationRouteProcessor;
-import de.fekl.tran.TransformerBuilder;
+import de.fekl.tran.api.core.IMessage;
+import de.fekl.tran.api.core.ITransformationRoute;
+import de.fekl.tran.api.core.ITransformer;
+import de.fekl.tran.impl.SimpleMessageFactory;
+import de.fekl.tran.impl.SimpleTransformationRoute;
+import de.fekl.tran.impl.StandardContentTypes;
+import de.fekl.tran.impl.TransformationRouteBuilder;
+import de.fekl.tran.impl.TransformationRouteProcessor;
+import de.fekl.tran.impl.TransformerBuilder;
 
 public class TranTest {
 
@@ -34,15 +29,15 @@ public class TranTest {
 		//@formatter:off
 				.setGraph(new DirectedGraphBuilder<ITransformer>()
 					.addNode(transformerBuilder
-								.name(A)
+								.id(A)
 								.transformation(o->o+A)
 								.build())
 					.addNode(transformerBuilder
-								.name(B)
+								.id(B)
 								.transformation(o->o+B)
 								.build())
 					.addNode(transformerBuilder
-								.name(C)
+								.id(C)
 								.transformation(o->o+C)
 								.build())
 					.addEdge(A, B)
@@ -51,26 +46,25 @@ public class TranTest {
 				//@formatter:on
 				.setStartNode(A).build();
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	private static ISpongeNet<ITransformer> createSimpleABCNet2() {
 		TransformerBuilder<String, String> transformerBuilder = new TransformerBuilder<String, String>()
 				.source(StandardContentTypes.PRETTY_XML_STRING).target(StandardContentTypes.PRETTY_XML_STRING);
-		
+
 		return new SpongeNetBuilder<ITransformer>()
-				//@formatter:off
-				.setGraph(new DirectedGraphBuilder<ITransformer<?,?>>()
-						.addNode(new SimpleTransformerFactoryParams(
-								A,
-								StandardContentTypes.PRETTY_XML_STRING,
-								StandardContentTypes.PRETTY_XML_STRING,
-								o->o+A
-								))
+		//@formatter:off
+				.setGraph(new DirectedGraphBuilder<ITransformer>()
+						.setNodeBuilder(new TransformerBuilder()
+								.source(StandardContentTypes.PRETTY_XML_STRING)
+								.target(StandardContentTypes.PRETTY_XML_STRING))
+						.addNode(A)
 						.addNode(transformerBuilder
-								.name(B)
+								.id(B)
 								.transformation(o->o+B)
 								.build())
 						.addNode(transformerBuilder
-								.name(C)
+								.id(C)
 								.transformation(o->o+C)
 								.build())
 						.addEdge(A, B)
@@ -83,13 +77,42 @@ public class TranTest {
 	@Test
 	public void testTransformationRouteProcessor() throws InterruptedException {
 		ISpongeNet<ITransformer> transformerNet = createSimpleABCNet();
+		ISpongeNet<ITransformer> transformerNet2 = createSimpleABCNet2();
+
+		//@formatter:off
+		ITransformationRoute<String, String> route = new TransformationRouteBuilder<String,String>(
+				new SpongeNetBuilder<ITransformer>()
+					.setGraph(new DirectedGraphBuilder<ITransformer>()
+							.addNode(new TransformerBuilder<String,String>()
+								.id(A)
+								.source(StandardContentTypes.PRETTY_XML_STRING)
+								.target(StandardContentTypes.PRETTY_XML_STRING)
+								.transformation(o->o+A))
+							.addNode(new TransformerBuilder<String,String>()
+								.id(B)
+								.source(StandardContentTypes.PRETTY_XML_STRING)
+								.target(StandardContentTypes.PRETTY_XML_STRING)
+								.transformation(o->o+B))
+							.addNode(new TransformerBuilder<String,String>()
+								.id(C)
+								.source(StandardContentTypes.PRETTY_XML_STRING)
+								.target(StandardContentTypes.PRETTY_XML_STRING)
+								.transformation(o->o+C))
+							.addEdge(A, B)
+							.addEdge(B, C)
+							.build())
+					.setStartNode(A)
+				).build();
+							
+		//@formatter:on
+
 		SimpleTransformationRoute<String, String> simpleTransformationRoute = new SimpleTransformationRoute<>(
 				StandardContentTypes.PRETTY_XML_STRING, StandardContentTypes.PRETTY_XML_STRING, transformerNet);
 
 		TransformationRouteProcessor transformationRouteProcessor = new TransformationRouteProcessor();
 		IMessage<String> message = new SimpleMessageFactory().createMessage("hello");
 
-		IMessage<String> processed = transformationRouteProcessor.process(message, simpleTransformationRoute);
+		IMessage<String> processed = transformationRouteProcessor.process(message, route);
 		System.err.println(processed);
 
 	}

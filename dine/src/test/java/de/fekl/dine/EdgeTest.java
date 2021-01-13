@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import de.fekl.dine.api.core.IEdge;
-import de.fekl.dine.api.core.SimpleEdge;
+import de.fekl.dine.api.edge.IEdge;
+import de.fekl.dine.api.edge.SimpleEdge;
 
 public class EdgeTest {
 
