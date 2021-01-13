@@ -53,5 +53,9 @@ public class SimpleTransformer<S, T> implements ITransformer<S, T> {
 	public String getId() {
 		return id;
 	}
+	
+	protected ITransformation<S, T> getTransformation() {
+		return transformation;
+	}
 
 }

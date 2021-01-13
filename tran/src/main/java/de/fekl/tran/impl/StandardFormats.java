@@ -7,6 +7,9 @@ public class StandardFormats {
 	private StandardFormats() {
 
 	}
+	
+	public static final IFormat NONE = new IFormat() {
+	};
 
 	public static class XML {
 

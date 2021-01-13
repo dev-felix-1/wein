@@ -2,8 +2,6 @@ package de.fekl.tran.impl;
 
 import de.fekl.baut.Precondition;
 import de.fekl.tran.api.core.IContentType;
-import de.fekl.tran.api.core.IFormat;
-import de.fekl.tran.impl.StandardFormats.XML;
 
 public class StandardContentTypes {
 
@@ -11,21 +9,37 @@ public class StandardContentTypes {
 
 	}
 
-	public static final IContentType<String> PRETTY_XML_STRING = new IContentType<String>() {
-
-		@Override
-		public Class<String> getType() {
-			return String.class;
-		}
-
-		@Override
-		public IFormat getFormat() {
-			return StandardFormats.XML.PRETTY_STRING;
-		}
+	public static final IContentType<String> PRETTY_XML_STRING = new SimpleContentType<>(String.class,
+			StandardFormats.XML.PRETTY_STRING) {
 
 		@Override
 		public String toString() {
 			return "PRETTY_XML_STRING";
+		}
+	};
+
+	public static final IContentType<Object> OBJECT = new SimpleContentType<>(Object.class, StandardFormats.NONE) {
+
+		@Override
+		public String toString() {
+			return "UNKNOWN_OBJECT";
+		}
+	};
+
+	public static final IContentType<Integer> INTEGER = new SimpleContentType<>(Integer.class, StandardFormats.NONE) {
+
+		@Override
+		public String toString() {
+			return "INTEGER";
+		}
+	};
+
+	public static final IContentType<String> INTEGER_STRING = new SimpleContentType<>(String.class,
+			StandardFormats.NONE) {
+
+		@Override
+		public String toString() {
+			return "INTEGER_STRING";
 		}
 	};
 
@@ -39,6 +53,25 @@ public class StandardContentTypes {
 		case "XML":
 		case "xml":
 			return (IContentType<T>) PRETTY_XML_STRING;
+		case "UNKNOWN_OBJECT":
+		case "OBJECT":
+		case "object":
+		case "obj":
+		case "undefined":
+		case "unknown":
+		case "n/a":
+		case "none":
+			return (IContentType<T>) OBJECT;
+		case "INTEGER":
+		case "integer":
+		case "INT":
+		case "int":
+			return (IContentType<T>) INTEGER;
+		case "INTEGER_STRING":
+		case "integer-string":
+		case "INT_STR":
+		case "int-str":
+			return (IContentType<T>) INTEGER_STRING;
 		default:
 			throw new IllegalArgumentException(name);
 		}
