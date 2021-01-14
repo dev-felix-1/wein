@@ -1,11 +1,11 @@
 package de.fekl.tran.api.core;
 
+import de.fekl.dine.api.base.IIdHolder;
 import de.fekl.dine.api.tree.ISpongeNet;
 
-public interface ITransformationRoute<S, T> {
+public interface ITransformationRoute<S, T> extends IIdHolder<String>{
 
-	@SuppressWarnings("rawtypes")
-	ISpongeNet<ITransformer> getGraph();
+	ISpongeNet<ITransformer<?,?>> getGraph();
 
 	ITransformer<S, ?> getFirst();
 
@@ -15,6 +15,5 @@ public interface ITransformationRoute<S, T> {
 
 	IContentType<T> getTargetContentType();
 	
-	String getId();
 
 }

@@ -16,7 +16,7 @@ public class MessageContainer extends SimpleToken implements IToken {
 		this.message = message;
 	}
 
-	public IMessage getMessage() {
+	public <T> IMessage<T> getMessage() {
 		return message;
 	}
 

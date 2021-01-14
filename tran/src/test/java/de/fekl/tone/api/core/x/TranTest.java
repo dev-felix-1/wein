@@ -82,8 +82,8 @@ public class TranTest {
 
 		//@formatter:off
 		ITransformationRoute<String, String> route = new TransformationRouteBuilder<String,String>(
-				new SpongeNetBuilder<ITransformer>()
-					.setGraph(new DirectedGraphBuilder<ITransformer>()
+				new SpongeNetBuilder<ITransformer<?,?>>()
+					.setGraph(new DirectedGraphBuilder<ITransformer<?,?>>()
 							.addNode(new TransformerBuilder<String,String>()
 								.id(A)
 								.source(StandardContentTypes.PRETTY_XML_STRING)
@@ -132,10 +132,10 @@ public class TranTest {
 				.source(StandardContentTypes.PRETTY_XML_STRING)
 				.target(StandardContentTypes.PRETTY_XML_STRING)
 				.transformation(o->o+B).build());
-		TransformerBuilder<String, String> fromRegistry = new TransformerBuilder<String,String>().setTransformerRegistry(transformerRegistry);
+		TransformerBuilder<String, String> fromRegistry = new TransformerBuilder<String,String>().setRegistry(transformerRegistry);
 		ITransformationRoute<String, String> route = new TransformationRouteBuilder<String,String>(
-				new SpongeNetBuilder<ITransformer>()
-				.setGraph(new DirectedGraphBuilder<ITransformer>()
+				new SpongeNetBuilder<ITransformer<?,?>>()
+				.setGraph(new DirectedGraphBuilder<ITransformer<?,?>>()
 						.addNode(fromRegistry.id(A))
 						.addNode(fromRegistry.id(B))
 						.addNode(new TransformerBuilder<String,String>()

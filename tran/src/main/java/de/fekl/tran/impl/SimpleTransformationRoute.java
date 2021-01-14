@@ -9,16 +9,15 @@ import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.ITransformationRoute;
 import de.fekl.tran.api.core.ITransformer;
 
-@SuppressWarnings("rawtypes")
 public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, T> {
 
 	private final String id;
-	private final ISpongeNet<ITransformer> graph;
+	private final ISpongeNet<ITransformer<?, ?>> graph;
 	private final IContentType<S> sourceContentType;
 	private final IContentType<T> targetContentType;
 
 	public SimpleTransformationRoute(String id, IContentType<S> sourceContentType, IContentType<T> targetContentType,
-			ISpongeNet<ITransformer> spongeNet) {
+			ISpongeNet<ITransformer<?, ?>> spongeNet) {
 		Precondition.isNotEmpty(id);
 		Precondition.isNotNull(sourceContentType);
 		Precondition.isNotNull(targetContentType);
@@ -26,13 +25,14 @@ public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, 
 		if (spongeNet.getLeafs().size() > 1) {
 			throw new IllegalArgumentException("A Route can not have more than one end node");
 		}
-		if (((ITransformer) spongeNet.getRoot()).getSourceContentType() != sourceContentType) {
+		if (((ITransformer<?, ?>) spongeNet.getRoot()).getSourceContentType() != sourceContentType) {
 			throw new IllegalArgumentException(String.format("ContentTypes do not match %s <=> %s",
-					((ITransformer) spongeNet.getRoot()).getSourceContentType(), sourceContentType));
+					((ITransformer<?, ?>) spongeNet.getRoot()).getSourceContentType(), sourceContentType));
 		}
-		if (((ITransformer) spongeNet.getLeafs().iterator().next()).getTargetContentType() != targetContentType) {
+		if (((ITransformer<?, ?>) spongeNet.getLeafs().iterator().next()).getTargetContentType() != targetContentType) {
 			throw new IllegalArgumentException(String.format("ContentTypes do not match %s <=> %s",
-					((ITransformer) spongeNet.getLeafs().iterator().next()).getTargetContentType(), targetContentType));
+					((ITransformer<?, ?>) spongeNet.getLeafs().iterator().next()).getTargetContentType(),
+					targetContentType));
 		}
 		graph = spongeNet;
 		this.sourceContentType = sourceContentType;
@@ -41,7 +41,7 @@ public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, 
 	}
 
 	@Override
-	public ISpongeNet<ITransformer> getGraph() {
+	public ISpongeNet<ITransformer<?, ?>> getGraph() {
 		return graph;
 	}
 
@@ -54,7 +54,7 @@ public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, 
 	@SuppressWarnings("unchecked")
 	@Override
 	public ITransformer<?, T> getLast() {
-		return graph.getLeafs().iterator().next();
+		return (ITransformer<?, T>) graph.getLeafs().iterator().next();
 	}
 
 	@Override

@@ -1,29 +1,21 @@
 package de.fekl.dine.api.node;
 
-import de.fekl.baut.Precondition;
+import de.fekl.dine.api.base.AbstractIdHolder;
 
-public class SimpleNode implements INode {
-
-	private final String id;
+public class SimpleNode extends AbstractIdHolder<String> implements INode {
 
 	public SimpleNode(String id) {
-		Precondition.isNotEmpty(id);
-		this.id = id;
-	}
-
-	@Override
-	public String getId() {
-		return id;
+		super(id);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("SimpleNode(%s)", id);
+		return String.format("SimpleNode(%s)", getId());
 	}
 
 	@Override
 	public int hashCode() {
-		return this.getClass().hashCode() + id.getBytes().hashCode();
+		return this.getClass().hashCode() + getId().getBytes().hashCode();
 	}
 
 	@Override

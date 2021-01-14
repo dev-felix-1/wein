@@ -1,5 +1,7 @@
 package de.fekl.dine.api.node;
 
-public interface INodeFactory<N extends INode> {
+import de.fekl.dine.api.base.IFactory;
+
+public interface INodeFactory<N extends INode> extends IFactory<String, N> {
 
 }

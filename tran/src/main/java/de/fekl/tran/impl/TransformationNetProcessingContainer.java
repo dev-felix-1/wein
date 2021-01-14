@@ -11,14 +11,14 @@ import de.fekl.tran.api.core.ITransformer;
 
 @SuppressWarnings("rawtypes")
 public class TransformationNetProcessingContainer
-		extends ColouredNetProcessingContainer<ITransformer, MessageContainer> {
+		extends ColouredNetProcessingContainer<ITransformer<?,?>, MessageContainer> {
 
-	public TransformationNetProcessingContainer(ISpongeNet<ITransformer> net,
+	public TransformationNetProcessingContainer(ISpongeNet<ITransformer<?,?>> net,
 			ITokenStore<MessageContainer> initialState) {
 		super(net, initialState, null);
 	}
 
-	public TransformationNetProcessingContainer(ISpongeNet<ITransformer> net) {
+	public TransformationNetProcessingContainer(ISpongeNet<ITransformer<?,?>> net) {
 		super(net, new SimpleTokenStore<>(), null);
 	}
 

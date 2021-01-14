@@ -289,7 +289,7 @@ class GRouteBuilder extends BuilderSupport {
 			nodesBuilder.nodeBuilders.each { nodeBuilder ->
 				def transformerBuilder = new TransformerBuilder()
 				if (transformerRegistry) {
-					transformerBuilder.setTransformerRegistry(transformerRegistry)
+					transformerBuilder.setRegistry(transformerRegistry)
 				}
 				if (!nodeBuilder.id) {
 					nodeBuilder.id = TransformerNames.generateTransformerName()

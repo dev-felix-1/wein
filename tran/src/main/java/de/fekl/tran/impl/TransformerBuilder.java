@@ -5,23 +5,17 @@ import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.ITransformation;
 import de.fekl.tran.api.core.ITransformer;
 import de.fekl.tran.api.core.ITransformerFactory;
-import de.fekl.tran.api.core.ITransformerRegistry;
 
 public class TransformerBuilder<S, T>
-		extends AbstractNodeBuilder<ITransformer, ITransformerFactory, TransformerBuilder<S, T>> {
+		extends AbstractNodeBuilder<ITransformer<?,?>, ITransformerFactory, TransformerBuilder<S, T>> {
 
 	private IContentType<S> sourceContentType;
 	private IContentType<T> targetContentType;
 	private ITransformation<S, T> transformation;
-	private ITransformerRegistry transformerRegistry;
 
 	public TransformerBuilder() {
+		setAutoLookUp(true);
 		setNodeFactory(new SimpleTransformerFactory());
-	}
-
-	public TransformerBuilder<S, T> setTransformerRegistry(ITransformerRegistry transformerRegistry) {
-		this.transformerRegistry = transformerRegistry;
-		return this;
 	}
 
 	public TransformerBuilder<S, T> source(IContentType<S> sourceContentType) {
@@ -49,18 +43,8 @@ public class TransformerBuilder<S, T>
 		return this;
 	}
 
-	public ITransformer<S, T> build() {
-		ITransformer<S, T> result = null;
-		if (getId() != null && !getId().isBlank() && targetContentType == null && sourceContentType == null
-				&& transformation == null) {
-			result = lookUpTransformer();
-		} else {
-			result = createTransformer();
-		}
-		return result;
-	}
-
-	protected ITransformer<S, T> createTransformer() {
+	@SuppressWarnings("unchecked")
+	public ITransformer<S, T> doBuild() {
 		if (getId() == null || getId().isBlank()) {
 			id(TransformerNames.generateTransformerName());
 		}
@@ -71,13 +55,5 @@ public class TransformerBuilder<S, T>
 			}
 		}
 		return getNodeFactory().createTransformer(sourceContentType, targetContentType, transformation, getId());
-	}
-
-	protected ITransformer<S, T> lookUpTransformer() {
-		ITransformer<S, T> transformer = transformerRegistry.getTransformer(getId());
-		if (transformer == null) {
-			throw new IllegalStateException(String.format("Did not find transformer with id %s in registry",getId()));
-		}
-		return transformer;
 	}
 }

@@ -1,7 +1,7 @@
 package de.fekl.dine.api.node;
 
-public interface INode {
+import de.fekl.dine.api.base.IIdHolder;
 
-	String getId();
+public interface INode extends IIdHolder<String> {
 
 }

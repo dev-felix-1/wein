@@ -68,21 +68,42 @@ public class Precondition {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public static void isNotEmpty(Object o) {
 		if (o == null) {
 			throw new IllegalArgumentException();
 		}
+		if (String.class.isAssignableFrom(o.getClass())) {
+			isNotEmpty((String) o);
+		}
+		if (Collection.class.isAssignableFrom(o.getClass())) {
+			isNotEmpty((Collection<Object>) o);
+		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public static void isNotEmpty(Object o, String message) {
 		if (o == null) {
 			throw new IllegalArgumentException(message);
 		}
+		if (String.class.isAssignableFrom(o.getClass())) {
+			isNotEmpty((String) o, message);
+		}
+		if (Collection.class.isAssignableFrom(o.getClass())) {
+			isNotEmpty((Collection<Object>) o, message);
+		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public static void isNotEmpty(Object o, String messageFormat, Object... args) {
 		if (o == null) {
 			throw new IllegalArgumentException(String.format(messageFormat, args));
+		}
+		if (String.class.isAssignableFrom(o.getClass())) {
+			isNotEmpty((String) o, messageFormat, args);
+		}
+		if (Collection.class.isAssignableFrom(o.getClass())) {
+			isNotEmpty((Collection<Object>) o, messageFormat, args);
 		}
 	}
 

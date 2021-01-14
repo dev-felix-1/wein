@@ -57,7 +57,7 @@ public class NodeBuilderTest {
 		}
 
 		@Override
-		public CustomNode build() {
+		public CustomNode doBuild() {
 			return getNodeFactory().createNode(getId());
 		}
 
@@ -113,7 +113,7 @@ public class NodeBuilderTest {
 		}
 
 		@Override
-		public ComplexCustomNode build() {
+		public ComplexCustomNode doBuild() {
 			return getNodeFactory().createNode(getId(), additionalProperty);
 		}
 

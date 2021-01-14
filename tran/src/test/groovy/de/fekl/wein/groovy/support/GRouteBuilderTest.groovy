@@ -186,24 +186,28 @@ class GRouteBuilderTest {
 
 	@Test
 	public void test9() {
+		
 		def registry = new SimpleTransformerRegistry();
 		def routeBuilder = new GRouteBuilder()
-		routeBuilder.setTransformerRegistry(registry)
 		def transformerBuilder = new GTransformerBuilder()
+		
+		routeBuilder.transformerRegistry = registry
+		transformerBuilder.transformerRegistry = registry
+		transformerBuilder.autoRegister = true
 
-		registry.register( transformerBuilder . transformer {
+		transformerBuilder {
 			id 'A'
-			inputContentType 'string'
+			inputContentType StandardContentTypes.STRING
 			outputContentType 'string'
 			transformation { o -> o + 'A' }
-		} .build() )
-		registry.register( transformerBuilder {
+		}
+		transformerBuilder {
 			id 'B'
 			inputContentType 'string'
 			outputContentType 'string'
 			transformation { o -> o + 'B' }
-		} )
-		registry.register( transformerBuilder (id: 'C', input: 'xml', output: 'xml') { x -> x+'C' } )
+		} 
+		transformerBuilder (id: 'C', input: 'xml', output: 'xml') { x -> x+'C' } 
 
 		def route1 = routeBuilder {
 			id 'route1'

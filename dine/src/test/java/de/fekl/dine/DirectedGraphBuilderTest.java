@@ -105,7 +105,7 @@ public class DirectedGraphBuilderTest {
 		}
 
 		@Override
-		public ComplexCustomNode build() {
+		public ComplexCustomNode doBuild() {
 			return getNodeFactory().createNode(getId(), additionalProperty);
 		}
 

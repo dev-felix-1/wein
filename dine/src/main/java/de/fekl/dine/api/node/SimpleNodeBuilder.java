@@ -9,7 +9,7 @@ public class SimpleNodeBuilder extends AbstractNodeBuilder<SimpleNode, SimpleNod
 	}
 
 	@Override
-	public SimpleNode build() {
+	protected SimpleNode doBuild() {
 		return getNodeFactory().createNode(getId());
 	}
 }

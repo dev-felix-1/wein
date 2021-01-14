@@ -35,7 +35,7 @@ public class SimpleContentType<T> implements IContentType<T> {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof IContentType other) {
+		if (obj instanceof IContentType<?>other) {
 			return other.getFormat().equals(format) && other.getType().equals(type);
 		}
 		return false;

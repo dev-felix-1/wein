@@ -11,6 +11,7 @@ import de.fekl.tran.api.core.IContentType
 import de.fekl.tran.api.core.ITransformation
 import de.fekl.tran.api.core.ITransformationRoute
 import de.fekl.tran.api.core.ITransformer
+import de.fekl.tran.api.core.ITransformerRegistry
 import de.fekl.tran.impl.TransformationRouteBuilder
 import de.fekl.tran.impl.TransformerBuilder
 import de.fekl.tran.impl.TransformerNames
@@ -19,6 +20,9 @@ import groovy.transform.CompileStatic
 
 @CompileStatic
 class GTransformerBuilder extends BuilderSupport {
+	
+	ITransformerRegistry transformerRegistry
+	boolean autoRegister
 
 	@Override
 	protected void setParent(Object parent, Object child) {
@@ -98,12 +102,15 @@ class GTransformerBuilder extends BuilderSupport {
 	}
 
 	def createTransformer () {
-		new CompositeTransformerBuilder();
+		def result = new CompositeTransformerBuilder();
+		result.registry = transformerRegistry
+		result.autoRegister = autoRegister
+		return result
 	}
 
 	@CompileDynamic
 	def createTransformer (Map map) {
-		def result = new CompositeTransformerBuilder()
+		def result = createTransformer () 
 		result.id(map.id as String)
 		result.transformation(map.transformation as ITransformation)
 		result.source(map.source?:map.input?:map.'in'?:map.'i/o')
