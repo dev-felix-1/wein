@@ -10,6 +10,7 @@ import de.fekl.tran.api.core.ITransformationRoute;
 import de.fekl.tran.api.core.ITransformer;
 import de.fekl.tran.impl.SimpleMessageFactory;
 import de.fekl.tran.impl.SimpleTransformationRoute;
+import de.fekl.tran.impl.SimpleTransformerRegistry;
 import de.fekl.tran.impl.StandardContentTypes;
 import de.fekl.tran.impl.TransformationRouteBuilder;
 import de.fekl.tran.impl.TransformationRouteProcessor;
@@ -106,8 +107,8 @@ public class TranTest {
 							
 		//@formatter:on
 
-		SimpleTransformationRoute<String, String> simpleTransformationRoute = new SimpleTransformationRoute<>(
-				StandardContentTypes.PRETTY_XML_STRING, StandardContentTypes.PRETTY_XML_STRING, transformerNet);
+//		SimpleTransformationRoute<String, String> simpleTransformationRoute = new SimpleTransformationRoute<>(
+//				StandardContentTypes.PRETTY_XML_STRING, StandardContentTypes.PRETTY_XML_STRING, transformerNet);
 
 		TransformationRouteProcessor transformationRouteProcessor = new TransformationRouteProcessor();
 		IMessage<String> message = new SimpleMessageFactory().createMessage("hello");
@@ -115,6 +116,47 @@ public class TranTest {
 		IMessage<String> processed = transformationRouteProcessor.process(message, route);
 		System.err.println(processed);
 
+	}
+	
+	@Test
+	public void testTransfomerRegistry() throws InterruptedException {
+		SimpleTransformerRegistry transformerRegistry = new SimpleTransformerRegistry();
+		//@formatter:off
+		transformerRegistry.register(new TransformerBuilder<String,String>()
+				.id(A)
+				.source(StandardContentTypes.PRETTY_XML_STRING)
+				.target(StandardContentTypes.PRETTY_XML_STRING)
+				.transformation(o->o+A).build());
+		transformerRegistry.register(new TransformerBuilder<String,String>()
+				.id(B)
+				.source(StandardContentTypes.PRETTY_XML_STRING)
+				.target(StandardContentTypes.PRETTY_XML_STRING)
+				.transformation(o->o+B).build());
+		TransformerBuilder<String, String> fromRegistry = new TransformerBuilder<String,String>().setTransformerRegistry(transformerRegistry);
+		ITransformationRoute<String, String> route = new TransformationRouteBuilder<String,String>(
+				new SpongeNetBuilder<ITransformer>()
+				.setGraph(new DirectedGraphBuilder<ITransformer>()
+						.addNode(fromRegistry.id(A))
+						.addNode(fromRegistry.id(B))
+						.addNode(new TransformerBuilder<String,String>()
+								.id(C)
+								.source(StandardContentTypes.PRETTY_XML_STRING)
+								.target(StandardContentTypes.PRETTY_XML_STRING)
+								.transformation(o->o+C))
+						.addEdge(A, B)
+						.addEdge(B, C)
+						.build())
+				.setStartNode(A)
+				).build();
+		
+		//@formatter:on
+		
+		TransformationRouteProcessor transformationRouteProcessor = new TransformationRouteProcessor();
+		IMessage<String> message = new SimpleMessageFactory().createMessage("hello");
+		
+		IMessage<String> processed = transformationRouteProcessor.process(message, route);
+		System.err.println(processed);
+		
 	}
 
 }

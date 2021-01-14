@@ -8,6 +8,7 @@ import de.fekl.tran.api.core.ITransformer;
 
 public class TransformationRouteBuilder<S, T> {
 
+	private String id;
 	private IContentType<S> source;
 	private IContentType<T> target;
 	private ISpongeNet<ITransformer> transformationNet;
@@ -40,15 +41,22 @@ public class TransformationRouteBuilder<S, T> {
 		this.transformationNet = netBuilder.build();
 		return this;
 	}
+	
+	public TransformationRouteBuilder<S, T> id(String id) {
+		this.id = id;
+		return this;
+	}
 
 	public ITransformationRoute<S, T> build() {
+		if (id == null || id.isBlank()) {
+			id = TransformerNames.generateTransformerName();
+		}
 		if (source == null) {
 			source = transformationNet.getRoot().getSourceContentType();
 		}
 		if (target == null) {
 			target = transformationNet.getLeafs().iterator().next().getTargetContentType();
 		}
-		return new SimpleTransformationRoute<>(source, target, transformationNet);
+		return new SimpleTransformationRoute<>(id,source, target, transformationNet);
 	}
-
 }

@@ -22,6 +22,31 @@ class TestModuleBuilder {
 				}
 			}
 		}
+		
+		//with tran
+		return new ModuleBuilder().module {
+			name ('test')
+			routes {
+				route ('routA') {
+					transform ('xml') { it+'A' }
+					transform ('xml') { it+'B' }
+				}
+				route ('routB') {
+					transform ('xml') { it+'C' }
+					transform ('xml') { it+'D' }
+				}
+			}
+			operations {
+				operation ('operation1') {
+					service ('serviceCall')
+					endpoint {
+						name ('web-api-1')
+						version('0.1')
+					}
+				}
+			}
+			mapping (operation1 : [routeA,routeB])
+		}
 	}
 
 	public ModuleBuilder testClosureBuilderWithExtEndpoint() {

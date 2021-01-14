@@ -9,6 +9,14 @@ public class StandardContentTypes {
 
 	}
 
+	public static final IContentType<String> STRING = new SimpleContentType<>(String.class, StandardFormats.NONE) {
+
+		@Override
+		public String toString() {
+			return "STRING";
+		}
+	};
+
 	public static final IContentType<String> PRETTY_XML_STRING = new SimpleContentType<>(String.class,
 			StandardFormats.XML.PRETTY_STRING) {
 
@@ -47,6 +55,11 @@ public class StandardContentTypes {
 	public static <T> IContentType<T> byName(String name) {
 		Precondition.isNotEmpty(name);
 		switch (name) {
+		case "STRING":
+		case "string":
+		case "STR":
+		case "str":
+			return (IContentType<T>) STRING;
 		case "PRETTY_XML_STRING":
 		case "XML_STRING":
 		case "PRETTY_XML":

@@ -12,12 +12,14 @@ import de.fekl.tran.api.core.ITransformer;
 @SuppressWarnings("rawtypes")
 public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, T> {
 
+	private final String id;
 	private final ISpongeNet<ITransformer> graph;
 	private final IContentType<S> sourceContentType;
 	private final IContentType<T> targetContentType;
 
-	public SimpleTransformationRoute(IContentType<S> sourceContentType, IContentType<T> targetContentType,
+	public SimpleTransformationRoute(String id, IContentType<S> sourceContentType, IContentType<T> targetContentType,
 			ISpongeNet<ITransformer> spongeNet) {
+		Precondition.isNotEmpty(id);
 		Precondition.isNotNull(sourceContentType);
 		Precondition.isNotNull(targetContentType);
 		Precondition.isNotNull(spongeNet);
@@ -35,6 +37,7 @@ public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, 
 		graph = spongeNet;
 		this.sourceContentType = sourceContentType;
 		this.targetContentType = targetContentType;
+		this.id = id;
 	}
 
 	@Override
@@ -92,6 +95,11 @@ public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, 
 			return String.format(printTemplate, this.getClass().getSimpleName(),
 					graph.getEdges().stream().map(this::printEdge).collect(Collectors.joining(", ")));
 		}
+	}
+
+	@Override
+	public String getId() {
+		return id;
 	}
 
 }

@@ -8,6 +8,8 @@ import de.fekl.dine.api.tree.SpongeNetBuilder
 import de.fekl.tran.api.core.IContentType
 import de.fekl.tran.api.core.ITransformation
 import de.fekl.tran.api.core.ITransformationRoute
+import de.fekl.tran.api.core.ITransformerFactory
+import de.fekl.tran.api.core.ITransformerRegistry
 import de.fekl.tran.impl.TransformationRouteBuilder
 import de.fekl.tran.impl.TransformerBuilder
 import de.fekl.tran.impl.TransformerNames
@@ -16,6 +18,8 @@ import groovy.transform.CompileStatic
 
 @CompileStatic
 class GRouteBuilder extends BuilderSupport {
+	
+	ITransformerRegistry transformerRegistry
 
 	@Override
 	protected void setParent(Object parent, Object child) {
@@ -29,7 +33,13 @@ class GRouteBuilder extends BuilderSupport {
 			case 'node': return createNode()
 			case 'edges': return createEdges()
 			case 'edge': return createEdge()
-			default: throw new IllegalArgumentException("Invalid keyword $name")
+			
+			default: 
+				if (current instanceof CompositeNodesBuilder) {
+					return injectRouteNode(name as String)
+				}
+				throw new IllegalArgumentException("Invalid keyword $name")
+			
 		}
 	}
 
@@ -39,10 +49,12 @@ class GRouteBuilder extends BuilderSupport {
 		switch(name) {
 			case 'source':
 			case 'input':
+			case 'inputContentType':
 			case 'in': return setNodeSourceType(value)
 
 			case 'target':
 			case 'output':
+			case 'outputContentType':
 			case 'out': return setNodeTargetType(value)
 
 			case 'in/out':
@@ -52,6 +64,9 @@ class GRouteBuilder extends BuilderSupport {
 
 			case 'transform':
 			case 'transformation': return setTransformation(value)
+			
+			case 'node': return createRouteNode(value)
+			case 'nodes': return injectRouteNodesFromList(value)
 			
 			default: throw new IllegalArgumentException("Invalid keyword $name")
 		}
@@ -72,6 +87,13 @@ class GRouteBuilder extends BuilderSupport {
 	@Override
 	protected Object createNode(Object name, Map attributes, Object value) {
 		return null;
+	}
+	
+	public Object getProperty(String propertyName) {
+		if (transformerRegistry != null && transformerRegistry.contains(propertyName) && current instanceof CompositeNodesBuilder) {
+			Object name = getName('node');
+			return doInvokeMethod('node', name, propertyName);
+		}
 	}
 
 	public Object invokeMethod(String methodName, Object args) {
@@ -97,7 +119,9 @@ class GRouteBuilder extends BuilderSupport {
 	}
 
 	def createRoute () {
-		new CompositeRouteBuilder();
+		def result = new CompositeRouteBuilder();
+		result.transformerRegistry = transformerRegistry
+		return result
 	}
 
 	def createNodes () {
@@ -118,9 +142,12 @@ class GRouteBuilder extends BuilderSupport {
 		throw new IllegalStateException();
 	}
 
-	@CompileDynamic
 	def createNode () {
-		if (current instanceof CompositeNodesBuilder || current instanceof CompositeRouteBuilder) {
+		if (current instanceof CompositeNodesBuilder ) {
+			def child = new CompositeNodeBuilder()
+			current.nodeBuilders += child
+			return child
+		} else if (current instanceof CompositeRouteBuilder) {
 			def child = new CompositeNodeBuilder()
 			current.nodeBuilders += child
 			return child
@@ -137,6 +164,21 @@ class GRouteBuilder extends BuilderSupport {
 			child.target = map.target?:map.output?:map.'out'?:map.'i/o'
 			current.nodeBuilders += child
 			return child
+		}
+		throw new IllegalStateException();
+	}
+	
+	def createRouteNode (String id) {
+		if (current instanceof CompositeRouteBuilder) {
+			def child = new CompositeNodeBuilder()
+			child.id = id
+			current.nodeBuilders += child
+			return child
+		} else if (current instanceof CompositeNodesBuilder) {
+			def child = new CompositeNodeBuilder()
+			child.id = id
+			current.nodeBuilders += child
+			return current
 		}
 		throw new IllegalStateException();
 	}
@@ -186,6 +228,9 @@ class GRouteBuilder extends BuilderSupport {
 		if (current instanceof CompositeNodeBuilder) {
 			current.id = value
 			return current
+		} else if (current instanceof CompositeRouteBuilder) {
+			current.id ( value )
+			return current
 		}
 		throw new IllegalStateException();
 	}
@@ -197,11 +242,38 @@ class GRouteBuilder extends BuilderSupport {
 		}
 		throw new IllegalStateException();
 	}
+	
+	def injectRouteNodesFromList(List nodeNames) {
+		if (current == null) {
+			current = createRoute()
+		}
+		if (current instanceof CompositeRouteBuilder) {
+			current.nodesBuilder = new CompositeNodesBuilder()
+			current.nodesBuilder.nodeBuilders += nodeNames.collect { name -> 
+				def nb = new CompositeNodeBuilder()
+				nb.id = name
+				return nb
+			}
+			return current
+		}
+		throw new IllegalStateException();
+	}
+	
+	def injectRouteNode(String nodeName) {
+		if (current instanceof CompositeNodesBuilder) {
+			def nb = new CompositeNodeBuilder()
+			nb.id = nodeName
+			current.nodeBuilders += nb
+			return current
+		}
+		throw new IllegalStateException();
+	}
 
 	static class CompositeRouteBuilder extends TransformationRouteBuilder {
 		CompositeNodesBuilder nodesBuilder
 		List<CompositeNodeBuilder> nodeBuilders = []
 		CompositeEdgesBuilder edgesBuilder
+		ITransformerRegistry transformerRegistry
 
 		@CompileDynamic
 		@Override
@@ -215,11 +287,14 @@ class GRouteBuilder extends BuilderSupport {
 			nodesBuilder.nodeBuilders += nodeBuilders
 
 			nodesBuilder.nodeBuilders.each { nodeBuilder ->
+				def transformerBuilder = new TransformerBuilder()
+				if (transformerRegistry) {
+					transformerBuilder.setTransformerRegistry(transformerRegistry)
+				}
 				if (!nodeBuilder.id) {
 					nodeBuilder.id = TransformerNames.generateTransformerName()
 				}
-				graphBuilder.addNode(
-						new TransformerBuilder()
+				graphBuilder.addNode(transformerBuilder
 						.id(nodeBuilder.id)
 						.source(nodeBuilder.source)
 						.target(nodeBuilder.target)
@@ -258,4 +333,28 @@ class GRouteBuilder extends BuilderSupport {
 		String source
 		String target
 	}
+	
+	@CompileDynamic
+	def call(Closure closure) {
+		invokeMethod('route', closure).build()
+	}
+	
+	@CompileDynamic
+	def call(Map map) {
+		if (map.containsKey('nodes')) {
+			injectRouteNodesFromList(map.nodes).build()
+		}else {
+			super.call(map)
+		}
+	}
+	
+	@CompileDynamic
+	def route(Map map) {
+		if (map.containsKey('nodes')) {
+			injectRouteNodesFromList(map.nodes).build()
+		}else {
+			super.call(map)
+		}
+	}
+
 }

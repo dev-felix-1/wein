@@ -14,5 +14,7 @@ public interface ITransformationRoute<S, T> {
 	IContentType<S> getSourceContentType();
 
 	IContentType<T> getTargetContentType();
+	
+	String getId();
 
 }
