@@ -22,7 +22,7 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 	}
 
 	@Override
-	public synchronized void changeState(IStateChangeOperation<S> operation) {
+	public synchronized <O extends IStateChangeOperation<S>> void changeState(O operation) {
 		S sourceState = currentState;
 		S targetState = operation.apply(currentState);
 		currentState = targetState;

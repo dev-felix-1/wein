@@ -4,7 +4,7 @@ public interface IStateContainer<S> {
 
 	S getCurrentState();
 
-	void changeState(IStateChangeOperation<S> operation);
+	<O extends IStateChangeOperation<S>> void changeState(O operation);
 
 	IEventQueue<IStateHasChangedEvent<S>> getStateChangedEvents();
 

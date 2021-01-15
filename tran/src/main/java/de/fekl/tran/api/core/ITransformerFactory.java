@@ -6,6 +6,9 @@ public interface ITransformerFactory extends INodeFactory<ITransformer<?,?>> {
 
 	public <S, T> ITransformer<S, T> createTransformer(IContentType<S> sourceContentType,
 			IContentType<T> targetContentType, ITransformation<S, T> transformation, String id);
+	
+	public <S, T> ITransformer<S, T> createTransformer(IContentType<S> sourceContentType,
+			IContentType<T> targetContentType, ITransformation<S, T> transformation, String id, boolean autoSplit);
 
 	public <S, T> ITransformer<S, T> createTransformer(IContentType<S> sourceContentType,
 			IContentType<T> targetContentType, ITransformation<S, T> transformation);

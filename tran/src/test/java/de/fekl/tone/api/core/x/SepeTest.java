@@ -77,8 +77,8 @@ public class SepeTest {
 	public void testProcessing() {
 		ISpongeNet<SimpleNode> simpleNet = createSimpleABCNet();
 
-		ColouredNetProcessingContainer<SimpleNode, IToken> colouredNetProcessingContainer = new ColouredNetProcessingContainer<>(
-				simpleNet, new SimpleTokenStore<>(), null);
+		ColouredNetProcessingContainer<SimpleNode, SimpleToken> colouredNetProcessingContainer = new ColouredNetProcessingContainer<>(
+				simpleNet, new SimpleTokenStore<>(), new SimpleTokenFactory());
 
 		colouredNetProcessingContainer.process(new SimpleToken("hi"));
 
@@ -92,7 +92,7 @@ public class SepeTest {
 				simpleNet, new SimpleTokenStore<>(), null) {
 
 			protected <C extends IStateContainer<ITokenStore<IToken>>> void handleToken(C currentState, String tokenId,
-					String nodeId) {
+					String nodeId, boolean split) {
 
 				List<IEdge> outgoingEdges = getNet().getOutgoingEdges(nodeId);
 
@@ -100,10 +100,10 @@ public class SepeTest {
 
 					int size = outgoingEdges.size();
 					if (size > 1) {
-						IStateChangeOperation<ITokenStore<IToken>> copyTokenOperation = ColouredNetOperations
+						IStateChangeOperation<ITokenStore<SimpleToken>> copyTokenOperation = ColouredNetOperations
 								.copyToken(tokenId, size - 1, new SimpleTokenFactory());
 						System.err.println(copyTokenOperation);
-						currentState.changeState(copyTokenOperation);
+						currentState.changeState((IStateChangeOperation<ITokenStore<IToken>>)(IStateChangeOperation<?>)copyTokenOperation);
 					}
 
 					List<IToken> tokensOnNode = new ArrayList<>(currentState.getCurrentState().getTokens(nodeId));

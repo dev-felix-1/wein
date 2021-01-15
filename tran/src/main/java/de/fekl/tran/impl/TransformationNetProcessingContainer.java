@@ -11,26 +11,31 @@ import de.fekl.tran.api.core.ITransformer;
 
 @SuppressWarnings("rawtypes")
 public class TransformationNetProcessingContainer
-		extends ColouredNetProcessingContainer<ITransformer<?,?>, MessageContainer> {
+		extends ColouredNetProcessingContainer<ITransformer<?, ?>, MessageContainer> {
 
-	public TransformationNetProcessingContainer(ISpongeNet<ITransformer<?,?>> net,
+	public TransformationNetProcessingContainer(ISpongeNet<ITransformer<?, ?>> net,
 			ITokenStore<MessageContainer> initialState) {
-		super(net, initialState, null);
+		super(net, initialState, new MessageContainerFactory());
 	}
 
-	public TransformationNetProcessingContainer(ISpongeNet<ITransformer<?,?>> net) {
-		super(net, new SimpleTokenStore<>(), null);
+	public TransformationNetProcessingContainer(ISpongeNet<ITransformer<?, ?>> net) {
+		super(net, new SimpleTokenStore<>(), new MessageContainerFactory());
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected <C extends IStateContainer<ITokenStore<MessageContainer>>> void handleToken(C stateContainer,
-			String tokenId, String sourceNodeId) {
+			String tokenId, String sourceNodeId, boolean split) {
 		ITransformer node = getNet().getNode(sourceNodeId);
 		MessageContainer token = stateContainer.getCurrentState().getToken(tokenId);
 		IMessage<?> transformedMessage = node.transform(token.getMessage());
 		((MessageContainer) token).setMessage(transformedMessage);
-		super.handleToken(stateContainer, tokenId, sourceNodeId);
+
+		if (node.isAutoSplit()) {
+			super.handleToken(stateContainer, tokenId, sourceNodeId, true);
+		} else {
+			super.handleToken(stateContainer, tokenId, sourceNodeId, split);
+		}
 	}
 
 	public MessageContainer getNextProcessed() throws InterruptedException {

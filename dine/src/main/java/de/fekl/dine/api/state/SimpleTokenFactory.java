@@ -8,7 +8,7 @@ public class SimpleTokenFactory implements ITokenFactory<SimpleToken> {
 	}
 
 	@Override
-	public SimpleToken copyToken(IToken token) {
+	public SimpleToken copyToken(SimpleToken token) {
 		return new SimpleToken(TokenNames.generateTokenName());
 	}
 

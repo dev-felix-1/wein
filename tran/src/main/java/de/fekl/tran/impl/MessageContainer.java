@@ -1,13 +1,12 @@
 package de.fekl.tran.impl;
 
-import de.fekl.dine.api.state.IToken;
 import de.fekl.dine.api.state.SimpleToken;
 import de.fekl.tran.api.core.IMessage;
+import de.fekl.tran.api.core.IMessageContainer;
 
-public class MessageContainer extends SimpleToken implements IToken {
+public class MessageContainer extends SimpleToken implements IMessageContainer {
 
-	@SuppressWarnings("rawtypes")
-	private IMessage message;
+	private IMessage<?> message;
 
 	public MessageContainer(String id) {
 		super(id);
@@ -17,13 +16,13 @@ public class MessageContainer extends SimpleToken implements IToken {
 		this(MessageContainerNames.generateName());
 	}
 
-	public void setMessage(@SuppressWarnings("rawtypes") IMessage message) {
+	public <T> void setMessage(IMessage<T> message) {
 		this.message = message;
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T> IMessage<T> getMessage() {
-		return message;
+		return (IMessage<T>) message;
 	}
 
 	@Override

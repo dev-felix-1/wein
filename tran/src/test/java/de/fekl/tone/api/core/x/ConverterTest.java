@@ -20,7 +20,7 @@ public class ConverterTest {
 
 		public TestConverter(IContentType<Integer> sourceContentType, IContentType<String> targetContentType,
 				ITransformation<Integer, String> transformation, String id) {
-			super(sourceContentType, targetContentType, transformation, id);
+			super(sourceContentType, targetContentType, transformation, id, false);
 			Precondition.hasClass(transformation, IConversion.class);
 		}
 
@@ -37,7 +37,7 @@ public class ConverterTest {
 
 		public TestConverterInv(IContentType<String> sourceContentType, IContentType<Integer> targetContentType,
 				ITransformation<String, Integer> transformation, String id) {
-			super(sourceContentType, targetContentType, transformation, id);
+			super(sourceContentType, targetContentType, transformation, id, false);
 			Precondition.hasClass(transformation, IConversion.class);
 		}
 

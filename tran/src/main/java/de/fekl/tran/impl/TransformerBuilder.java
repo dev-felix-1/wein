@@ -7,15 +7,22 @@ import de.fekl.tran.api.core.ITransformer;
 import de.fekl.tran.api.core.ITransformerFactory;
 
 public class TransformerBuilder<S, T>
-		extends AbstractNodeBuilder<ITransformer<?,?>, ITransformerFactory, TransformerBuilder<S, T>> {
+		extends AbstractNodeBuilder<ITransformer<?, ?>, ITransformerFactory, TransformerBuilder<S, T>> {
 
 	private IContentType<S> sourceContentType;
 	private IContentType<T> targetContentType;
 	private ITransformation<S, T> transformation;
+	private boolean autoSplit;
 
 	public TransformerBuilder() {
+		autoSplit(false);
 		setAutoLookUp(true);
 		setNodeFactory(new SimpleTransformerFactory());
+	}
+
+	public TransformerBuilder<S, T> autoSplit(boolean autoSplit) {
+		this.autoSplit = autoSplit;
+		return this;
 	}
 
 	public TransformerBuilder<S, T> source(IContentType<S> sourceContentType) {
@@ -54,6 +61,7 @@ public class TransformerBuilder<S, T>
 				transformation = (S o) -> (T) o;
 			}
 		}
-		return getNodeFactory().createTransformer(sourceContentType, targetContentType, transformation, getId());
+		return getNodeFactory().createTransformer(sourceContentType, targetContentType, transformation, getId(),
+				autoSplit);
 	}
 }

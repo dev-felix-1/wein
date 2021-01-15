@@ -10,7 +10,13 @@ public class SimpleTransformerFactory implements ITransformerFactory {
 	@Override
 	public <S, T> ITransformer<S, T> createTransformer(IContentType<S> sourceContentType,
 			IContentType<T> targetContentType, ITransformation<S, T> transformation, String id) {
-		return new SimpleTransformer<>(sourceContentType, targetContentType, transformation, id);
+		return new SimpleTransformer<>(sourceContentType, targetContentType, transformation, id, false);
+	}
+	
+	@Override
+	public <S, T> ITransformer<S, T> createTransformer(IContentType<S> sourceContentType,
+			IContentType<T> targetContentType, ITransformation<S, T> transformation, String id, boolean autoSplit) {
+		return new SimpleTransformer<>(sourceContentType, targetContentType, transformation, id, autoSplit);
 	}
 
 	@Override

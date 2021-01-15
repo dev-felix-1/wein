@@ -93,6 +93,7 @@ public class ColouredNetOperations {
 
 	static class CopyToken<T extends IToken> implements IStateChangeOperation<ITokenStore<T>> {
 
+		private String targetNodeId;
 		private ITokenFactory<T> factory;
 		private String tokenId;
 		private int numberOfCopies;
@@ -101,6 +102,14 @@ public class ColouredNetOperations {
 			this.factory = factory;
 			this.tokenId = tokenId;
 			this.numberOfCopies = numberOfCopies;
+			this.targetNodeId = null;
+		}
+
+		CopyToken(String targetNodeId, String tokenId, ITokenFactory<T> factory) {
+			this.factory = factory;
+			this.tokenId = tokenId;
+			this.numberOfCopies = 1;
+			this.targetNodeId = targetNodeId;
 		}
 
 		@Override
@@ -110,9 +119,14 @@ public class ColouredNetOperations {
 
 		@Override
 		public ITokenStore<T> apply(ITokenStore<T> state) {
-			IToken token = state.getToken(tokenId);
 			ITokenStore<T> newState = cloneTokenStore(state);
-			String nodeId = newState.getPosition(tokenId);
+			final String nodeId;
+			if (targetNodeId == null) {
+				nodeId = newState.getPosition(tokenId);
+			} else {
+				nodeId = targetNodeId;
+			}
+			IToken token = state.getToken(tokenId);
 			IntStream.range(0, numberOfCopies).forEach(i -> newState.putToken(nodeId, factory.copyToken(token)));
 			return newState;
 		}
@@ -122,7 +136,8 @@ public class ColouredNetOperations {
 
 	}
 
-	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> putToken(String nodeId, String tokenId, T token) {
+	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> putToken(String nodeId, String tokenId,
+			T token) {
 		return new PutToken<>(nodeId, token);
 	}
 
@@ -130,13 +145,18 @@ public class ColouredNetOperations {
 		return new RemoveToken<>(nodeId, tokenId);
 	}
 
-	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> moveToken(String sourceNodeId, String targetNodeId,
-			String tokenId) {
+	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> moveToken(String sourceNodeId,
+			String targetNodeId, String tokenId) {
 		return new MoveToken<>(sourceNodeId, targetNodeId, tokenId);
 	}
 
-	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> copyToken(String tokenId, int numberOfCopies,
-			ITokenFactory factory) {
+	public static <T extends IToken, F extends ITokenFactory<T>> IStateChangeOperation<ITokenStore<T>> copyToken(
+			String targetNodeId, String tokenId, F factory) {
+		return new CopyToken<>(targetNodeId, tokenId, factory);
+	}
+
+	public static <T extends IToken, F extends ITokenFactory<T>> IStateChangeOperation<ITokenStore<T>> copyToken(
+			String tokenId, int numberOfCopies, F factory) {
 		return new CopyToken<>(tokenId, numberOfCopies, factory);
 	}
 

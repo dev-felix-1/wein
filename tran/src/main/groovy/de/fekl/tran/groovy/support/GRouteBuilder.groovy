@@ -47,6 +47,11 @@ class GRouteBuilder extends BuilderSupport {
 	@Override
 	protected Object createNode(Object name, Object value) {
 		switch(name) {
+			case 'split': 
+			case 'splitting':
+			case 'splitter':
+			case 'autoSplit': return setSplit(value as Boolean)
+				
 			case 'source': return setSource(value)
 			case 'input':
 			case 'inputContentType':
@@ -60,10 +65,10 @@ class GRouteBuilder extends BuilderSupport {
 			case 'in/out':
 				case 'i/o': return setIO(value)
 
-			case 'id': return setId(value)
+			case 'id': return setId(value as String)
 
 			case 'transform':
-				case 'transformation': return setTransformation(value)
+				case 'transformation': return setTransformation(value as ITransformation)
 
 			case 'node': return createRouteNode(value)
 			case 'nodes': return injectRouteNodesFromList(value)
@@ -193,13 +198,17 @@ class GRouteBuilder extends BuilderSupport {
 		}
 		throw new IllegalStateException();
 	}
+	
+	def List<CompositeNodeBuilder> createRouteNodeBuilders(Collection names) {
+		names.collect { createRouteNodeBuilder(it as String) }
+	}
 
 	def createEdge (Map map) {
 		if (current instanceof CompositeEdgesBuilder) {
 			if (map.target instanceof Collection) {
 				if (!current.parent.nodesBuilder) {
 					current.parent.nodeBuilders += createRouteNodeBuilder(map.source as String)
-					current.parent.nodeBuilders += map.target.collect { createRouteNodeBuilder(it as String) }
+					current.parent.nodeBuilders += createRouteNodeBuilders(map.target as Collection)
 				}
 				def edges = map.target.collect {
 					new CompositeEdgeBuilder().source(map.source as String).target(it as String)
@@ -208,7 +217,7 @@ class GRouteBuilder extends BuilderSupport {
 				return current
 			} else if (map.source instanceof Collection) {
 				if (!current.parent.nodesBuilder) {
-					current.parent.nodeBuilders += map.source.collect { createRouteNodeBuilder(it as String) }
+					current.parent.nodeBuilders += createRouteNodeBuilders(map.source as Collection)
 					current.parent.nodeBuilders += createRouteNodeBuilder(map.target as String)
 				}
 				def edges = map.source.collect {
@@ -228,6 +237,11 @@ class GRouteBuilder extends BuilderSupport {
 		}
 		throw new IllegalStateException();
 	}
+	
+	def setSplit(Boolean value) {
+		current instanceof CompositeNodeBuilder ? current.autoSplit(value) : {throw new IllegalStateException()}
+	}
+
 
 	def setNodeSourceType(Object value) {
 		current instanceof CompositeNodeBuilder ? current.source(value) : {throw new IllegalStateException()}
@@ -276,32 +290,28 @@ class GRouteBuilder extends BuilderSupport {
 
 	def setTransformation(ITransformation value) {
 		//@formatter:off
-		if (current instanceof CompositeNodeBuilder) { current.transformation ( value ) } 
+		if (current instanceof CompositeNodeBuilder) { current.transformation ( value ) }
 		else 									     { throw new IllegalStateException() }
 		//@formatter:on
 	}
 
 	def injectRouteNodesFromList(List nodeNames) {
-		if (current == null) {
-			current = createRoute()
-		}
-		if (current instanceof CompositeRouteBuilder) {
-			current.nodesBuilder = new CompositeNodesBuilder()
-			current.nodesBuilder.nodeBuilders += nodeNames.collect { name ->
-				createRouteNodeBuilder(name as String)
-			}
+		//@formatter:off
+		if (current == null) { current = createRoute() }
+		//@formatter:on
+		if (current instanceof CompositeRouteBuilder && !current.nodesBuilder) {
+			(current.nodesBuilder = new CompositeNodesBuilder()).nodeBuilders += nodeNames.collect { createRouteNodeBuilder(it as String) }
 			return current
+		} else {
+			throw new IllegalStateException();
 		}
-		throw new IllegalStateException();
 	}
 
 	def injectRouteNode(String nodeName) {
-		if (current instanceof CompositeNodesBuilder) {
-			def nb = createRouteNodeBuilder(nodeName as String)
-			current.nodeBuilders += nb
-			return current
-		}
-		throw new IllegalStateException();
+		//@formatter:off
+		if (current instanceof CompositeNodesBuilder) { current.addNodeBuilder(createRouteNodeBuilder(nodeName)) }
+		else 									      { throw new IllegalStateException() }
+		//@formatter:on
 	}
 
 	static class CompositeRouteBuilder extends TransformationRouteBuilder {
@@ -349,8 +359,14 @@ class GRouteBuilder extends BuilderSupport {
 		}
 	}
 
+	@Builder(builderStrategy = SimpleStrategy, prefix= '')
 	static class CompositeNodesBuilder {
 		List<CompositeNodeBuilder> nodeBuilders = []
+
+		def CompositeNodesBuilder addNodeBuilder(CompositeNodeBuilder nb) {
+			nodeBuilders += nb
+			return this
+		}
 	}
 
 	static class CompositeEdgesBuilder {
@@ -361,6 +377,7 @@ class GRouteBuilder extends BuilderSupport {
 	@Builder(builderStrategy = SimpleStrategy, prefix= '')
 	static class CompositeNodeBuilder {
 		String id
+		boolean autoSplit
 		Object source, target
 		ITransformation transformation
 	}

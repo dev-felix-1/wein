@@ -40,6 +40,11 @@ class GTransformerBuilder extends BuilderSupport {
 	@Override
 	protected Object createNode(Object name, Object value) {
 		switch(name) {
+			case 'split': 
+			case 'splitting':
+			case 'splitter':
+			case 'autoSplit': return setSplit(value as Boolean)
+			
 			case 'source':
 			case 'input':
 			case 'inputContentType':
@@ -116,6 +121,14 @@ class GTransformerBuilder extends BuilderSupport {
 		result.source(map.source?:map.input?:map.'in'?:map.'i/o')
 		result.target(map.target?:map.output?:map.'out'?:map.'i/o')
 		return result
+	}
+	
+	def setSplit(Boolean value) {
+		if (current instanceof CompositeTransformerBuilder) {
+			current.autoSplit(value)
+			return current
+		}
+		throw new IllegalStateException();
 	}
 
 	@CompileDynamic

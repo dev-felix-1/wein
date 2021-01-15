@@ -9,5 +9,7 @@ public interface ITransformer<S, T> extends INode {
 	IContentType<T> getTargetContentType();
 
 	IMessage<T> transform(IMessage<S> msg);
+	
+	boolean isAutoSplit();
 
 }

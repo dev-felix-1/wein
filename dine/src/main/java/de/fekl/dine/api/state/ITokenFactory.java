@@ -4,6 +4,6 @@ public interface ITokenFactory<T extends IToken> {
 
 	T createToken(String id);
 
-	T copyToken(IToken token);
+	T copyToken(T token);
 
 }

@@ -30,7 +30,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 
 	private final String processingContainerId;
 
-//	private ITokenFactory<T> tokenFactory;
+	private ITokenFactory<T> tokenFactory;
 	private boolean running;
 	private long stepCounter;
 
@@ -41,7 +41,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 	public ColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
 			ITokenFactory<T> tokenFactory) {
 		this.net = net;
-//		this.tokenFactory = tokenFactory;
+		this.tokenFactory = tokenFactory;
 		stateContainer = new SimpleStateContainer<>(initialState);
 		processingContainerId = RandomNames.getRandomName(ColouredNetProcessingContainer.class.getName(), "processor_",
 				15);
@@ -77,7 +77,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 			String nodeId = entry.getValue();
 			String tokenId = entry.getKey();
 
-			handleToken(stateContainer, tokenId, nodeId);
+			handleToken(stateContainer, tokenId, nodeId, false);
 		});
 	}
 
@@ -99,13 +99,25 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 	}
 
 	protected <C extends IStateContainer<ITokenStore<T>>> void handleToken(C stateContainer, String tokenId,
-			String sourceNodeId) {
+			String sourceNodeId, boolean split) {
 		LOG.debug("Handle Token %s on %s ...", tokenId, sourceNodeId);
 		List<IEdge> outgoingEdges = net.getOutgoingEdges(sourceNodeId);
 		if (!outgoingEdges.isEmpty()) {
-			IEdge firstEdge = outgoingEdges.get(0);
-			String targetNodeId = firstEdge.getTarget();
-			stateContainer.changeState(ColouredNetOperations.moveToken(sourceNodeId, targetNodeId, tokenId));
+			if (split) {
+				for (int i=0; i< outgoingEdges.size();i++) {
+					IEdge edge = outgoingEdges.get(i);
+					String targetNodeId = edge.getTarget();
+					if (i==outgoingEdges.size() -1) {
+						stateContainer.changeState(ColouredNetOperations.moveToken(sourceNodeId, targetNodeId, tokenId));
+					}else {
+						stateContainer.changeState(ColouredNetOperations.copyToken(targetNodeId, tokenId, tokenFactory));
+					}
+				}
+			} else {
+				IEdge firstEdge = outgoingEdges.get(0);
+				String targetNodeId = firstEdge.getTarget();
+				stateContainer.changeState(ColouredNetOperations.moveToken(sourceNodeId, targetNodeId, tokenId));
+			}
 		} else {
 			endNodesReachedEvents.add(new EndNodeReachedEvent(sourceNodeId, tokenId));
 		}

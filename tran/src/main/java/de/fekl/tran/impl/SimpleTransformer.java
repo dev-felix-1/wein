@@ -12,9 +12,10 @@ public class SimpleTransformer<S, T> implements ITransformer<S, T> {
 	private final IContentType<T> targetContentType;
 	private final ITransformation<S, T> transformation;
 	private final String id;
+	private final boolean autoSplit;
 
 	public SimpleTransformer(IContentType<S> sourceContentType, IContentType<T> targetContentType,
-			ITransformation<S, T> transformation, String id) {
+			ITransformation<S, T> transformation, String id, boolean autoSplit) {
 		super();
 		Precondition.isNotNull(sourceContentType);
 		Precondition.isNotNull(targetContentType);
@@ -24,6 +25,7 @@ public class SimpleTransformer<S, T> implements ITransformer<S, T> {
 		this.targetContentType = targetContentType;
 		this.transformation = transformation;
 		this.id = id;
+		this.autoSplit = autoSplit;
 	}
 
 	@Override
@@ -45,17 +47,21 @@ public class SimpleTransformer<S, T> implements ITransformer<S, T> {
 
 	@Override
 	public String toString() {
-		return String.format("%s{in=%s,out=%s}", getClass().getSimpleName(), sourceContentType,
-				targetContentType);
+		return String.format("%s{in=%s,out=%s}", getClass().getSimpleName(), sourceContentType, targetContentType);
 	}
 
 	@Override
 	public String getId() {
 		return id;
 	}
-	
+
 	protected ITransformation<S, T> getTransformation() {
 		return transformation;
+	}
+
+	@Override
+	public boolean isAutoSplit() {
+		return autoSplit;
 	}
 
 }

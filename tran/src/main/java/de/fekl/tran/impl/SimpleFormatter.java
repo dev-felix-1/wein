@@ -44,4 +44,9 @@ public class SimpleFormatter<T> implements IFormatter<T> {
 		return id;
 	}
 
+	@Override
+	public boolean isAutoSplit() {
+		return false;
+	}
+
 }
