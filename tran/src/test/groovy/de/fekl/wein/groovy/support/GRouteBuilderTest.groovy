@@ -420,7 +420,7 @@ class GRouteBuilderTest {
 			}
 		}
 
-		def processed1 = new TransformationRouteProcessor().process('hello1', route1);
+		def processed1 = new TransformationRouteProcessor().processForMultiResult('hello1', route1);
 		System.err.println(processed1);
 	}
 }

@@ -35,8 +35,8 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 	private long stepCounter;
 
 	private final IEventQueue<IEndNodeReachedEvent> endNodesReachedEvents = new SimpleEventQueue<>(32);
-
-//	private final Map<String, IToken> finishedToken = new ConcurrentHashMap<>();
+	private final IEventQueue<IProcessStartedEvent> processStartedEvents = new SimpleEventQueue<>(1);
+	private final IEventQueue<IProcessFinishedEvent> processFinishedEvents = new SimpleEventQueue<>(1);
 
 	public ColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
 			ITokenFactory<T> tokenFactory) {
@@ -57,6 +57,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 
 	public void run() {
 		running = true;
+		processStartedEvents.add(new ProcessStartedEvent());
 		while (running) {
 			if (running && stateContainer.getCurrentState().getTokenPositions().entrySet().stream()
 					.allMatch(e -> net.isLeaf(e.getValue()))) {
@@ -64,6 +65,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 			}
 			step();
 		}
+		processFinishedEvents.add(new ProcessFinishedEvent());
 	}
 
 	private synchronized void step() {
@@ -130,9 +132,21 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 	protected IEventQueue<IEndNodeReachedEvent> getEndNodesReachedEvents() {
 		return endNodesReachedEvents;
 	}
+	
+	protected IEventQueue<IProcessStartedEvent> getProcessStartedEvents() {
+		return processStartedEvents;
+	}
+	
+	protected IEventQueue<IProcessFinishedEvent> getProcessFinishedEvents() {
+		return processFinishedEvents;
+	}
 
 	protected IStateContainer<ITokenStore<T>> getStateContainer() {
 		return stateContainer;
+	}
+	
+	public boolean isRunning() {
+		return running;
 	}
 
 }

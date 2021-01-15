@@ -1,8 +1,11 @@
 package de.fekl.tran.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import de.fekl.tran.api.core.IMessage;
 import de.fekl.tran.api.core.ITransformationRoute;
@@ -30,6 +33,22 @@ public class TransformationRouteProcessor {
 		return processedMessageContainer.getMessage();
 	}
 
+	@SuppressWarnings("unchecked")
+	protected <T> List<IMessage<T>> processForMultiResult(MessageContainer messageContainer,
+			TransformationNetProcessingContainer processingContainer) throws InterruptedException {
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		executor.submit(() -> processingContainer.process(messageContainer));
+		List<IMessage<T>> resultList = new ArrayList<>();
+		processingContainer.waitForStart();
+		while (processingContainer.isRunning()) {
+			resultList.add(processingContainer.getNextProcessed().getMessage());
+		}
+		processingContainer.waitForFinish();
+		resultList.addAll(processingContainer.getAllCurrentlyProcessed().stream()
+				.map(mc -> (IMessage<T>) mc.getMessage()).collect(Collectors.toList()));
+		return resultList;
+	}
+
 	// -- sync - blocking
 	public <S, T> IMessage<T> process(IMessage<S> message, ITransformationRoute<S, T> route)
 			throws InterruptedException {
@@ -41,6 +60,19 @@ public class TransformationRouteProcessor {
 	public <S, T> IMessage<T> process(S messageContent, ITransformationRoute<S, T> route) throws InterruptedException {
 		IMessage<S> message = wrapMessageContent(messageContent);
 		return process(message, route);
+	}
+
+	public <S, T> List<IMessage<T>> processForMultiResult(IMessage<S> message, ITransformationRoute<S, T> route)
+			throws InterruptedException {
+		MessageContainer messageContainer = wrapMessage(message);
+		TransformationNetProcessingContainer processingContainer = createProcessingContainer(route);
+		return processForMultiResult(messageContainer, processingContainer);
+	}
+
+	public <S, T> List<IMessage<T>> processForMultiResult(S messageContent, ITransformationRoute<S, T> route)
+			throws InterruptedException {
+		IMessage<S> message = wrapMessageContent(messageContent);
+		return processForMultiResult(message, route);
 	}
 
 	// -- async - nonblocking
