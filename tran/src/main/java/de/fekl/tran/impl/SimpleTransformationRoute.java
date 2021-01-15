@@ -23,7 +23,9 @@ public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, 
 		Precondition.isNotNull(targetContentType);
 		Precondition.isNotNull(spongeNet);
 		if (spongeNet.getLeafs().size() > 1) {
-			throw new IllegalArgumentException("A Route can not have more than one end node");
+			throw new IllegalArgumentException(
+					String.format("A Route can not have more than one end node. Found end nodes: [%s]",
+							spongeNet.getLeafs().stream().map(ITransformer::getId).collect(Collectors.joining(", "))));
 		}
 		if (((ITransformer<?, ?>) spongeNet.getRoot()).getSourceContentType() != sourceContentType) {
 			throw new IllegalArgumentException(String.format("ContentTypes do not match %s <=> %s",

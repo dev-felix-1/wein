@@ -30,7 +30,10 @@ class GRouteBuilderTest {
 				}
 			}
 			edges {
-				edge (source: 'A', target: 'B')
+				edge {
+					source 'A'
+					target 'B'
+				}
 			}
 		}
 
@@ -186,11 +189,11 @@ class GRouteBuilderTest {
 
 	@Test
 	public void test9() {
-		
+
 		def registry = new SimpleTransformerRegistry();
 		def routeBuilder = new GRouteBuilder()
 		def transformerBuilder = new GTransformerBuilder()
-		
+
 		routeBuilder.transformerRegistry = registry
 		transformerBuilder.transformerRegistry = registry
 		transformerBuilder.autoRegister = true
@@ -206,8 +209,8 @@ class GRouteBuilderTest {
 			inputContentType 'string'
 			outputContentType 'string'
 			transformation { o -> o + 'B' }
-		} 
-		transformerBuilder (id: 'C', input: 'xml', output: 'xml') { x -> x+'C' } 
+		}
+		transformerBuilder (id: 'C', input: 'xml', output: 'xml') { x -> x+'C' }
 
 		def route1 = routeBuilder {
 			id 'route1'
@@ -215,6 +218,128 @@ class GRouteBuilderTest {
 				A
 				B
 				C
+			}
+		}
+
+		def processed1 = new TransformationRouteProcessor().process('hello1', route1);
+		System.err.println(processed1);
+	}
+
+	@Test
+	public void test91() {
+
+		def registry = new SimpleTransformerRegistry();
+		def routeBuilder = new GRouteBuilder()
+		def transformerBuilder = new GTransformerBuilder()
+
+		routeBuilder.transformerRegistry = registry
+		transformerBuilder.transformerRegistry = registry
+		transformerBuilder.autoRegister = true
+
+		transformerBuilder {
+			id 'A'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'A' }
+		}
+		transformerBuilder {
+			id 'B'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'B' }
+		}
+		transformerBuilder {
+			id 'C'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'C' }
+		}
+		transformerBuilder {
+			id 'D'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'D' }
+		}
+
+		def route1 = routeBuilder {
+			id 'route1'
+			nodes {
+				A
+				B
+				C
+				D
+			}
+			edges {
+				edge (source: 'A', target: ['C', 'B'])
+				edge (source: 'B', target: 'D')
+				edge (source: 'C', target: 'D')
+			}
+		}
+
+		def processed1 = new TransformationRouteProcessor().process('hello1', route1);
+		System.err.println(processed1);
+	}
+
+	@Test
+	public void test92() {
+
+		def registry = new SimpleTransformerRegistry();
+		def routeBuilder = new GRouteBuilder()
+		def transformerBuilder = new GTransformerBuilder()
+
+		routeBuilder.transformerRegistry = registry
+		transformerBuilder.transformerRegistry = registry
+		transformerBuilder.autoRegister = true
+
+		transformerBuilder {
+			id 'A'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'A' }
+		}
+		transformerBuilder {
+			id 'B'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'B' }
+		}
+		transformerBuilder {
+			id 'C'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'C' }
+		}
+		transformerBuilder {
+			id 'D'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'D' }
+		}
+		transformerBuilder {
+			id 'E'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'E' }
+		}
+		transformerBuilder {
+			id 'F'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'F' }
+		}
+		transformerBuilder {
+			id 'G'
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + 'G' }
+		}
+
+		def route1 = routeBuilder {
+			edges {
+				edge ('A', ['B', 'C', 'D'])
+				edge (['B','C'], 'E')
+				edge ('D', 'F')
+				edge (['E','F'], 'G')
 			}
 		}
 

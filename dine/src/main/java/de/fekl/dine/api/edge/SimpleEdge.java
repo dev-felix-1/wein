@@ -11,8 +11,8 @@ public class SimpleEdge implements IEdge {
 
 	public SimpleEdge(String source, String target) {
 		super();
-		Precondition.isNotEmpty(source);
-		Precondition.isNotEmpty(target);
+		Precondition.isNotEmpty(source, "Parameter %s is empty!", "source");
+		Precondition.isNotEmpty(target, "Parameter %s is empty!", "target");
 		this.source = source;
 		this.target = target;
 	}

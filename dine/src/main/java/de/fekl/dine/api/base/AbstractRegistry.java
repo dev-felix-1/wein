@@ -14,8 +14,8 @@ public abstract class AbstractRegistry<I, N extends IIdHolder<I>> implements IRe
 		Precondition.isNotNull(node);
 		Precondition.isNotEmpty(node.getId());
 		if (map.containsKey(node.getId())) {
-			throw new IllegalStateException(
-					"Cannot register node with id %s: there is already a node with this id registered");
+			throw new IllegalStateException(String.format(
+					"Cannot register node with id %s: there is already a node with this id registered", node.getId()));
 		}
 		map.put(node.getId(), node);
 	}
