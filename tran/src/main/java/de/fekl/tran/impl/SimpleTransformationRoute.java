@@ -1,11 +1,13 @@
 package de.fekl.tran.impl;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import de.fekl.baut.Precondition;
 import de.fekl.dine.api.edge.IEdge;
 import de.fekl.dine.api.tree.ISpongeNet;
 import de.fekl.tran.api.core.IContentType;
+import de.fekl.tran.api.core.IMerger;
 import de.fekl.tran.api.core.ITransformationRoute;
 import de.fekl.tran.api.core.ITransformer;
 
@@ -36,10 +38,31 @@ public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, 
 					((ITransformer<?, ?>) spongeNet.getLeafs().iterator().next()).getTargetContentType(),
 					targetContentType));
 		}
+		checkConnectedTransformersContentTypeMatching(spongeNet.getRoot(), spongeNet);
+
 		graph = spongeNet;
 		this.sourceContentType = sourceContentType;
 		this.targetContentType = targetContentType;
 		this.id = id;
+	}
+
+	static <U, V> void checkConnectedTransformersContentTypeMatching(ITransformer<U, V> transformer,
+			ISpongeNet<ITransformer<?, ?>> net) {
+		List<IEdge> outgoingEdges = net.getOutgoingEdges(transformer.getId());
+		for (IEdge edge : outgoingEdges) {
+			ITransformer<?, ?> nextNode = net.getNode(edge.getTarget());
+			if (nextNode instanceof IMerger<?>) {
+				// skip validation for now -FIXME
+			} else {
+				if (!nextNode.getSourceContentType().equals(transformer.getTargetContentType())) {
+					throw new IllegalStateException(String.format(
+							"(%s targetContentType %s) does not match (%s sourceContentType %s)", transformer.getId(),
+							transformer.getTargetContentType(), nextNode.getId(), nextNode.getSourceContentType()));
+				}
+
+			}
+			checkConnectedTransformersContentTypeMatching(nextNode, net);
+		}
 	}
 
 	@Override

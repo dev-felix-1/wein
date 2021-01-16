@@ -1,5 +1,7 @@
 package de.fekl.tone.api.core.x;
 
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Test;
 
 import de.fekl.dine.api.graph.DirectedGraphBuilder;
@@ -8,6 +10,7 @@ import de.fekl.dine.api.tree.SpongeNetBuilder;
 import de.fekl.tran.api.core.IMessage;
 import de.fekl.tran.api.core.ITransformationRoute;
 import de.fekl.tran.api.core.ITransformer;
+import de.fekl.tran.impl.MergerBuilder;
 import de.fekl.tran.impl.SimpleMessageFactory;
 import de.fekl.tran.impl.SimpleTransformationRoute;
 import de.fekl.tran.impl.SimpleTransformerRegistry;
@@ -21,6 +24,7 @@ public class TranTest {
 	private static final String A = "A";
 	private static final String B = "B";
 	private static final String C = "C";
+	private static final String D = "D";
 
 	private static ISpongeNet<ITransformer> createSimpleABCNet() {
 		TransformerBuilder<String, String> transformerBuilder = new TransformerBuilder<String, String>()
@@ -145,6 +149,58 @@ public class TranTest {
 								.transformation(o->o+C))
 						.addEdge(A, B)
 						.addEdge(B, C)
+						.build())
+				.setStartNode(A)
+				).build();
+		
+		//@formatter:on
+		
+		TransformationRouteProcessor transformationRouteProcessor = new TransformationRouteProcessor();
+		IMessage<String> message = new SimpleMessageFactory().createMessage("hello");
+		
+		IMessage<String> processed = transformationRouteProcessor.process(message, route);
+		System.err.println(processed);
+		
+	}
+	
+	@Test
+	public void testSplitMerge() throws InterruptedException {
+		SimpleTransformerRegistry transformerRegistry = new SimpleTransformerRegistry();
+		//@formatter:off
+		transformerRegistry.register(new TransformerBuilder<String,String>()
+				.autoSplit(true)
+				.id(A)
+				.source(StandardContentTypes.PRETTY_XML_STRING)
+				.target(StandardContentTypes.PRETTY_XML_STRING)
+				.transformation(o->o+A).build());
+		transformerRegistry.register(new TransformerBuilder<String,String>()
+				.id(B)
+				.source(StandardContentTypes.PRETTY_XML_STRING)
+				.target(StandardContentTypes.STRING)
+				.transformation(o->o+B).build());
+		transformerRegistry.register(new TransformerBuilder<String,String>()
+				.id(C)
+				.source(StandardContentTypes.PRETTY_XML_STRING)
+				.target(StandardContentTypes.PRETTY_XML_STRING)
+				.transformation(o->o+C).build());
+		transformerRegistry.register(new MergerBuilder<String>()
+				.id(D)
+				.source(StandardContentTypes.STRING)
+				.source(StandardContentTypes.PRETTY_XML_STRING)
+				.target(StandardContentTypes.PRETTY_XML_STRING)
+				.transformation(o->o.stream().map(Object::toString).collect(Collectors.joining(","))).build());
+		TransformerBuilder<String, String> fromRegistry = new TransformerBuilder<String,String>().setRegistry(transformerRegistry);
+		ITransformationRoute<String, String> route = new TransformationRouteBuilder<String,String>(
+				new SpongeNetBuilder<ITransformer<?,?>>()
+				.setGraph(new DirectedGraphBuilder<ITransformer<?,?>>()
+						.addNode(fromRegistry.id(A))
+						.addNode(fromRegistry.id(B))
+						.addNode(fromRegistry.id(C))
+						.addNode(fromRegistry.id(D))
+						.addEdge(A, B)
+						.addEdge(A, C)
+						.addEdge(B, D)
+						.addEdge(C, D)
 						.build())
 				.setStartNode(A)
 				).build();

@@ -1,5 +1,8 @@
 package de.fekl.sepe;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import de.fekl.dine.api.state.IToken;
@@ -64,23 +67,60 @@ public class ColouredNetOperations {
 		}
 	}
 
-	static class MoveToken<T extends IToken> implements IStateChangeOperation<ITokenStore<T>> {
+	static class MergeToken<T extends IToken> implements IStateChangeOperation<ITokenStore<T>> {
 
+		private String targetNodeId;
+		private List<String> tokenIds;
+		private ITokenFactory<T> factory;
+
+		MergeToken(ITokenFactory<T> factory, String targetNodeId, String[] tokenIds) {
+			this.targetNodeId = targetNodeId;
+			this.tokenIds = Arrays.asList(tokenIds);
+			this.factory = factory;
+		}
+		
+		MergeToken(ITokenFactory<T> factory, String targetNodeId, List<String> tokenIds) {
+			this.targetNodeId = targetNodeId;
+			this.tokenIds = tokenIds;
+			this.factory = factory;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("Merge Tokens ...");
+		}
+
+		@Override
+		public ITokenStore<T> apply(ITokenStore<T> state) {
+			ITokenStore<T> newState = cloneTokenStore(state);
+			List<T> tokens =  new ArrayList<>(tokenIds.size());
+			for (String tokenId : tokenIds) {
+				String position = state.getPosition(tokenId);
+				T token = state.getToken(tokenId);
+				tokens.add(token);
+				newState.removeToken(position, tokenId);
+			}
+			newState.putToken(targetNodeId, factory.mergeToken(tokens));
+			return newState;
+		}
+	}
+	static class MoveToken<T extends IToken> implements IStateChangeOperation<ITokenStore<T>> {
+		
 		private String sourceNodeId;
 		private String targetNodeId;
 		private String tokenId;
-
+		
 		MoveToken(String sourceNodeId, String targetNodeId, String tokenId) {
 			this.sourceNodeId = sourceNodeId;
 			this.targetNodeId = targetNodeId;
 			this.tokenId = tokenId;
 		}
-
+		
 		@Override
 		public String toString() {
 			return String.format("Move Token %s from %s to %s", tokenId, sourceNodeId, targetNodeId);
 		}
-
+		
 		@Override
 		public ITokenStore<T> apply(ITokenStore<T> state) {
 			T token = state.getToken(tokenId);
@@ -126,7 +166,7 @@ public class ColouredNetOperations {
 			} else {
 				nodeId = targetNodeId;
 			}
-			IToken token = state.getToken(tokenId);
+			T token = state.getToken(tokenId);
 			IntStream.range(0, numberOfCopies).forEach(i -> newState.putToken(nodeId, factory.copyToken(token)));
 			return newState;
 		}
@@ -158,6 +198,16 @@ public class ColouredNetOperations {
 	public static <T extends IToken, F extends ITokenFactory<T>> IStateChangeOperation<ITokenStore<T>> copyToken(
 			String tokenId, int numberOfCopies, F factory) {
 		return new CopyToken<>(tokenId, numberOfCopies, factory);
+	}
+	
+	public static <T extends IToken, F extends ITokenFactory<T>> IStateChangeOperation<ITokenStore<T>> mergeTokens(
+			 F factory, String targetNodeId, String ... tokenIds ) {
+		return new MergeToken<>(factory, targetNodeId, tokenIds);
+	}
+	
+	public static <T extends IToken, F extends ITokenFactory<T>> IStateChangeOperation<ITokenStore<T>> mergeTokens(
+			F factory, String targetNodeId, List<String> tokenIds ) {
+		return new MergeToken<>(factory, targetNodeId, tokenIds);
 	}
 
 }

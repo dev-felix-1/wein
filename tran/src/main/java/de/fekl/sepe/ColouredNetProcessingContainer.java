@@ -106,22 +106,30 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 		List<IEdge> outgoingEdges = net.getOutgoingEdges(sourceNodeId);
 		if (!outgoingEdges.isEmpty()) {
 			if (split) {
-				for (int i=0; i< outgoingEdges.size();i++) {
+				for (int i = 0; i < outgoingEdges.size(); i++) {
 					IEdge edge = outgoingEdges.get(i);
-					String targetNodeId = edge.getTarget();
-					if (i==outgoingEdges.size() -1) {
-						stateContainer.changeState(ColouredNetOperations.moveToken(sourceNodeId, targetNodeId, tokenId));
-					}else {
-						stateContainer.changeState(ColouredNetOperations.copyToken(targetNodeId, tokenId, tokenFactory));
+					if (i == outgoingEdges.size() - 1) {
+						handleTokenTransition(stateContainer, tokenId, sourceNodeId, edge, false);
+					} else {
+						handleTokenTransition(stateContainer, tokenId, sourceNodeId, edge, true);
 					}
 				}
 			} else {
 				IEdge firstEdge = outgoingEdges.get(0);
-				String targetNodeId = firstEdge.getTarget();
-				stateContainer.changeState(ColouredNetOperations.moveToken(sourceNodeId, targetNodeId, tokenId));
+				handleTokenTransition(stateContainer, tokenId, sourceNodeId, firstEdge, false);
 			}
 		} else {
 			endNodesReachedEvents.add(new EndNodeReachedEvent(sourceNodeId, tokenId));
+		}
+	}
+
+	protected <C extends IStateContainer<ITokenStore<T>>> void handleTokenTransition(C stateContainer, String tokenId,
+			String sourceNodeId, IEdge edge, boolean copy) {
+		String targetNodeId = edge.getTarget();
+		if (copy) {
+			stateContainer.changeState(ColouredNetOperations.copyToken(targetNodeId, tokenId, tokenFactory));
+		} else {
+			stateContainer.changeState(ColouredNetOperations.moveToken(sourceNodeId, targetNodeId, tokenId));
 		}
 	}
 
@@ -132,11 +140,11 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 	protected IEventQueue<IEndNodeReachedEvent> getEndNodesReachedEvents() {
 		return endNodesReachedEvents;
 	}
-	
+
 	protected IEventQueue<IProcessStartedEvent> getProcessStartedEvents() {
 		return processStartedEvents;
 	}
-	
+
 	protected IEventQueue<IProcessFinishedEvent> getProcessFinishedEvents() {
 		return processFinishedEvents;
 	}
@@ -145,6 +153,10 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 		return stateContainer;
 	}
 	
+	protected ITokenFactory<T> getTokenFactory() {
+		return tokenFactory;
+	}
+
 	public boolean isRunning() {
 		return running;
 	}

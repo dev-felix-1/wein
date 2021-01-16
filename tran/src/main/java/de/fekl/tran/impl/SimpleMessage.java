@@ -6,13 +6,16 @@ import de.fekl.tran.api.core.IMessage;
 public class SimpleMessage<T> implements IMessage<T> {
 
 	private final T value;
+	private final IContentType<T> contentType;
 
-	public SimpleMessage(T value) {
+	public SimpleMessage(T value, IContentType<T> contentType) {
 		this.value = value;
+		this.contentType = contentType;
 	}
 
 	public SimpleMessage(SimpleMessage<T> msg) {
 		this.value = msg.getValue();
+		this.contentType = msg.getContentType();
 	}
 
 	@Override
@@ -27,7 +30,7 @@ public class SimpleMessage<T> implements IMessage<T> {
 
 	@Override
 	public IContentType<T> getContentType() {
-		return null;
+		return contentType;
 	}
 
 }
