@@ -455,6 +455,7 @@ class GRouteBuilderTest {
 			transformation { o -> o + 'C' }
 		}
 		transformerBuilder {
+			autoSplit true
 			id 'D'
 			inputContentType StandardContentTypes.STRING
 			outputContentType StandardContentTypes.STRING
@@ -464,7 +465,7 @@ class GRouteBuilderTest {
 			id 'E'
 			inputContentType StandardContentTypes.STRING
 			outputContentType StandardContentTypes.STRING
-			transformation { o -> o + 'E' }
+			merge { o -> o?.join(', ') }
 		}
 		transformerBuilder {
 			id 'F'
@@ -476,7 +477,7 @@ class GRouteBuilderTest {
 			id 'G'
 			inputContentType StandardContentTypes.STRING
 			outputContentType StandardContentTypes.STRING
-			transformation { o -> o + 'G' }
+			merge { o -> o?.join(', ') }
 		}
 
 		def route1 = routeBuilder {
@@ -498,6 +499,103 @@ class GRouteBuilderTest {
 		}
 
 		def processed1 = new TransformationRouteProcessor().processForMultiResult('hello1', route1);
+		System.err.println(processed1);
+	}
+
+	@Test
+	public void test95_Performance_1() {
+		def registry = new SimpleTransformerRegistry();
+		def routeBuilder = new GRouteBuilder()
+		def transformerBuilder = new GTransformerBuilder()
+
+		routeBuilder.transformerRegistry = registry
+		transformerBuilder.transformerRegistry = registry
+		transformerBuilder.autoRegister = true
+
+		transformerBuilder {
+			id "Node0".toString()
+			autoSplit true
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			transformation { o -> o + "_0" }
+		}
+		for (int i = 0 ; i < 10 ; i++) {
+			def si = i
+			transformerBuilder {
+				id "Node0$i".toString()
+				autoSplit true
+				inputContentType StandardContentTypes.STRING
+				outputContentType StandardContentTypes.STRING
+				transformation { o -> o + "_$si" }
+			}
+		}
+		for (int i = 10 ; i < 100 ; i++) {
+			def si = i
+			transformerBuilder {
+				id "Node$i".toString()
+				autoSplit true
+				inputContentType StandardContentTypes.STRING
+				outputContentType StandardContentTypes.STRING
+				transformation { o -> o + "_$si" }
+			}
+		}
+
+		transformerBuilder {
+			id "Node100".toString()
+			autoSplit true
+			inputContentType StandardContentTypes.STRING
+			outputContentType StandardContentTypes.STRING
+			merge { o -> o?.join(', ') }
+		}
+
+		def route1 = routeBuilder {
+			edges {
+				for(int i = 1 ; i < 10 ; i++) {
+					edge('Node0',"Node0${i}")
+				}
+				for(int i = 0 ; i < 9 ; i++) {
+					for (int j = 1 ; j < 10 ; j++) {
+						edge ("Node$i$j","Node${i+1}${j}")
+					}
+				}
+				for (int j = 1 ; j < 10 ; j++) {
+					edge ("Node9$j","Node100")
+				}
+			}
+		}
+
+		def processed1 = new TransformationRouteProcessor().processForMultiResult('hello', route1);
+		System.err.println(processed1);
+	}
+	@Test
+	public void test95_Performance_2() {
+		def registry = new SimpleTransformerRegistry();
+		def routeBuilder = new GRouteBuilder()
+		def transformerBuilder = new GTransformerBuilder()
+
+		routeBuilder.transformerRegistry = registry
+		transformerBuilder.transformerRegistry = registry
+		transformerBuilder.autoRegister = true
+
+		for (int i = 0 ; i < 1000 ; i++) {
+			def si = i
+			transformerBuilder {
+				id "Node$i".toString()
+				inputContentType StandardContentTypes.INTEGER
+				outputContentType StandardContentTypes.INTEGER
+				transformation { o -> o!=null?o + 1:1 }
+			}
+		}
+
+		def route1 = routeBuilder {
+			edges {
+				for(int i = 1 ; i < 999 ; i++) {
+					edge("Node${i}","Node${i+1}")
+				}
+			}
+		}
+
+		def processed1 = new TransformationRouteProcessor().process(0, route1);
 		System.err.println(processed1);
 	}
 }

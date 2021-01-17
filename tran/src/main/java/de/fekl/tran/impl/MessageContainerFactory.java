@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import de.fekl.dine.api.state.ITokenFactory;
 import de.fekl.tran.api.core.IAutoMergedMessage;
+import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.IMessage;
 
 public class MessageContainerFactory implements ITokenFactory<MessageContainer> {
@@ -25,10 +26,16 @@ public class MessageContainerFactory implements ITokenFactory<MessageContainer> 
 
 	@Override
 	public MessageContainer mergeToken(List<MessageContainer> tokens) {
-		List<IMessage<Object>> messages = new ArrayList<>(tokens.size());
+		List<Object> values = new ArrayList<>(tokens.size());
+		List<IContentType<?>> contentTypes = new ArrayList<>(tokens.size());
+		for (MessageContainer mc : tokens) {
+			IContentType<Object> contentType = mc.getMessage().getContentType();
+			Object value = mc.getMessage().getValue();
+			values.add(value);
+			contentTypes.add(contentType);
+		}
 		MessageContainer messageContainer = new MessageContainer();
-		IAutoMergedMessage mergedMessage = new SimpleAutoMergedMessage(messages,
-				messages.stream().map(m -> m.getContentType()).collect(Collectors.toList()));
+		IAutoMergedMessage mergedMessage = new SimpleAutoMergedMessage(values, contentTypes);
 		messageContainer.setMessage(mergedMessage);
 		return messageContainer;
 	}

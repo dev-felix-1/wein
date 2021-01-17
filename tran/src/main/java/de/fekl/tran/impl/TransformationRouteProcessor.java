@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import de.fekl.tran.api.core.IMessage;
@@ -29,7 +30,12 @@ public class TransformationRouteProcessor {
 	protected <T> IMessage<T> process(MessageContainer messageContainer,
 			TransformationNetProcessingContainer processingContainer) throws InterruptedException {
 		processingContainer.process(messageContainer);
-		MessageContainer processedMessageContainer = processingContainer.getNextProcessed();
+		MessageContainer processedMessageContainer;
+		try {
+			processedMessageContainer = processingContainer.getNextProcessed();
+		} catch (TimeoutException e) {
+			throw new IllegalStateException(e);
+		}
 		return processedMessageContainer.getMessage();
 	}
 
@@ -41,7 +47,11 @@ public class TransformationRouteProcessor {
 		List<IMessage<T>> resultList = new ArrayList<>();
 		processingContainer.waitForStart();
 		while (processingContainer.isRunning()) {
-			resultList.add(processingContainer.getNextProcessed().getMessage());
+			try {
+				resultList.add(processingContainer.getNextProcessed().getMessage());
+			} catch (TimeoutException e) {
+				throw new IllegalStateException(e);
+			}
 		}
 		processingContainer.waitForFinish();
 		resultList.addAll(processingContainer.getAllCurrentlyProcessed().stream()

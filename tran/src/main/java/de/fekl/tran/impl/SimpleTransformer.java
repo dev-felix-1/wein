@@ -17,10 +17,18 @@ public class SimpleTransformer<S, T> implements ITransformer<S, T> {
 	public SimpleTransformer(IContentType<S> sourceContentType, IContentType<T> targetContentType,
 			ITransformation<S, T> transformation, String id, boolean autoSplit) {
 		super();
-		Precondition.isNotNull(sourceContentType);
+		Precondition.isNotEmpty(id);
+		Precondition.isNotNull(sourceContentType, "Tried to construct transformer %s without %s", id,
+				"sourceContentType");
 		Precondition.isNotNull(targetContentType);
 		Precondition.isNotNull(transformation);
-		Precondition.isNotEmpty(id);
+		try {
+			transformation.transform(null);
+		} catch (Exception e) {
+			throw new IllegalArgumentException(
+					String.format("The transformation for transformer %s is not null-safe or has other problems: ", id),
+					e);
+		}
 		this.sourceContentType = sourceContentType;
 		this.targetContentType = targetContentType;
 		this.transformation = transformation;

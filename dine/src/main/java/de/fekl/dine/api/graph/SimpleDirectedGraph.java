@@ -3,6 +3,7 @@ package de.fekl.dine.api.graph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,11 @@ public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 
 	private final Map<String, N> nodes;
 	private final List<IEdge> edges;
+
+	// caching
+	private final Map<String, List<IEdge>> incomingEdges = new HashMap<>();
+	private final Map<String, List<IEdge>> outgoingEdges = new HashMap<>();
+	private String prettyString = null;
 
 	public SimpleDirectedGraph(Set<N> nodes, List<IEdge> edges) {
 		if (!ALLOW_EMPTY_NODE_SET) {
@@ -57,24 +63,31 @@ public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 	@Override
 	public List<IEdge> getIncomingEdges(String nodeName) {
 		Precondition.isNotEmpty(nodeName);
-		return edges.stream().filter(e -> e.getTarget().equals(nodeName)).collect(Collectors.toList());
+		return incomingEdges.computeIfAbsent(nodeName,
+				s -> edges.stream().filter(e -> e.getTarget().equals(nodeName)).collect(Collectors.toList()));
 	}
 
 	@Override
 	public List<IEdge> getOutgoingEdges(String nodeName) {
 		Precondition.isNotEmpty(nodeName);
-		return edges.stream().filter(e -> e.getSource().equals(nodeName)).collect(Collectors.toList());
+		return outgoingEdges.computeIfAbsent(nodeName,
+				s -> edges.stream().filter(e -> e.getSource().equals(nodeName)).collect(Collectors.toList()));
 	}
 
 	@Override
 	public String toString() {
+		this.prettyString = toPrettyString();
+		return prettyString;
+	}
+
+	public String toPrettyString() {
 		//@formatter:off
 		var printTemplate = """
-		%s {
-		    Nodes [%s],
-		    Edges [%s]
-		}
-		""";
+				%s {
+				Nodes [%s],
+				Edges [%s]
+				}
+				""";
 		return String.format(printTemplate, this.getClass().getSimpleName(), 
 				nodes.keySet().stream().collect(Collectors.joining(", ")),
 				edges.stream().map(IEdge::toString).collect(Collectors.joining(", ")));

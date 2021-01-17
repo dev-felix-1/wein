@@ -64,4 +64,20 @@ public class TransformerBuilder<S, T>
 		return getNodeFactory().createTransformer(sourceContentType, targetContentType, transformation, getId(),
 				autoSplit);
 	}
+	
+	protected boolean isAutoSplit() {
+		return autoSplit;
+	}
+	
+	protected IContentType<S> getSourceContentType() {
+		return sourceContentType;
+	}
+	
+	protected IContentType<T> getTargetContentType() {
+		return targetContentType;
+	}
+	
+	protected ITransformation<S, T> getTransformation() {
+		return transformation;
+	}
 }

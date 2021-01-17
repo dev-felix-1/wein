@@ -14,6 +14,8 @@ public interface IMerger<T> extends ITransformer<List<?>, T> {
 		throw new UnsupportedOperationException("Merger does not support single-message content type.");
 	}
 	
+	IMessage<T> merge(List<IMessage<?>> messages);
+	
 	List<IContentType<?>> getSourceContentTypes();
 
 }

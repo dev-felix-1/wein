@@ -8,10 +8,12 @@ import org.codehaus.groovy.runtime.InvokerHelper
 import de.fekl.dine.api.graph.DirectedGraphBuilder
 import de.fekl.dine.api.tree.SpongeNetBuilder
 import de.fekl.tran.api.core.IContentType
+import de.fekl.tran.api.core.IMerge
 import de.fekl.tran.api.core.ITransformation
 import de.fekl.tran.api.core.ITransformationRoute
 import de.fekl.tran.api.core.ITransformer
 import de.fekl.tran.api.core.ITransformerRegistry
+import de.fekl.tran.impl.MergerBuilder
 import de.fekl.tran.impl.TransformationRouteBuilder
 import de.fekl.tran.impl.TransformerBuilder
 import de.fekl.tran.impl.TransformerNames
@@ -62,6 +64,8 @@ class GTransformerBuilder extends BuilderSupport {
 
 			case 'transform':
 			case 'transformation': return setTransformation(value)
+			
+			case 'merge': return setMerge(value)
 
 			default: throw new IllegalArgumentException("Invalid keyword $name")
 		}
@@ -86,7 +90,7 @@ class GTransformerBuilder extends BuilderSupport {
 
 	public Object invokeMethod(String methodName, Object args) {
 		Object name = getName(methodName);
-		if (current != null && (methodName == 'transformer' || methodName == 'transform' || methodName == 'transformation')) {
+		if (current != null && (methodName == 'transformer' || methodName == 'transform' || methodName == 'transformation' || methodName == 'merge')) {
 			def argList = InvokerHelper.asList(args);
 			if(argList.size() > 1) {
 				if(argList[0] instanceof Map) {
@@ -99,7 +103,11 @@ class GTransformerBuilder extends BuilderSupport {
 				}
 			}
 			else {
-				return doInvokeMethod(methodName, name, InvokerHelper.asList(args)[0] as ITransformation);
+				if(methodName == 'merge') {
+					return doInvokeMethod(methodName, name, InvokerHelper.asList(args)[0] as IMerge);
+				}else {
+					return doInvokeMethod(methodName, name, InvokerHelper.asList(args)[0] as ITransformation);
+				}
 			}
 		} else {
 			return doInvokeMethod(methodName, name, args);
@@ -161,6 +169,15 @@ class GTransformerBuilder extends BuilderSupport {
 		}
 		throw new IllegalStateException();
 	}
+	
+	def setMerge(IMerge value) {
+		if (current instanceof CompositeTransformerBuilder) {
+			current.merger = true
+			current.transformation(value)
+			return current
+		}
+		throw new IllegalStateException();
+	}
 
 	def setTransformation(ITransformation value) {
 		if (current instanceof CompositeTransformerBuilder) {
@@ -171,8 +188,34 @@ class GTransformerBuilder extends BuilderSupport {
 	}
 
 	static class CompositeTransformerBuilder extends TransformerBuilder {
+		boolean merger = false
+		List<IContentType> sourceContentTypes = []
+		
+		@Override
+		public TransformerBuilder source(IContentType sourceContentType) {
+			if (merger) {
+				sourceContentTypes+=sourceContentType
+				return this
+			} else {
+				return super.source(sourceContentType)
+			}
+		}
+		
 		public ITransformer build() {
-			return super.build();
+			if (merger) {
+				def mergerBuilder = new MergerBuilder()
+				mergerBuilder.autoLookUp = autoLookUp
+				mergerBuilder.autoRegister = autoRegister
+				mergerBuilder.autoSplit = autoSplit
+				mergerBuilder.id(id)
+				mergerBuilder.registry = registry
+				mergerBuilder.sourceContentTypes = sourceContentTypes
+				mergerBuilder.targetContentType = targetContentType
+				mergerBuilder.transformation = transformation as IMerge
+				return mergerBuilder.build()
+			} else {
+				return super.build()
+			}
 		}
 	}
 	

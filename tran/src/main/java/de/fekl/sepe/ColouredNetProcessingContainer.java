@@ -1,5 +1,6 @@
 package de.fekl.sepe;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,7 +35,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 	private boolean running;
 	private long stepCounter;
 
-	private final IEventQueue<IEndNodeReachedEvent> endNodesReachedEvents = new SimpleEventQueue<>(32);
+	private final IEventQueue<IEndNodeReachedEvent> endNodesReachedEvents;
 	private final IEventQueue<IProcessStartedEvent> processStartedEvents = new SimpleEventQueue<>(1);
 	private final IEventQueue<IProcessFinishedEvent> processFinishedEvents = new SimpleEventQueue<>(1);
 
@@ -42,11 +43,14 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 			ITokenFactory<T> tokenFactory) {
 		this.net = net;
 		this.tokenFactory = tokenFactory;
-		stateContainer = new SimpleStateContainer<>(initialState);
+		stateContainer = new SimpleStateContainer<>(initialState, getNet().getNodes().size() * 2);
 		processingContainerId = RandomNames.getRandomName(ColouredNetProcessingContainer.class.getName(), "processor_",
 				15);
 		running = false;
 		stepCounter = 0;
+		// FIXME find all paths from start to end and set it like this
+		endNodesReachedEvents = new SimpleEventQueue<>(64);
+
 	}
 
 	public void process(T token) {
@@ -73,12 +77,11 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 				ITokenStore.print(stateContainer.getCurrentState()));
 		Map<String, String> tokenToNodeMapping = stateContainer.getCurrentState().getTokenPositions();
 
-		Set<Entry<String, String>> entrySet = tokenToNodeMapping.entrySet();
+		Set<Entry<String, String>> entrySet = Collections.unmodifiableSet(tokenToNodeMapping.entrySet());
 		entrySet.forEach(entry -> {
 
 			String nodeId = entry.getValue();
 			String tokenId = entry.getKey();
-
 			handleToken(stateContainer, tokenId, nodeId, false);
 		});
 	}
@@ -106,6 +109,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 		List<IEdge> outgoingEdges = net.getOutgoingEdges(sourceNodeId);
 		if (!outgoingEdges.isEmpty()) {
 			if (split) {
+				LOG.debug("Splitting token %s ...", tokenId);
 				for (int i = 0; i < outgoingEdges.size(); i++) {
 					IEdge edge = outgoingEdges.get(i);
 					if (i == outgoingEdges.size() - 1) {
@@ -119,6 +123,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 				handleTokenTransition(stateContainer, tokenId, sourceNodeId, firstEdge, false);
 			}
 		} else {
+			LOG.debug("Token %s reached an endNode %s.", tokenId, sourceNodeId);
 			endNodesReachedEvents.add(new EndNodeReachedEvent(sourceNodeId, tokenId));
 		}
 	}
@@ -152,7 +157,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 	protected IStateContainer<ITokenStore<T>> getStateContainer() {
 		return stateContainer;
 	}
-	
+
 	protected ITokenFactory<T> getTokenFactory() {
 		return tokenFactory;
 	}
