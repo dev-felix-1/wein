@@ -76,7 +76,9 @@ public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 
 	@Override
 	public String toString() {
-		this.prettyString = toPrettyString();
+		if (prettyString == null) {
+			prettyString = toPrettyString();
+		}
 		return prettyString;
 	}
 

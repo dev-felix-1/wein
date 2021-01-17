@@ -16,6 +16,9 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 	private final IDirectedGraph<N> graph;
 	private final String startNode;
 
+	// caching
+	private Set<N> leafs;
+
 	public SimpleSpongeNet(IDirectedGraph<N> graph, String startNode) {
 		Precondition.isNotNull(graph, "Parameter %s is null", "graph");
 		Precondition.isNotEmpty(startNode, "Parameter %s is null", "startNode");
@@ -129,12 +132,18 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 
 	@Override
 	public Set<N> getLeafs() {
-		return collectLeafs(graph, startNode);
+		if (leafs == null) {
+			leafs = collectLeafs(graph, startNode);
+		}
+		return leafs;
 	}
 
 	@Override
 	public boolean isLeaf(N node) {
-		return collectLeafs(graph, startNode).contains(node);
+		if (leafs == null) {
+			leafs = collectLeafs(graph, startNode);
+		}
+		return leafs.contains(node);
 	}
 
 	@Override
@@ -187,7 +196,10 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 
 	@Override
 	public boolean isLeaf(String nodeId) {
-		return collectLeafs(graph, startNode).stream().anyMatch(l -> l.getId().equals(nodeId));
+		if (leafs == null) {
+			leafs = collectLeafs(graph, startNode);
+		}
+		return leafs.stream().anyMatch(l -> l.getId().equals(nodeId));
 	}
 
 }
