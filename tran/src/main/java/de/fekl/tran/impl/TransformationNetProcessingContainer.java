@@ -135,7 +135,8 @@ public class TransformationNetProcessingContainer
 	}
 
 	public MessageContainer getNextProcessed() throws InterruptedException, TimeoutException {
-		MessageContainer poll = processedTokens.poll(3, TimeUnit.SECONDS);
+		MessageContainer poll = processedTokens.take();
+				//.poll(3, TimeUnit.SECONDS);
 		if(poll == null) {
 			throw new TimeoutException();
 		}

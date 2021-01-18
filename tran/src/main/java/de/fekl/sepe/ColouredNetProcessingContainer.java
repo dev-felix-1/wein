@@ -42,7 +42,6 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 
 	private final SimpleEventBus<IEvent> processingEvents;
 
-
 	public ColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
 			ITokenFactory<T> tokenFactory) {
 		this.net = net;
@@ -59,22 +58,27 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 
 	public void process(T token) {
 		String startNodeId = net.getRoot().getId();
-		new Thread(processingEvents).start();		
+		new Thread(processingEvents).start();
 		stateContainer.changeState(ColouredNetOperations.putToken(startNodeId, TokenNames.generateTokenName(), token));
 		run();
 	}
 
+	protected void setRunning(boolean running) {
+		this.running = running;
+	}
+
 	public void run() {
-		running = true;
+		setRunning(true);
 		processingEvents.post(new ProcessStartedEvent());
 		processingEvents.waitForHandlers();
 		while (running) {
 			if (running && stateContainer.getCurrentState().getTokenPositions().entrySet().stream()
 					.allMatch(e -> net.isLeaf(e.getValue()))) {
-				running = false;
+				LOG.debug("Stop running because every token is in a final place.");
+				setRunning(false);
 			}
 			if (abort) {
-				running = false;
+				setRunning(false);
 				processingEvents.post(new ProcessAbortedEvent());
 				processingEvents.waitForHandlers();
 			} else {
@@ -92,7 +96,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 		}
 		processingEvents.post(new ProcessFinishedEvent());
 	}
-	
+
 	public void shutdown() {
 		processingEvents.waitForHandlers();
 		processingEvents.abort();

@@ -39,7 +39,7 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 		S sourceState = currentState;
 		S targetState = operation.apply(currentState);
 		currentState = targetState;
-		if (stateChangedEvents == null) {
+		if (stateChangedEvents == null) { 
 			if (eventBusThread == null) {
 				eventBusThread = new Thread((Runnable) eventBus);
 				eventBusThread.start();

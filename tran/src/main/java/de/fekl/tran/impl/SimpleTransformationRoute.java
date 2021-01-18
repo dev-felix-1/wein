@@ -48,36 +48,54 @@ public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, 
 
 	static <U, V> void checkConnectedTransformersContentTypeMatching(ITransformer<U, V> transformer,
 			ISpongeNet<ITransformer<?, ?>> net) {
-		List<IEdge> outgoingEdges = net.getOutgoingEdges(transformer.getId());
+		ITransformer<?, ?> current = checkConnectedTransformersContentTypeMatchingOnOneWayPath(transformer, net);
+		List<IEdge> outgoingEdges = net.getOutgoingEdges(current.getId());
 		for (IEdge edge : outgoingEdges) {
 			ITransformer<?, ?> nextNode = net.getNode(edge.getTarget());
-			if (nextNode instanceof IMerger<?>merger) {
-				List<IContentType<?>> sourceContentTypes = merger.getSourceContentTypes();
-				List<IEdge> incomingEdges = net.getIncomingEdges(merger.getId());
-				if (sourceContentTypes.size() != incomingEdges.size()) {
-					throw new IllegalStateException(String.format(
-							"Merger %s has %s incoming edges (%s) but specifies %s content-types (%s)", merger.getId(),
-							incomingEdges.size(), incomingEdges, sourceContentTypes.size(), sourceContentTypes));
-				}
-				for (int i = 0; i < incomingEdges.size(); i++) {
-					String incoming = incomingEdges.get(i).getSource();
-					IContentType<?> incomingTargetContentType = net.getNode(incoming).getTargetContentType();
-					IContentType<?> mergerSourceContentType = sourceContentTypes.get(i);
-					if (!incomingTargetContentType.equals(mergerSourceContentType)) {
-						throw new IllegalStateException(
-								String.format("(%s targetContentType %s) does not match (%s sourceContentType %s)",
-										merger.getId(), mergerSourceContentType, incoming, incomingTargetContentType));
-					}
-				}
-			} else {
-				if (!nextNode.getSourceContentType().equals(transformer.getTargetContentType())) {
-					throw new IllegalStateException(String.format(
-							"(%s targetContentType %s) does not match (%s sourceContentType %s)", transformer.getId(),
-							transformer.getTargetContentType(), nextNode.getId(), nextNode.getSourceContentType()));
-				}
-
-			}
+			checkConnection(current, nextNode, net);
 			checkConnectedTransformersContentTypeMatching(nextNode, net);
+		}
+	}
+
+	static ITransformer<?, ?> checkConnectedTransformersContentTypeMatchingOnOneWayPath(ITransformer<?, ?> transformer,
+			ISpongeNet<ITransformer<?, ?>> net) {
+		ITransformer<?, ?> current = transformer;
+		List<IEdge> outgoingEdges = null;
+		while ((outgoingEdges = net.getOutgoingEdges(current.getId())).size() == 1) {
+			ITransformer<?, ?> next = net.getNode(outgoingEdges.get(0).getTarget());
+			checkConnection(current, next, net);
+			current = next;
+		}
+		return current;
+	}
+
+	static <U, V> void checkConnection(ITransformer<?, U> transformerA, ITransformer<V, ?> transformerB,
+			ISpongeNet<ITransformer<?, ?>> net) {
+		if (transformerB instanceof IMerger<?>merger) {
+			List<IContentType<?>> sourceContentTypes = merger.getSourceContentTypes();
+			List<IEdge> incomingEdges = net.getIncomingEdges(merger.getId());
+			if (sourceContentTypes.size() != incomingEdges.size()) {
+				throw new IllegalStateException(String.format(
+						"Merger %s has %s incoming edges (%s) but specifies %s content-types (%s)", merger.getId(),
+						incomingEdges.size(), incomingEdges, sourceContentTypes.size(), sourceContentTypes));
+			}
+			for (int i = 0; i < incomingEdges.size(); i++) {
+				String incoming = incomingEdges.get(i).getSource();
+				IContentType<?> incomingTargetContentType = net.getNode(incoming).getTargetContentType();
+				IContentType<?> mergerSourceContentType = sourceContentTypes.get(i);
+				if (!incomingTargetContentType.equals(mergerSourceContentType)) {
+					throw new IllegalStateException(
+							String.format("(%s targetContentType %s) does not match (%s sourceContentType %s)",
+									merger.getId(), mergerSourceContentType, incoming, incomingTargetContentType));
+				}
+			}
+		} else {
+			if (!transformerB.getSourceContentType().equals(transformerA.getTargetContentType())) {
+				throw new IllegalStateException(
+						String.format("(%s targetContentType %s) does not match (%s sourceContentType %s)",
+								transformerA.getId(), transformerA.getTargetContentType(), transformerB.getId(),
+								transformerB.getSourceContentType()));
+			}
 		}
 	}
 

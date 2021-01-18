@@ -63,15 +63,33 @@ public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 	@Override
 	public List<IEdge> getIncomingEdges(String nodeName) {
 		Precondition.isNotEmpty(nodeName);
-		return incomingEdges.computeIfAbsent(nodeName,
-				s -> edges.stream().filter(e -> e.getTarget().equals(nodeName)).collect(Collectors.toList()));
+		return incomingEdges.computeIfAbsent(nodeName, s -> computeIncomingEdges(edges, nodeName));
 	}
 
 	@Override
 	public List<IEdge> getOutgoingEdges(String nodeName) {
 		Precondition.isNotEmpty(nodeName);
-		return outgoingEdges.computeIfAbsent(nodeName,
-				s -> edges.stream().filter(e -> e.getSource().equals(nodeName)).collect(Collectors.toList()));
+		return outgoingEdges.computeIfAbsent(nodeName, s -> computeOutgoingEdges(edges, nodeName));
+	}
+
+	private static List<IEdge> computeOutgoingEdges(List<IEdge> edges, String nodeName) {
+		List<IEdge> result = new ArrayList<>();
+		for (IEdge edge : edges) {
+			if (edge.getSource().equals(nodeName)) {
+				result.add(edge);
+			}
+		}
+		return result;
+	}
+
+	private static List<IEdge> computeIncomingEdges(List<IEdge> edges, String nodeName) {
+		List<IEdge> result = new ArrayList<>();
+		for (IEdge edge : edges) {
+			if (edge.getTarget().equals(nodeName)) {
+				result.add(edge);
+			}
+		}
+		return result;
 	}
 
 	@Override
@@ -104,5 +122,10 @@ public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 	@Override
 	public N getNode(String nodeId) {
 		return nodes.get(nodeId);
+	}
+
+	@Override
+	public Collection<String> getNodeIds() {
+		return nodes.keySet();
 	}
 }
