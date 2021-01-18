@@ -573,6 +573,9 @@ class GRouteBuilderTest {
 	}
 	@Test
 	public void test95_Performance_2() {
+		int numberOfRoutes = 200
+		int numberOfTransformers = 200
+		
 		def registry = new SimpleTransformerRegistry();
 		def routeBuilder = new GRouteBuilder()
 		def transformerBuilder = new GTransformerBuilder()
@@ -581,7 +584,7 @@ class GRouteBuilderTest {
 		transformerBuilder.transformerRegistry = registry
 		transformerBuilder.autoRegister = true
 
-		for (int i = 0 ; i < 10000 ; i++) {
+		for (int i = 0 ; i < numberOfTransformers ; i++) {
 			def si = i
 			transformerBuilder {
 				id "Node$i".toString()
@@ -591,15 +594,15 @@ class GRouteBuilderTest {
 			}
 		}
 
-		def route1 = routeBuilder {
-			edges {
-				for(int i = 1 ; i < 9999 ; i++) {
-					edge("Node${i}","Node${i+1}")
+		for(int a = 0; a < numberOfRoutes ; a++) {
+			def route1 = routeBuilder {
+				edges {
+					for(int i = 1 ; i < numberOfTransformers -1 ; i++) {
+						edge("Node${i}","Node${i+1}")
+					}
 				}
 			}
+			def processed1 = new TransformationRouteProcessor().process(0, route1);
 		}
-
-		def processed1 = new TransformationRouteProcessor().process(0, route1);
-		System.err.println(processed1);
 	}
 }
