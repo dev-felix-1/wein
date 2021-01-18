@@ -7,6 +7,8 @@ import de.fekl.tran.api.core.ITransformation;
 import de.fekl.tran.api.core.ITransformer;
 
 public class SimpleTransformer<S, T> implements ITransformer<S, T> {
+	
+	public static boolean ENFORCE_NULLSAFE_TRANSFORMATION = true;
 
 	private final IContentType<S> sourceContentType;
 	private final IContentType<T> targetContentType;
@@ -22,12 +24,14 @@ public class SimpleTransformer<S, T> implements ITransformer<S, T> {
 				"sourceContentType");
 		Precondition.isNotNull(targetContentType);
 		Precondition.isNotNull(transformation);
-		try {
-			transformation.transform(null);
-		} catch (Exception e) {
-			throw new IllegalArgumentException(
-					String.format("The transformation for transformer %s is not null-safe or has other problems: ", id),
-					e);
+		if (ENFORCE_NULLSAFE_TRANSFORMATION) {
+			try {
+				transformation.transform(null);
+			} catch (Exception e) {
+				throw new IllegalArgumentException(
+						String.format("The transformation for transformer %s is not null-safe or has other problems: ", id),
+						e);
+			}
 		}
 		this.sourceContentType = sourceContentType;
 		this.targetContentType = targetContentType;

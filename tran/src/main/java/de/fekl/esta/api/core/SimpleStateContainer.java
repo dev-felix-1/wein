@@ -7,7 +7,7 @@ public class SimpleStateContainer<S> extends AbstractStateContainer<S> {
 	}
 
 	public SimpleStateContainer(S initialState, int eventQueueSize) {
-		super(initialState, new SimpleEventQueue<>(eventQueueSize));
+		super(initialState, new SimpleEventBus<>(eventQueueSize));
 	}
 
 }

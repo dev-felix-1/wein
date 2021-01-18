@@ -14,6 +14,7 @@ import de.fekl.tran.api.core.ITransformationRoute
 import de.fekl.tran.api.core.ITransformer
 import de.fekl.tran.api.core.ITransformerRegistry
 import de.fekl.tran.impl.MergerBuilder
+import de.fekl.tran.impl.StandardContentTypes
 import de.fekl.tran.impl.TransformationRouteBuilder
 import de.fekl.tran.impl.TransformerBuilder
 import de.fekl.tran.impl.TransformerNames
@@ -50,11 +51,13 @@ class GTransformerBuilder extends BuilderSupport {
 			case 'source':
 			case 'input':
 			case 'inputContentType':
+			case 'sourceContentType':
 			case 'in': return setNodeSourceType(value)
 
 			case 'target':
 			case 'output':
 			case 'outputContentType':
+			case 'targetContentType':
 			case 'out': return setNodeTargetType(value)
 
 			case 'in/out':
@@ -193,12 +196,14 @@ class GTransformerBuilder extends BuilderSupport {
 		
 		@Override
 		public TransformerBuilder source(IContentType sourceContentType) {
-			if (merger) {
-				sourceContentTypes+=sourceContentType
-				return this
-			} else {
-				return super.source(sourceContentType)
-			}
+			sourceContentTypes+=sourceContentType
+			return this
+		}
+		
+		@Override
+		public TransformerBuilder source(String sourceContentType) {
+			sourceContentTypes+=StandardContentTypes.byName(sourceContentType)
+			return this
 		}
 		
 		public ITransformer build() {
@@ -214,6 +219,7 @@ class GTransformerBuilder extends BuilderSupport {
 				mergerBuilder.transformation = transformation as IMerge
 				return mergerBuilder.build()
 			} else {
+				super.source(sourceContentTypes.last())
 				return super.build()
 			}
 		}

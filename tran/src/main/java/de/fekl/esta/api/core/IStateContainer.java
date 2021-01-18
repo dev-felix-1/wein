@@ -6,6 +6,13 @@ public interface IStateContainer<S> {
 
 	<O extends IStateChangeOperation<S>> void changeState(O operation);
 
+	@Deprecated
 	IEventQueue<IStateHasChangedEvent<S>> getStateChangedEvents();
+
+	void onStateChangedEvent(IEventListener<IStateHasChangedEvent<S>> listener);
+
+	IEventQueue<IStateHasChangedEvent<S>> receiveChangeEvents();
+	
+	void waitForStateChangeEventsHandled();
 
 }

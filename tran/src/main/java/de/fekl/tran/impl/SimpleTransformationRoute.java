@@ -51,8 +51,24 @@ public class SimpleTransformationRoute<S, T> implements ITransformationRoute<S, 
 		List<IEdge> outgoingEdges = net.getOutgoingEdges(transformer.getId());
 		for (IEdge edge : outgoingEdges) {
 			ITransformer<?, ?> nextNode = net.getNode(edge.getTarget());
-			if (nextNode instanceof IMerger<?>) {
-				// skip validation for now -FIXME
+			if (nextNode instanceof IMerger<?>merger) {
+				List<IContentType<?>> sourceContentTypes = merger.getSourceContentTypes();
+				List<IEdge> incomingEdges = net.getIncomingEdges(merger.getId());
+				if (sourceContentTypes.size() != incomingEdges.size()) {
+					throw new IllegalStateException(String.format(
+							"Merger %s has %s incoming edges (%s) but specifies %s content-types (%s)", merger.getId(),
+							incomingEdges.size(), incomingEdges, sourceContentTypes.size(), sourceContentTypes));
+				}
+				for (int i = 0; i < incomingEdges.size(); i++) {
+					String incoming = incomingEdges.get(i).getSource();
+					IContentType<?> incomingTargetContentType = net.getNode(incoming).getTargetContentType();
+					IContentType<?> mergerSourceContentType = sourceContentTypes.get(i);
+					if (!incomingTargetContentType.equals(mergerSourceContentType)) {
+						throw new IllegalStateException(
+								String.format("(%s targetContentType %s) does not match (%s sourceContentType %s)",
+										merger.getId(), mergerSourceContentType, incoming, incomingTargetContentType));
+					}
+				}
 			} else {
 				if (!nextNode.getSourceContentType().equals(transformer.getTargetContentType())) {
 					throw new IllegalStateException(String.format(

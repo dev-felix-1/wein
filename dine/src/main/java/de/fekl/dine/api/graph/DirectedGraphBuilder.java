@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import de.fekl.dine.api.edge.IEdge;
 import de.fekl.dine.api.edge.IEdgeBuilder;
@@ -17,6 +18,8 @@ import de.fekl.dine.api.node.INodeFactory;
 import de.fekl.dine.api.node.SimpleNodeBuilder;
 
 public class DirectedGraphBuilder<N extends INode> {
+
+	public static final boolean LOOK_UP_NODES_FROM_EDGES = true;
 
 	private class NodeBuilderHolder<F extends INodeFactory<N>, B extends INodeBuilder<N, F, B>> {
 		private final INodeBuilder<N, F, B> nodeBuilder;
@@ -102,6 +105,22 @@ public class DirectedGraphBuilder<N extends INode> {
 			}
 			IEdge edge = edgeBuilderHolder.edgeBuilder.source(entry.getKey()).target(entry.getValue()).build();
 			edges.add(edge);
+		}
+		if (LOOK_UP_NODES_FROM_EDGES) {
+			for (IEdge edge : edges) {
+				List<String> nodeNames = nodes.stream().map(n -> n.getId()).collect(Collectors.toList());
+				List<String> addedNodeNames = new ArrayList<>();
+				if (nodeBuilderHolder != null && nodeBuilderHolder.nodeBuilder != null) {
+					if (!nodeNames.contains(edge.getSource()) && !addedNodeNames.contains(edge.getSource())) {
+						N node = nodeBuilderHolder.nodeBuilder.id(edge.getSource()).build();
+						nodes.add(node);
+					}
+					if (!nodeNames.contains(edge.getTarget()) && !addedNodeNames.contains(edge.getTarget())) {
+						N node = nodeBuilderHolder.nodeBuilder.id(edge.getTarget()).build();
+						nodes.add(node);
+					}
+				}
+			}
 		}
 		return directedGraphFactory.createDirectedGraph(nodes, edges);
 	}

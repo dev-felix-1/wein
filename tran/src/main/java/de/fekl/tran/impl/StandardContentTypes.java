@@ -1,5 +1,7 @@
 package de.fekl.tran.impl;
 
+import java.util.List;
+
 import de.fekl.baut.Precondition;
 import de.fekl.tran.api.core.IContentType;
 
@@ -8,6 +10,16 @@ public class StandardContentTypes {
 	private StandardContentTypes() {
 
 	}
+
+	@SuppressWarnings("rawtypes")
+	public static final IContentType<List> LIST_OF_OBJECTS = new SimpleContentType<List>(List.class,
+			StandardFormats.NONE) {
+
+		@Override
+		public String toString() {
+			return "LIST_OF_OBJECTS";
+		}
+	};
 
 	public static final IContentType<String> STRING = new SimpleContentType<>(String.class, StandardFormats.NONE) {
 

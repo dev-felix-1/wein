@@ -464,6 +464,7 @@ class GRouteBuilderTest {
 		transformerBuilder {
 			id 'E'
 			inputContentType StandardContentTypes.STRING
+			inputContentType StandardContentTypes.STRING
 			outputContentType StandardContentTypes.STRING
 			merge { o -> o?.join(', ') }
 		}
@@ -475,6 +476,7 @@ class GRouteBuilderTest {
 		}
 		transformerBuilder {
 			id 'G'
+			inputContentType StandardContentTypes.STRING
 			inputContentType StandardContentTypes.STRING
 			outputContentType StandardContentTypes.STRING
 			merge { o -> o?.join(', ') }
@@ -542,9 +544,11 @@ class GRouteBuilderTest {
 
 		transformerBuilder {
 			id "Node100".toString()
-			autoSplit true
-			inputContentType StandardContentTypes.STRING
+			for(int i = 1 ; i < 10 ; i++) {
+				inputContentType StandardContentTypes.STRING
+			}
 			outputContentType StandardContentTypes.STRING
+			autoSplit true
 			merge { o -> o?.join(', ') }
 		}
 
@@ -568,7 +572,7 @@ class GRouteBuilderTest {
 		System.err.println(processed1);
 	}
 	@Test
-	public void test95_Performance_2() {
+	public void test95_Performance_2() { 
 		def registry = new SimpleTransformerRegistry();
 		def routeBuilder = new GRouteBuilder()
 		def transformerBuilder = new GTransformerBuilder()
