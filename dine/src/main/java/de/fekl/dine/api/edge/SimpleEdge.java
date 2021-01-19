@@ -39,8 +39,7 @@ public class SimpleEdge implements IEdge {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof IEdge) {
-			IEdge other = (IEdge) obj;
+		if (obj instanceof IEdge other) {
 			return this.getSource().equals(other.getSource()) && this.getTarget().equals(other.getTarget());
 		}
 		return false;

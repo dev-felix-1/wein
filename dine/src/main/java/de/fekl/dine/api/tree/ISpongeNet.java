@@ -1,7 +1,9 @@
 package de.fekl.dine.api.tree;
 
+import java.util.List;
 import java.util.Set;
 
+import de.fekl.dine.api.edge.IEdge;
 import de.fekl.dine.api.graph.IDirectedGraph;
 import de.fekl.dine.api.node.INode;
 
@@ -20,7 +22,9 @@ public interface ISpongeNet<N extends INode> extends IDirectedGraph<N> {
 	Set<N> getLeafs();
 
 	boolean isLeaf(N node);
-	
+
 	boolean isLeaf(String nodeId);
+
+	List<List<IEdge>> getPaths(String sourceNodeId, String targetNodeId);
 
 }

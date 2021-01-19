@@ -1,13 +1,18 @@
 package de.fekl.dine.api.tree;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.fekl.baut.Precondition;
 import de.fekl.dine.api.edge.IEdge;
+import de.fekl.dine.api.edge.SimpleEdge;
 import de.fekl.dine.api.graph.IDirectedGraph;
 import de.fekl.dine.api.node.INode;
 
@@ -18,6 +23,7 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 
 	// caching
 	private Set<N> leafs;
+	private Map<IEdge, List<List<IEdge>>> paths = new HashMap<>();
 
 	public SimpleSpongeNet(IDirectedGraph<N> graph, String startNode) {
 		Precondition.isNotNull(graph, "Parameter %s is null", "graph");
@@ -200,6 +206,29 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 			leafs = collectLeafs(graph, startNode);
 		}
 		return leafs.stream().anyMatch(l -> l.getId().equals(nodeId));
+	}
+
+	@Override
+	public List<List<IEdge>> getPaths(String sourceNodeId, String targetNodeId) {
+		SimpleEdge pathId = new SimpleEdge(sourceNodeId, targetNodeId);
+		return paths.computeIfAbsent(pathId, p -> getPaths(graph, sourceNodeId, targetNodeId, new ArrayList<>()));
+	}
+
+	protected static List<List<IEdge>> getPaths(IDirectedGraph<?> graph, String sourceNodeId, String targetNodeId,
+			List<IEdge> currentTrack) {
+		List<List<IEdge>> resultPaths = new ArrayList<List<IEdge>>();
+		List<IEdge> incoming = graph.getIncomingEdges(targetNodeId);
+		for (IEdge edge : incoming) {
+			List<IEdge> nextTrack = new ArrayList<>(currentTrack);
+			nextTrack.add(edge);
+			if (edge.getSource().equals(sourceNodeId)) {
+				Collections.reverse(nextTrack);
+				resultPaths.add(nextTrack);
+			} else {
+				resultPaths.addAll(getPaths(graph, sourceNodeId, edge.getSource(), nextTrack));
+			}
+		}
+		return resultPaths;
 	}
 
 }
