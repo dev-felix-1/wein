@@ -5,20 +5,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import de.fekl.baut.ILogger;
 import de.fekl.baut.LogManager;
 import de.fekl.baut.RandomNames;
 import de.fekl.dine.api.edge.IEdge;
+import de.fekl.dine.api.edge.conditional.IConditionalEdge;
 import de.fekl.dine.api.node.INode;
 import de.fekl.dine.api.state.IToken;
 import de.fekl.dine.api.state.ITokenFactory;
 import de.fekl.dine.api.state.ITokenStore;
 import de.fekl.dine.api.state.TokenNames;
 import de.fekl.dine.api.tree.ISpongeNet;
+import de.fekl.esta.api.core.IEvent;
+import de.fekl.esta.api.core.IEventListener;
 import de.fekl.esta.api.core.IEventQueue;
 import de.fekl.esta.api.core.IStateContainer;
+import de.fekl.esta.api.core.SimpleEventBus;
 import de.fekl.esta.api.core.SimpleEventQueue;
 import de.fekl.esta.api.core.SimpleStateContainer;
 
@@ -33,43 +38,86 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 
 	private ITokenFactory<T> tokenFactory;
 	private boolean running;
+	private boolean abort;
 	private long stepCounter;
 
-	private final IEventQueue<IEndNodeReachedEvent> endNodesReachedEvents;
-	private final IEventQueue<IProcessStartedEvent> processStartedEvents = new SimpleEventQueue<>(1);
-	private final IEventQueue<IProcessFinishedEvent> processFinishedEvents = new SimpleEventQueue<>(1);
+	private final SimpleEventBus<IEvent> stateChanedEventBus;
+	private final SimpleEventBus<IEvent> processingEventBus;
+
+	private final IEventQueue<IEvent> stateChangedEvents;
+
+	private boolean stateChanedEventBusDaemon = false;
+	private boolean processingEventBusDaemon = false;
 
 	public ColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
 			ITokenFactory<T> tokenFactory) {
 		this.net = net;
 		this.tokenFactory = tokenFactory;
-		stateContainer = new SimpleStateContainer<>(initialState, getNet().getNodes().size() * 2);
 		processingContainerId = RandomNames.getRandomName(ColouredNetProcessingContainer.class.getName(), "processor_",
 				15);
 		running = false;
+		abort = false;
 		stepCounter = 0;
 		// FIXME find all paths from start to end and set it like this
-		endNodesReachedEvents = new SimpleEventQueue<>(64);
-
+		stateChangedEvents = new SimpleEventQueue<>(net.getNodes().size()*6);
+		stateChanedEventBus = new SimpleEventBus<>(net.getNodes().size()*2);
+		processingEventBus = new SimpleEventBus<>(net.getNodes().size());
+		stateChanedEventBus.register(event -> stateChangedEvents.add(event));
+		stateContainer = new SimpleStateContainer<>(initialState, stateChanedEventBus);
 	}
 
 	public void process(T token) {
 		String startNodeId = net.getRoot().getId();
+		if (stateChanedEventBusDaemon) {
+			new Thread(stateChanedEventBus).start();
+		}
+		if (processingEventBusDaemon) {
+			new Thread(processingEventBus).start();
+		}
 		stateContainer.changeState(ColouredNetOperations.putToken(startNodeId, TokenNames.generateTokenName(), token));
 		run();
 	}
 
+	protected void setRunning(boolean running) {
+		this.running = running;
+	}
+
+	public void abort() {
+		abort = true;
+		processingEventBus.post(new ProcessAbortedEvent());
+	}
+
 	public void run() {
-		running = true;
-		processStartedEvents.add(new ProcessStartedEvent());
-		while (running) {
+		setRunning(true);
+		processingEventBus.post(new ProcessStartedEvent());
+		stateChanedEventBus.waitForHandlers();
+		while (running && !abort) {
 			if (running && stateContainer.getCurrentState().getTokenPositions().entrySet().stream()
 					.allMatch(e -> net.isLeaf(e.getValue()))) {
-				running = false;
+				LOG.debug("Stop running because every token is in a final place.");
+				setRunning(false);
 			}
-			step();
+
+			try {
+				IEvent processingEvent = stateChangedEvents.poll(1, TimeUnit.SECONDS);
+				stateChanedEventBus.waitForHandlers();
+				if (processingEvent != null) {
+					step();
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 		}
-		processFinishedEvents.add(new ProcessFinishedEvent());
+		setRunning(false);
+		processingEventBus.post(new ProcessFinishedEvent());
+		stateChanedEventBus.waitForHandlers();
+		processingEventBus.waitForHandlers();
+		shutdown();
+	}
+
+	public void shutdown() {
+		stateChanedEventBus.abort();
+		processingEventBus.abort();
 	}
 
 	private synchronized void step() {
@@ -84,15 +132,6 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 			String tokenId = entry.getKey();
 			handleToken(stateContainer, tokenId, nodeId, false);
 		});
-	}
-
-	protected boolean hasReachedEndNode(String tokenId) {
-		boolean endNodeReached = endNodesReachedEvents.size() > 0;
-		if (endNodeReached) {
-			Set<String> reachedEndNodes = getReachedEndNodes();
-			LOG.debug("End-Nodes reached %s", reachedEndNodes);
-		}
-		return endNodeReached;
 	}
 
 	protected Set<String> getReachedEndNodes() {
@@ -124,34 +163,38 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 			}
 		} else {
 			LOG.debug("Token %s reached an endNode %s.", tokenId, sourceNodeId);
-			endNodesReachedEvents.add(new EndNodeReachedEvent(sourceNodeId, tokenId));
+			processingEventBus.post(new EndNodeReachedEvent(sourceNodeId, tokenId));
 		}
 	}
 
 	protected <C extends IStateContainer<ITokenStore<T>>> void handleTokenTransition(C stateContainer, String tokenId,
 			String sourceNodeId, IEdge edge, boolean copy) {
+
+		boolean shouldTrigger = true;
+		if (edge instanceof IConditionalEdge conditionalEdge) {
+			if (conditionalEdge.getCondition() instanceof IColouredNetProcessingCondition condition) {
+				T token = stateContainer.getCurrentState().getToken(tokenId);
+				N sourceNode = getNet().getNode(sourceNodeId);
+				N targetNode = getNet().getNode(edge.getTarget());
+				shouldTrigger = condition.evaluate(token, sourceNode, targetNode);
+			} else {
+				LOG.debug("Ignoring unsupported Condition %s of type on edge %s...",
+						conditionalEdge.getCondition().getClass().getSimpleName(), edge);
+			}
+		}
+
 		String targetNodeId = edge.getTarget();
 		if (copy) {
 			stateContainer.changeState(ColouredNetOperations.copyToken(targetNodeId, tokenId, tokenFactory));
 		} else {
-			stateContainer.changeState(ColouredNetOperations.moveToken(sourceNodeId, targetNodeId, tokenId));
+			if (shouldTrigger) {
+				stateContainer.changeState(ColouredNetOperations.moveToken(sourceNodeId, targetNodeId, tokenId));
+			}
 		}
 	}
 
 	protected ISpongeNet<N> getNet() {
 		return net;
-	}
-
-	protected IEventQueue<IEndNodeReachedEvent> getEndNodesReachedEvents() {
-		return endNodesReachedEvents;
-	}
-
-	protected IEventQueue<IProcessStartedEvent> getProcessStartedEvents() {
-		return processStartedEvents;
-	}
-
-	protected IEventQueue<IProcessFinishedEvent> getProcessFinishedEvents() {
-		return processFinishedEvents;
 	}
 
 	protected IStateContainer<ITokenStore<T>> getStateContainer() {
@@ -164,6 +207,14 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 
 	public boolean isRunning() {
 		return running;
+	}
+
+	protected void onProcessingEvent(IEventListener<IEvent> listener) {
+		processingEventBus.register(listener);
+	}
+	
+	protected void onStateChangeEvent(IEventListener<IEvent> listener) {
+		stateChanedEventBus.register(listener);
 	}
 
 }

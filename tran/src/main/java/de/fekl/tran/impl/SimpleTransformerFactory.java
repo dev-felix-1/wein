@@ -18,12 +18,6 @@ public class SimpleTransformerFactory implements ITransformerFactory {
 	}
 
 	@Override
-	public <T> IMerger<T> createMerger(List<IContentType<?>> sourceContentTypes, IContentType<T> targetContentType,
-			IMerge<T> transformation, String id) {
-		return new SimpleMerger<T>(sourceContentTypes, targetContentType, transformation, id, false);
-	}
-
-	@Override
 	public <S, T> ITransformer<S, T> createTransformer(IContentType<S> sourceContentType,
 			IContentType<T> targetContentType, ITransformation<S, T> transformation, String id, boolean autoSplit) {
 		return new SimpleTransformer<>(sourceContentType, targetContentType, transformation, id, autoSplit);
@@ -34,6 +28,25 @@ public class SimpleTransformerFactory implements ITransformerFactory {
 			IContentType<T> targetContentType, ITransformation<S, T> transformation) {
 		return createTransformer(sourceContentType, targetContentType, transformation,
 				TransformerNames.generateTransformerName());
+	}
+
+	@Override
+	public <T> IMerger<T> createMerger(List<IContentType<?>> sourceContentTypes, IContentType<T> targetContentType,
+			IMerge<T> transformation, String id) {
+		return createMerger(sourceContentTypes, targetContentType, transformation, id, false);
+	}
+
+	@Override
+	public <T> IMerger<T> createMerger(List<IContentType<?>> sourceContentTypes, IContentType<T> targetContentType,
+			IMerge<T> transformation, String id, boolean autoSplit) {
+		return new SimpleMerger<T>(sourceContentTypes, targetContentType, transformation, id, autoSplit);
+	}
+
+	@Override
+	public <T> IMerger<T> createMerger(List<IContentType<?>> sourceContentTypes, IContentType<T> targetContentType,
+			IMerge<T> transformation) {
+		return createMerger(sourceContentTypes, targetContentType, transformation,
+				TransformerNames.generateTransformerName(), false);
 	}
 
 }

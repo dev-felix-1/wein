@@ -14,8 +14,14 @@ import de.fekl.baut.Precondition;
 
 public class SimpleTokenStore<T extends IToken> implements ITokenStore<T> {
 
+	// NodeId to Set of Token-Objects
 	private final Map<String, Set<T>> tokenMapping;
+	// TokenId to Token-Object
 	private final Map<String, T> tokens;
+
+	// CACHING - TokenId to NodeId
+	private Map<String, String> tokenPositions = new HashMap<>();
+	private boolean tokenPositionsValid = false;
 
 	public SimpleTokenStore(SimpleTokenStore<T> toCopyFrom) {
 		super();
@@ -40,6 +46,7 @@ public class SimpleTokenStore<T extends IToken> implements ITokenStore<T> {
 		tokens.put(token.getId(), token);
 		Set<T> tokenSet = tokenMapping.computeIfAbsent(nodeId, (id) -> new HashSet<>());
 		tokenSet.add(token);
+		tokenPositionsValid = false;
 	}
 
 	@Override
@@ -54,16 +61,19 @@ public class SimpleTokenStore<T extends IToken> implements ITokenStore<T> {
 	}
 
 	@Override
-	public void removeToken(String nodeId, String tokenId) {
+	public synchronized void removeToken(String nodeId, String tokenId) {
 		Precondition.isNotEmpty(nodeId);
 		Precondition.isNotEmpty(nodeId);
-		tokens.remove(tokenId);
-		Set<T> set = tokenMapping.get(nodeId);
-		if (set != null) {
-			Optional<T> token = set.stream().filter(t -> t.getId().equals(tokenId)).findFirst();
-			if (token.isPresent()) {
-				set.remove(token.get());
+		T removed = tokens.remove(tokenId);
+		if (removed!=null) {
+			Set<T> set = tokenMapping.get(nodeId);
+			if (set != null) {
+				Optional<T> token = set.stream().filter(t -> t.getId().equals(tokenId)).findFirst();
+				if (token.isPresent()) {
+					set.remove(token.get());
+				}
 			}
+			tokenPositionsValid = false;
 		}
 	}
 
@@ -87,7 +97,15 @@ public class SimpleTokenStore<T extends IToken> implements ITokenStore<T> {
 	}
 
 	@Override
-	public Map<String, String> getTokenPositions() {
+	public synchronized Map<String, String> getTokenPositions() {
+		if (!tokenPositionsValid) {
+			tokenPositions = calculateTokenPositions();
+			tokenPositionsValid = true;
+		}
+		return tokenPositions;
+	}
+
+	private Map<String, String> calculateTokenPositions() {
 		return tokens.entrySet().stream().collect(Collectors.<Entry<String, T>, String, String>toMap(e -> e.getKey(),
 				e -> getPosition(e.getValue().getId())));
 	}

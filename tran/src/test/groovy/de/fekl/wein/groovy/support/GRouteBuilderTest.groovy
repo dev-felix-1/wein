@@ -464,6 +464,7 @@ class GRouteBuilderTest {
 		transformerBuilder {
 			id 'E'
 			inputContentType StandardContentTypes.STRING
+			inputContentType StandardContentTypes.STRING
 			outputContentType StandardContentTypes.STRING
 			merge { o -> o?.join(', ') }
 		}
@@ -475,6 +476,7 @@ class GRouteBuilderTest {
 		}
 		transformerBuilder {
 			id 'G'
+			inputContentType StandardContentTypes.STRING
 			inputContentType StandardContentTypes.STRING
 			outputContentType StandardContentTypes.STRING
 			merge { o -> o?.join(', ') }
@@ -542,9 +544,11 @@ class GRouteBuilderTest {
 
 		transformerBuilder {
 			id "Node100".toString()
-			autoSplit true
-			inputContentType StandardContentTypes.STRING
+			for(int i = 1 ; i < 10 ; i++) {
+				inputContentType StandardContentTypes.STRING
+			}
 			outputContentType StandardContentTypes.STRING
+			autoSplit true
 			merge { o -> o?.join(', ') }
 		}
 
@@ -569,6 +573,9 @@ class GRouteBuilderTest {
 	}
 	@Test
 	public void test95_Performance_2() {
+		int numberOfRoutes = 100
+		int numberOfTransformers = 100
+		
 		def registry = new SimpleTransformerRegistry();
 		def routeBuilder = new GRouteBuilder()
 		def transformerBuilder = new GTransformerBuilder()
@@ -577,7 +584,7 @@ class GRouteBuilderTest {
 		transformerBuilder.transformerRegistry = registry
 		transformerBuilder.autoRegister = true
 
-		for (int i = 0 ; i < 1000 ; i++) {
+		for (int i = 0 ; i < numberOfTransformers ; i++) {
 			def si = i
 			transformerBuilder {
 				id "Node$i".toString()
@@ -587,15 +594,15 @@ class GRouteBuilderTest {
 			}
 		}
 
-		def route1 = routeBuilder {
-			edges {
-				for(int i = 1 ; i < 999 ; i++) {
-					edge("Node${i}","Node${i+1}")
+		for(int a = 0; a < numberOfRoutes ; a++) {
+			def route1 = routeBuilder {
+				edges {
+					for(int i = 1 ; i < numberOfTransformers -1 ; i++) {
+						edge("Node${i}","Node${i+1}")
+					}
 				}
 			}
+			def processed1 = new TransformationRouteProcessor().process(0, route1);
 		}
-
-		def processed1 = new TransformationRouteProcessor().process(0, route1);
-		System.err.println(processed1);
 	}
 }

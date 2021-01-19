@@ -3,17 +3,17 @@ package de.fekl.esta.api.core;
 import de.fekl.baut.Precondition;
 
 public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
-	
+
 	private IStateContainerContext context;
 	private S currentState;
-	private IEventQueue<IStateHasChangedEvent<S>> stateChangedEvents;
+	private IEventBus<IEvent> eventBus;
 
-	protected AbstractStateContainer(S initialState, IEventQueue<IStateHasChangedEvent<S>> stateChangedEvents) {
+	protected AbstractStateContainer(S initialState, IEventBus<IEvent> eventBus) {
 		super();
 		Precondition.isNotNull(initialState);
-		Precondition.isNotNull(stateChangedEvents);
+		Precondition.isNotNull(eventBus);
 		this.currentState = initialState;
-		this.stateChangedEvents = stateChangedEvents;
+		this.eventBus = eventBus;
 	}
 
 	@Override
@@ -26,12 +26,12 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 		S sourceState = currentState;
 		S targetState = operation.apply(currentState);
 		currentState = targetState;
-		stateChangedEvents.add(new SimpleStateChangedEvent<>(operation, sourceState, targetState));
+		postStateChangedEvent(operation, sourceState, targetState);
 	}
 
-	@Override
-	public IEventQueue<IStateHasChangedEvent<S>> getStateChangedEvents() {
-		return stateChangedEvents;
+	protected <O extends IStateChangeOperation<S>> void postStateChangedEvent(O operation, S sourceState,
+			S targetState) {
+		eventBus.post(new SimpleStateChangedEvent<>(operation, sourceState, targetState));
 	}
 
 }

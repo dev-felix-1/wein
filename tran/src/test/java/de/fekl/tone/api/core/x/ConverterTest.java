@@ -55,6 +55,9 @@ public class ConverterTest {
 
 		@Override
 		public String transform(Integer source) {
+			if (source == null) {
+				return null;
+			}
 			return String.valueOf(source);
 		}
 
@@ -71,6 +74,9 @@ public class ConverterTest {
 
 		@Override
 		public Integer transform(String source) {
+			if (source == null) {
+				return null;
+			}
 			return Integer.parseInt(source);
 		}
 

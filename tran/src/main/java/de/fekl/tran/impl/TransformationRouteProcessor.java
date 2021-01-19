@@ -36,6 +36,7 @@ public class TransformationRouteProcessor {
 		} catch (TimeoutException e) {
 			throw new IllegalStateException(e);
 		}
+		processingContainer.shutdown();
 		return processedMessageContainer.getMessage();
 	}
 
@@ -45,17 +46,25 @@ public class TransformationRouteProcessor {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		executor.submit(() -> processingContainer.process(messageContainer));
 		List<IMessage<T>> resultList = new ArrayList<>();
+		System.err.println("hello1");
 		processingContainer.waitForStart();
-		while (processingContainer.isRunning()) {
+		System.err.println("hello2");
+		while (processingContainer.isRunning()) { 
 			try {
-				resultList.add(processingContainer.getNextProcessed().getMessage());
+				resultList.add(processingContainer.getNextProcessed().getMessage()); 
 			} catch (TimeoutException e) {
 				throw new IllegalStateException(e);
 			}
 		}
+		System.err.println("hello3");
 		processingContainer.waitForFinish();
+		System.err.println("hello4");
 		resultList.addAll(processingContainer.getAllCurrentlyProcessed().stream()
 				.map(mc -> (IMessage<T>) mc.getMessage()).collect(Collectors.toList()));
+		System.err.println("hello5");
+		processingContainer.shutdown();
+		System.err.println("hello6");
+		executor.shutdown();
 		return resultList;
 	}
 

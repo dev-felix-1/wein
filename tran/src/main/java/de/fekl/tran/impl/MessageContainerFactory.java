@@ -2,7 +2,6 @@ package de.fekl.tran.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import de.fekl.dine.api.state.ITokenFactory;
 import de.fekl.tran.api.core.IAutoMergedMessage;

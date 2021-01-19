@@ -31,9 +31,7 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 		if (!graph.contains(startNode)) {
 			throw new IllegalArgumentException("startNode is not part of the graph");
 		}
-		if (!isConnected(graph)) {
-			throw new IllegalArgumentException("graph is not fully connected :\n" + graph.toString());
-		}
+		checkIsConnected(graph, startNode);
 		if (isCyclic(graph)) {
 			throw new IllegalArgumentException("graph is cyclic");
 		}
@@ -41,25 +39,54 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 		this.startNode = startNode;
 	}
 
-	private static <N extends INode> boolean isConnected(IDirectedGraph<N> graph) {
-		N next = graph.getNodes().iterator().next();
-		Set<String> collectChildren = collectChildrenUndirected(graph, next.getId());
-		return collectChildren.size() == graph.getNodes().size();
+	private static <N extends INode> void checkIsConnected(IDirectedGraph<N> graph, String startNode) {
+		Set<String> collectChildren = collectChildrenUndirected(graph, startNode);
+		if (collectChildren.size() != graph.getNodes().size()) {
+			ArrayList<String> nodeIds = new ArrayList<>(graph.getNodeIds());
+			nodeIds.removeAll(collectChildren);
+			throw new IllegalArgumentException(
+					String.format("Found %s unconnected nodes: %s", nodeIds.size(), nodeIds));
+		}
 	}
 
 	private static <N extends INode> void collectChildrenUndirected(IDirectedGraph<N> graph, String startNode,
 			Set<String> visited) {
-		visited.add(startNode);
-		for (IEdge edge : graph.getOutgoingEdges(startNode)) {
+		String currentOut = collectChildrenOnewayOutgoingPath(graph, startNode, visited);
+		for (IEdge edge : graph.getOutgoingEdges(currentOut)) {
 			if (!visited.contains(edge.getTarget())) {
 				collectChildrenUndirected(graph, edge.getTarget(), visited);
 			}
 		}
-		for (IEdge edge : graph.getIncomingEdges(startNode)) {
+		String currentIn = collectChildrenOnewayIncomingPath(graph, startNode, visited);
+		for (IEdge edge : graph.getIncomingEdges(currentIn)) {
 			if (!visited.contains(edge.getSource())) {
 				collectChildrenUndirected(graph, edge.getSource(), visited);
 			}
 		}
+	}
+
+	private static <N extends INode> String collectChildrenOnewayOutgoingPath(IDirectedGraph<N> graph, String startNode,
+			Set<String> visited) {
+		String current = startNode;
+		List<IEdge> outgoingEdges = null;
+		while ((outgoingEdges = graph.getOutgoingEdges(current)).size() == 1) {
+			visited.add(current);
+			current = outgoingEdges.get(0).getTarget();
+		}
+		visited.add(current);
+		return current;
+	}
+
+	private static <N extends INode> String collectChildrenOnewayIncomingPath(IDirectedGraph<N> graph, String startNode,
+			Set<String> visited) {
+		String current = startNode;
+		List<IEdge> incomingEdges = null;
+		while ((incomingEdges = graph.getIncomingEdges(current)).size() == 1) {
+			visited.add(current);
+			current = incomingEdges.get(0).getSource();
+		}
+		visited.add(current);
+		return current;
 	}
 
 	private static <N extends INode> Set<String> collectChildrenUndirected(IDirectedGraph<N> graph, String startNode) {
@@ -69,14 +96,24 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 	}
 
 	private static <N extends INode> void collectLeafs(IDirectedGraph<N> graph, N startNode, Set<N> visited) {
-		List<IEdge> outgoingEdges = graph.getOutgoingEdges(startNode.getId());
+		String walkThroughId = walkThroughOneWayPaths(graph, startNode.getId());
+		List<IEdge> outgoingEdges = graph.getOutgoingEdges(walkThroughId);
 		if (outgoingEdges.isEmpty()) {
-			visited.add(startNode);
+			visited.add(graph.getNode(walkThroughId));
 		} else {
 			for (IEdge edge : outgoingEdges) {
 				collectLeafs(graph, graph.getNode(edge.getTarget()), visited);
 			}
 		}
+	}
+
+	private static <N extends INode> String walkThroughOneWayPaths(IDirectedGraph<N> graph, String startNodeId) {
+		String current = startNodeId;
+		List<IEdge> outgoingEdges;
+		while ((outgoingEdges = graph.getOutgoingEdges(current)).size() == 1) {
+			current = outgoingEdges.get(0).getTarget();
+		}
+		return current;
 	}
 
 	private static <N extends INode> Set<N> collectLeafs(IDirectedGraph<N> graph, String startNode) {
@@ -91,8 +128,29 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 	}
 
 	private static <N extends INode> boolean hasCycle(IDirectedGraph<N> graph, String startNode, Set<String> visited) {
-		visited.add(startNode);
-		for (IEdge edge : graph.getOutgoingEdges(startNode)) {
+
+		// try to search on one way path first
+		String current = startNode;
+		List<IEdge> outgoingEdges = graph.getOutgoingEdges(current);
+		while ((outgoingEdges = graph.getOutgoingEdges(current)).size() == 1) {
+			visited.add(current);
+			IEdge edge = outgoingEdges.get(0);
+			if (edge.getSource().equals(edge.getTarget())) {
+				return true;
+			}
+			if (visited.contains(edge.getTarget())) {
+				return true;
+			}
+			current = edge.getTarget();
+		}
+
+		visited.add(current);
+
+		// explore
+		for (IEdge edge : graph.getOutgoingEdges(current)) {
+			if (edge.getSource().equals(edge.getTarget())) {
+				return true;
+			}
 			if (visited.contains(edge.getTarget())) {
 				return true;
 			} else {
@@ -217,18 +275,37 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 	protected static List<List<IEdge>> getPaths(IDirectedGraph<?> graph, String sourceNodeId, String targetNodeId,
 			List<IEdge> currentTrack) {
 		List<List<IEdge>> resultPaths = new ArrayList<List<IEdge>>();
-		List<IEdge> incoming = graph.getIncomingEdges(targetNodeId);
-		for (IEdge edge : incoming) {
+		List<IEdge> incoming;
+		String nextNodeId = targetNodeId;
+		
+		while((incoming = graph.getIncomingEdges(nextNodeId)).size() == 1) {
 			List<IEdge> nextTrack = new ArrayList<>(currentTrack);
+			IEdge edge = incoming.get(0);
 			nextTrack.add(edge);
 			if (edge.getSource().equals(sourceNodeId)) {
 				Collections.reverse(nextTrack);
 				resultPaths.add(nextTrack);
-			} else {
+				break;
+			}else {
 				resultPaths.addAll(getPaths(graph, sourceNodeId, edge.getSource(), nextTrack));
+			}
+			
+		}
+		
+		for (IEdge edge : incoming) {
+			List<IEdge> nextTrack = new ArrayList<>(currentTrack);
+			nextTrack.add(edge);
+			if (edge.getSource().equals(nextNodeId)) {
+				Collections.reverse(nextTrack);
+				resultPaths.add(nextTrack);
+			} else {
+				resultPaths.addAll(getPaths(graph, nextNodeId, edge.getSource(), nextTrack));
 			}
 		}
 		return resultPaths;
+	}
+	public Collection<String> getNodeIds() {
+		return graph.getNodeIds();
 	}
 
 }

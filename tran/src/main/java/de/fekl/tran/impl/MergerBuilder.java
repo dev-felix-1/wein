@@ -53,11 +53,10 @@ public class MergerBuilder<T> extends AbstractNodeBuilder<ITransformer<?, ?>, IT
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	public IMerger<T> doBuild() {
 		if (getId() == null || getId().isBlank()) {
 			id(TransformerNames.generateTransformerName());
 		}
-		return getNodeFactory().createMerger(sourceContentTypes, targetContentType, transformation, getId());
+		return getNodeFactory().createMerger(sourceContentTypes, targetContentType, transformation, getId(),autoSplit);
 	}
 }

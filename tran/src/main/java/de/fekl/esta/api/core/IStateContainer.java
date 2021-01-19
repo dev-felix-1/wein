@@ -6,6 +6,4 @@ public interface IStateContainer<S> {
 
 	<O extends IStateChangeOperation<S>> void changeState(O operation);
 
-	IEventQueue<IStateHasChangedEvent<S>> getStateChangedEvents();
-
 }
