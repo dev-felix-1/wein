@@ -277,33 +277,32 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 		List<List<IEdge>> resultPaths = new ArrayList<List<IEdge>>();
 		List<IEdge> incoming;
 		String nextNodeId = targetNodeId;
-		
-		while((incoming = graph.getIncomingEdges(nextNodeId)).size() == 1) {
-			List<IEdge> nextTrack = new ArrayList<>(currentTrack);
+		List<IEdge> nextTrack = new ArrayList<>(currentTrack);
+
+		while ((incoming = graph.getIncomingEdges(nextNodeId)).size() == 1) {
 			IEdge edge = incoming.get(0);
 			nextTrack.add(edge);
-			if (edge.getSource().equals(sourceNodeId)) {
+			nextNodeId = edge.getSource();
+			if (nextNodeId.equals(sourceNodeId)) {
 				Collections.reverse(nextTrack);
 				resultPaths.add(nextTrack);
-				break;
-			}else {
-				resultPaths.addAll(getPaths(graph, sourceNodeId, edge.getSource(), nextTrack));
+				return resultPaths;
 			}
-			
 		}
-		
+
 		for (IEdge edge : incoming) {
-			List<IEdge> nextTrack = new ArrayList<>(currentTrack);
-			nextTrack.add(edge);
+			List<IEdge> nextTrackSplit = new ArrayList<>(nextTrack);
+			nextTrackSplit.add(edge);
 			if (edge.getSource().equals(nextNodeId)) {
-				Collections.reverse(nextTrack);
-				resultPaths.add(nextTrack);
+				Collections.reverse(nextTrackSplit);
+				resultPaths.add(nextTrackSplit);
 			} else {
-				resultPaths.addAll(getPaths(graph, nextNodeId, edge.getSource(), nextTrack));
+				resultPaths.addAll(getPaths(graph, sourceNodeId, edge.getSource(), nextTrackSplit));
 			}
 		}
 		return resultPaths;
 	}
+
 	public Collection<String> getNodeIds() {
 		return graph.getNodeIds();
 	}
