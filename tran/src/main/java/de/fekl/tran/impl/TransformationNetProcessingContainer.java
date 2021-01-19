@@ -12,13 +12,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-
 import de.fekl.dine.api.edge.IEdge;
 import de.fekl.dine.api.state.ITokenStore;
 import de.fekl.dine.api.state.SimpleTokenStore;
 import de.fekl.dine.api.tree.ISpongeNet;
 import de.fekl.esta.api.core.IStateChangeOperation;
 import de.fekl.esta.api.core.IStateContainer;
+import de.fekl.esta.api.core.IStateHasChangedEvent;
 import de.fekl.sepe.ColouredNetOperations;
 import de.fekl.sepe.ColouredNetProcessingContainer;
 import de.fekl.sepe.IEndNodeReachedEvent;
@@ -44,12 +44,14 @@ public class TransformationNetProcessingContainer
 			ITokenStore<MessageContainer> initialState) {
 		super(net, initialState, new MessageContainerFactory());
 
-		getStateContainer().onStateChangedEvent(event -> {
-			if (event.getSourceOperation() instanceof ITokenTransitionOperation<MessageContainer>tokenTransition) {
-				tokenTransition.getTransitionedToken().forEach(t -> {
-					System.err.println(tokenTransition);
-					handleTransformation(getNet().getNode(tokenTransition.getTargetNodeId()), t);
-				});
+		onStateChangeEvent(event -> {
+			if (event instanceof IStateHasChangedEvent<?>stateChangedEvent) {
+				if (stateChangedEvent.getSourceOperation() instanceof ITokenTransitionOperation<?>tokenTransition) {
+					tokenTransition.getTransitionedToken().forEach(t -> {
+						handleTransformation(getNet().getNode(tokenTransition.getTargetNodeId()),
+								(IMessageContainer) t);
+					});
+				}
 			}
 		});
 
@@ -87,7 +89,7 @@ public class TransformationNetProcessingContainer
 		MessageContainer token = stateContainer.getCurrentState().getToken(tokenId);
 		if (token != null) {
 			if (!tokensAwaitingMerge.containsKey(tokenId)) {
-				//skip
+				// skip
 			}
 			if (node.isAutoSplit()) {
 				super.handleToken(stateContainer, tokenId, sourceNodeId, true);
@@ -135,9 +137,8 @@ public class TransformationNetProcessingContainer
 	}
 
 	public MessageContainer getNextProcessed() throws InterruptedException, TimeoutException {
-		MessageContainer poll = processedTokens.take();
-				//.poll(3, TimeUnit.SECONDS);
-		if(poll == null) {
+		MessageContainer poll = processedTokens.poll(3, TimeUnit.SECONDS);
+		if (poll == null) {
 			throw new TimeoutException();
 		}
 		return poll;
@@ -159,4 +160,5 @@ public class TransformationNetProcessingContainer
 	public void waitForFinish() throws InterruptedException {
 		waitForFinish.await();
 	}
+	
 }

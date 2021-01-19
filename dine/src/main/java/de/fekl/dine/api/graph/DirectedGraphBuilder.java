@@ -109,15 +109,17 @@ public class DirectedGraphBuilder<N extends INode> {
 		if (LOOK_UP_NODES_FROM_EDGES) {
 			for (IEdge edge : edges) {
 				List<String> nodeNames = nodes.stream().map(n -> n.getId()).collect(Collectors.toList());
-				List<String> addedNodeNames = new ArrayList<>();
+				List<String> addedNodeNames = new ArrayList<>(edges.size()/2);
 				if (nodeBuilderHolder != null && nodeBuilderHolder.nodeBuilder != null) {
 					if (!nodeNames.contains(edge.getSource()) && !addedNodeNames.contains(edge.getSource())) {
 						N node = nodeBuilderHolder.nodeBuilder.id(edge.getSource()).build();
 						nodes.add(node);
+						addedNodeNames.add(edge.getSource());
 					}
 					if (!nodeNames.contains(edge.getTarget()) && !addedNodeNames.contains(edge.getTarget())) {
 						N node = nodeBuilderHolder.nodeBuilder.id(edge.getTarget()).build();
 						nodes.add(node);
+						addedNodeNames.add(edge.getTarget());
 					}
 				}
 			}

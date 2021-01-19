@@ -13,5 +13,9 @@ public class LogManager {
 	public ILogger getLogger() {
 		return logger;
 	}
+	
+	public void setLogger(ILogger logger) {
+		this.logger = logger;
+	}
 
 }

@@ -79,7 +79,7 @@ public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 				result.add(edge);
 			}
 		}
-		return result;
+		return Collections.unmodifiableList(result);
 	}
 
 	private static List<IEdge> computeIncomingEdges(List<IEdge> edges, String nodeName) {
@@ -89,7 +89,7 @@ public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 				result.add(edge);
 			}
 		}
-		return result;
+		return Collections.unmodifiableList(result);
 	}
 
 	@Override

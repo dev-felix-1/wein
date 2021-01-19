@@ -2,7 +2,6 @@ package de.fekl.dine.api.tree;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -131,6 +130,9 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 		while ((outgoingEdges = graph.getOutgoingEdges(current)).size() == 1) {
 			visited.add(current);
 			IEdge edge = outgoingEdges.get(0);
+			if (edge.getSource().equals(edge.getTarget())) {
+				return true;
+			}
 			if (visited.contains(edge.getTarget())) {
 				return true;
 			}
@@ -141,6 +143,9 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 
 		// explore
 		for (IEdge edge : graph.getOutgoingEdges(current)) {
+			if (edge.getSource().equals(edge.getTarget())) {
+				return true;
+			}
 			if (visited.contains(edge.getTarget())) {
 				return true;
 			} else {

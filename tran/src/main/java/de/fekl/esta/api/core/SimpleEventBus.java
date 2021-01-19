@@ -13,33 +13,27 @@ public class SimpleEventBus<E extends IEvent> implements IEventBus<E>, Runnable 
 	private boolean abort;
 
 	private final IEventQueue<E> internalQueue;
-	private final int capacity;
 
 	public CountDownLatch waitForHandlersLatch;
 
 	public SimpleEventBus(int capacity) {
 		this.running = false;
 		this.abort = false;
-		this.capacity = capacity;
 		this.internalQueue = new SimpleEventQueue<>(capacity);
 	}
 
 	private final List<IEventListener<E>> listeners = new ArrayList<>();
-	private final List<IEventQueue<E>> subscriptions = new ArrayList<>();
 
 	ReentrantLock lock = new ReentrantLock();
 	Condition handlersFinish = lock.newCondition();
 
 	@Override
-	public IEventQueue<E> subscribe() {
-		SimpleEventQueue<E> sub = new SimpleEventQueue<>(capacity);
-		subscriptions.add(sub);
-		return sub;
-	}
-
-	@Override
 	public void post(E event) {
-		internalQueue.add(event);
+		if (running) {
+			internalQueue.add(event);
+		} else {
+			handleEvent(event);
+		}
 	}
 
 	@Override
@@ -54,20 +48,14 @@ public class SimpleEventBus<E extends IEvent> implements IEventBus<E>, Runnable 
 	public void run() {
 		if (!running) {
 			running = true;
-			while (running) {
-				if (abort) {
-					running = false;
-				}
+			while (running && !abort) {
 				try {
 					E event = internalQueue.poll(1, TimeUnit.SECONDS);
-					if (event != null) {
-						for (IEventQueue<E> sub : subscriptions) {
-							sub.add(event);
-						}
+					if (!abort) {
 						waitForHandlersLatch = new CountDownLatch(1);
-						for (IEventListener<E> listener : listeners) {
-							listener.handleEvent(event);
-						}
+						System.err.println("start handle...");
+						handleEvent(event);
+						System.err.println("end handle...");
 						waitForHandlersLatch.countDown();
 					}
 				} catch (InterruptedException e) {
@@ -77,28 +65,31 @@ public class SimpleEventBus<E extends IEvent> implements IEventBus<E>, Runnable 
 		} else {
 			throw new IllegalStateException("Eventbus is already running.");
 		}
+		System.err.println("Daemon exit...");
+		running = false;
 	}
 
-	@Override
-	public int getNumberOfWaitingEvents() {
-		return internalQueue.size();
-	}
-
-	@Override
-	public IEventQueue<E> getWaitingEvents() {
-		return internalQueue;
+	protected void handleEvent(E event) {
+		if (event != null) {
+			for (IEventListener<E> listener : listeners) {
+				listener.handleEvent(event);
+			}
+		}
 	}
 
 	@Override
 	public synchronized void waitForHandlers() {
-		try {
-			if (waitForHandlersLatch != null) {
-				waitForHandlersLatch.await();
+		if (running) {
+			try {
+				if (waitForHandlersLatch != null) {
+					System.err.println("waiting for handler...");
+					waitForHandlersLatch.await();
+					System.err.println("handlers done.");
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 			}
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
 		}
-
 	}
 
 }

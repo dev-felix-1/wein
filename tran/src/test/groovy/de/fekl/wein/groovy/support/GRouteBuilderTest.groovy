@@ -573,8 +573,8 @@ class GRouteBuilderTest {
 	}
 	@Test
 	public void test95_Performance_2() {
-		int numberOfRoutes = 200
-		int numberOfTransformers = 200
+		int numberOfRoutes = 100
+		int numberOfTransformers = 100
 		
 		def registry = new SimpleTransformerRegistry();
 		def routeBuilder = new GRouteBuilder()
