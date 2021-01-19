@@ -59,9 +59,17 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 		abort = false;
 		stepCounter = 0;
 		// FIXME find all paths from start to end and set it like this
-		stateChangedEvents = new SimpleEventQueue<>(net.getNodes().size()*6);
-		stateChanedEventBus = new SimpleEventBus<>(net.getNodes().size()*2);
-		processingEventBus = new SimpleEventBus<>(net.getNodes().size());
+		stateChangedEvents = new SimpleEventQueue<>(net.getNodes().size() * 6);
+		if (stateChanedEventBusDaemon) {
+			stateChanedEventBus = new SimpleEventBus<>(net.getNodes().size() * 2);
+		} else {
+			stateChanedEventBus = new SimpleEventBus<>(1);
+		}
+		if (processingEventBusDaemon) {
+			processingEventBus = new SimpleEventBus<>(net.getLeafs().size() * 2);
+		} else {
+			processingEventBus = new SimpleEventBus<>(1);
+		}
 		stateChanedEventBus.register(event -> stateChangedEvents.add(event));
 		stateContainer = new SimpleStateContainer<>(initialState, stateChanedEventBus);
 	}
@@ -212,7 +220,7 @@ public class ColouredNetProcessingContainer<N extends INode, T extends IToken> {
 	protected void onProcessingEvent(IEventListener<IEvent> listener) {
 		processingEventBus.register(listener);
 	}
-	
+
 	protected void onStateChangeEvent(IEventListener<IEvent> listener) {
 		stateChanedEventBus.register(listener);
 	}
