@@ -1,5 +1,7 @@
 package de.fekl.wein.api.core;
 
+import java.util.Objects;
+
 import de.fekl.baut.Precondition;
 
 public class SimpleWsOperationIdentifier implements IWsOperationIdentifier {
@@ -28,6 +30,19 @@ public class SimpleWsOperationIdentifier implements IWsOperationIdentifier {
 	@Override
 	public String toString() {
 		return String.format("%s{name=%s,endpoint=%s}", this.getClass().getSimpleName(), name, endpoint);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(IWsEndpointIdentifier.class, name, endpoint);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof IWsOperationIdentifier other) {
+			return name.equals(other.getName()) && endpoint.equals(other.getEndpoint());
+		}
+		return false;
 	}
 
 }

@@ -11,9 +11,9 @@ public class TransformationRouteBuilder<S, T> {
 	private String id;
 	private IContentType<S> source;
 	private IContentType<T> target;
-	private ISpongeNet<ITransformer<?,?>> transformationNet;
+	private ISpongeNet<ITransformer<?, ?>> transformationNet;
 
-	public TransformationRouteBuilder(SpongeNetBuilder<ITransformer<?,?>> netBuilder) {
+	public TransformationRouteBuilder(SpongeNetBuilder<ITransformer<?, ?>> netBuilder) {
 		this();
 		transformation(netBuilder);
 	}
@@ -32,16 +32,16 @@ public class TransformationRouteBuilder<S, T> {
 		return this;
 	}
 
-	public TransformationRouteBuilder<S, T> transformation(ISpongeNet<ITransformer<?,?>> transformationNet) {
+	public TransformationRouteBuilder<S, T> transformation(ISpongeNet<ITransformer<?, ?>> transformationNet) {
 		this.transformationNet = transformationNet;
 		return this;
 	}
 
-	public TransformationRouteBuilder<S, T> transformation(SpongeNetBuilder<ITransformer<?,?>> netBuilder) {
+	public TransformationRouteBuilder<S, T> transformation(SpongeNetBuilder<ITransformer<?, ?>> netBuilder) {
 		this.transformationNet = netBuilder.build();
 		return this;
 	}
-	
+
 	public TransformationRouteBuilder<S, T> id(String id) {
 		this.id = id;
 		return this;
@@ -58,6 +58,10 @@ public class TransformationRouteBuilder<S, T> {
 		if (target == null) {
 			target = (IContentType<T>) transformationNet.getLeafs().iterator().next().getTargetContentType();
 		}
-		return new SimpleTransformationRoute<S,T>(id,source, target, transformationNet);
+		return new SimpleTransformationRoute<S, T>(id, source, target, transformationNet);
+	}
+
+	protected String getId() {
+		return id;
 	}
 }

@@ -1,5 +1,7 @@
 package de.fekl.wein.api.core;
 
+import java.util.Objects;
+
 import de.fekl.baut.Precondition;
 
 public class SimpleWsEndpointIdentifier implements IWsEndpointIdentifier {
@@ -28,6 +30,19 @@ public class SimpleWsEndpointIdentifier implements IWsEndpointIdentifier {
 	@Override
 	public String toString() {
 		return String.format("%s{name=%s,version=%s}", this.getClass().getSimpleName(), name, version);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(IWsEndpointIdentifier.class, name, version);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof IWsEndpointIdentifier other) {
+			return name.equals(other.getName()) && version.equals(other.getVersion());
+		}
+		return false;
 	}
 
 }

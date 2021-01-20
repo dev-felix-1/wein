@@ -33,7 +33,7 @@ public class WsOperationIdentifierBuilder {
 		return this;
 	}
 
-	public IWsOperationIdentifier buildOperation() {
+	public IWsOperationIdentifier build() {
 		if (endpoint != null) {
 			return new SimpleWsOperationIdentifier(endpoint, name);
 		} else {

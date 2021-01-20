@@ -8,7 +8,7 @@ public class WsEndpointIdentifierBuilder {
 	private String name;
 	private String version;
 
-	public String getName() {
+	protected String getName() {
 		return name;
 	}
 
@@ -17,7 +17,7 @@ public class WsEndpointIdentifierBuilder {
 		return this;
 	}
 
-	public String getVersion() {
+	protected String getVersion() {
 		return version;
 	}
 
