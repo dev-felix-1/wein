@@ -8,11 +8,12 @@ import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import de.fekl.dine.api.edge.IEdge;
-import de.fekl.dine.api.edge.SimpleEdge;
-import de.fekl.dine.api.graph.SimpleDirectedGraph;
-import de.fekl.dine.api.node.INode;
-import de.fekl.dine.api.node.SimpleNode;
+import de.fekl.dine.core.api.edge.IEdge;
+import de.fekl.dine.core.api.node.INode;
+import de.fekl.dine.core.impl.edge.SimpleEdge;
+import de.fekl.dine.core.impl.graph.SimpleDirectedGraph;
+import de.fekl.dine.core.impl.node.SimpleNode;
+import de.fekl.dine.core.impl.sponge.SimpleSpongeNet;
 
 public class SimpleSpongeNetTest {
 	

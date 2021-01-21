@@ -1,6 +1,6 @@
 package de.fekl.wein.api.core;
 
-import de.fekl.baut.RandomNames;
+import de.fekl.dine.util.RandomNames;
 
 public class ModuleNames {
 

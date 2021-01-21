@@ -1,7 +1,7 @@
 package de.fekl.wein.groovy.support
 
-import de.fekl.baut.LogManager
-import de.fekl.baut.NullLogger
+import de.fekl.stat.util.LogManager
+import de.fekl.stat.util.NullLogger
 import de.fekl.tran.groovy.support.GRouteBuilder
 import de.fekl.tran.groovy.support.GTransformerBuilder
 import de.fekl.tran.impl.SimpleTransformerRegistry

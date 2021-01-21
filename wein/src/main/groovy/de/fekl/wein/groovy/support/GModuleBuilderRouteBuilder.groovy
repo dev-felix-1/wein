@@ -1,7 +1,7 @@
 package de.fekl.wein.groovy.support
 
-import de.fekl.dine.api.graph.DirectedGraphBuilder
-import de.fekl.dine.api.tree.SpongeNetBuilder
+import de.fekl.dine.core.api.graph.DirectedGraphBuilder
+import de.fekl.dine.core.api.sponge.SpongeNetBuilder
 import de.fekl.tran.api.core.ITransformationRoute
 import de.fekl.tran.api.core.ITransformerRegistry
 import de.fekl.tran.impl.TransformationRouteBuilder

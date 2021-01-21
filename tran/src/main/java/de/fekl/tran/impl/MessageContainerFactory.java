@@ -3,7 +3,7 @@ package de.fekl.tran.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.fekl.dine.api.state.ITokenFactory;
+import de.fekl.stat.core.api.token.ITokenFactory;
 import de.fekl.tran.api.core.IAutoMergedMessage;
 import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.IMessage;

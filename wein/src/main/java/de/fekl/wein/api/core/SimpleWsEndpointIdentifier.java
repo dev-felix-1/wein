@@ -2,7 +2,7 @@ package de.fekl.wein.api.core;
 
 import java.util.Objects;
 
-import de.fekl.baut.Precondition;
+import de.fekl.dine.util.Precondition;
 
 public class SimpleWsEndpointIdentifier implements IWsEndpointIdentifier {
 

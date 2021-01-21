@@ -1,7 +1,7 @@
 package de.fekl.tran.api.core;
 
-import de.fekl.dine.api.base.IIdHolder;
-import de.fekl.dine.api.tree.ISpongeNet;
+import de.fekl.dine.core.api.base.IIdHolder;
+import de.fekl.dine.core.api.sponge.ISpongeNet;
 
 public interface ITransformationRoute<S, T> extends IIdHolder<String>{
 

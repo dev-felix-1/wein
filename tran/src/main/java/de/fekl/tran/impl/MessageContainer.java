@@ -1,6 +1,6 @@
 package de.fekl.tran.impl;
 
-import de.fekl.dine.api.state.SimpleToken;
+import de.fekl.stat.core.impl.token.SimpleToken;
 import de.fekl.tran.api.core.IMessage;
 import de.fekl.tran.api.core.IMessageContainer;
 

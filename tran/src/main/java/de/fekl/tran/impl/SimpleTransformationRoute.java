@@ -3,9 +3,9 @@ package de.fekl.tran.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import de.fekl.baut.Precondition;
-import de.fekl.dine.api.edge.IEdge;
-import de.fekl.dine.api.tree.ISpongeNet;
+import de.fekl.dine.core.api.edge.IEdge;
+import de.fekl.dine.core.api.sponge.ISpongeNet;
+import de.fekl.dine.util.Precondition;
 import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.IMerger;
 import de.fekl.tran.api.core.ITransformationRoute;

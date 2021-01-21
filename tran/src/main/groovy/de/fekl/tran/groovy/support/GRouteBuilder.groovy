@@ -3,8 +3,8 @@ package de.fekl.tran.groovy.support
 
 import org.codehaus.groovy.runtime.InvokerHelper
 
-import de.fekl.dine.api.graph.DirectedGraphBuilder
-import de.fekl.dine.api.tree.SpongeNetBuilder
+import de.fekl.dine.core.api.graph.DirectedGraphBuilder
+import de.fekl.dine.core.api.sponge.SpongeNetBuilder
 import de.fekl.tran.api.core.IContentType
 import de.fekl.tran.api.core.ITransformation
 import de.fekl.tran.api.core.ITransformationRoute

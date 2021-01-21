@@ -1,7 +1,7 @@
 package de.fekl.tran.impl;
 
-import de.fekl.dine.api.tree.ISpongeNet;
-import de.fekl.dine.api.tree.SpongeNetBuilder;
+import de.fekl.dine.core.api.sponge.ISpongeNet;
+import de.fekl.dine.core.api.sponge.SpongeNetBuilder;
 import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.ITransformationRoute;
 import de.fekl.tran.api.core.ITransformer;

@@ -3,7 +3,7 @@ package de.fekl.tran.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.fekl.dine.api.node.AbstractNodeBuilder;
+import de.fekl.dine.core.api.node.AbstractNodeBuilder;
 import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.IMerge;
 import de.fekl.tran.api.core.IMerger;

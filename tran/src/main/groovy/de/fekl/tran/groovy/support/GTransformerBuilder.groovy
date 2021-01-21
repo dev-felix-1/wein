@@ -1,23 +1,16 @@
 package de.fekl.tran.groovy.support
 
 
-import java.util.concurrent.Callable
-
 import org.codehaus.groovy.runtime.InvokerHelper
 
-import de.fekl.dine.api.graph.DirectedGraphBuilder
-import de.fekl.dine.api.tree.SpongeNetBuilder
 import de.fekl.tran.api.core.IContentType
 import de.fekl.tran.api.core.IMerge
 import de.fekl.tran.api.core.ITransformation
-import de.fekl.tran.api.core.ITransformationRoute
 import de.fekl.tran.api.core.ITransformer
 import de.fekl.tran.api.core.ITransformerRegistry
 import de.fekl.tran.impl.MergerBuilder
 import de.fekl.tran.impl.StandardContentTypes
-import de.fekl.tran.impl.TransformationRouteBuilder
 import de.fekl.tran.impl.TransformerBuilder
-import de.fekl.tran.impl.TransformerNames
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 

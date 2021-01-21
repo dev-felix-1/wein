@@ -1,20 +1,13 @@
 package de.fekl.tone.api.core.x;
 
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
-import de.fekl.dine.api.edge.IEdge;
-import de.fekl.dine.api.edge.conditional.SimpleConditionalEdgeBuilder;
-import de.fekl.dine.api.graph.DirectedGraphBuilder;
-import de.fekl.dine.api.node.INode;
-import de.fekl.dine.api.state.IToken;
-import de.fekl.dine.api.tree.ISpongeNet;
-import de.fekl.dine.api.tree.SpongeNetBuilder;
-import de.fekl.sepe.IColouredNetProcessingCondition;
+import de.fekl.dine.core.api.graph.DirectedGraphBuilder;
+import de.fekl.dine.core.api.sponge.ISpongeNet;
+import de.fekl.dine.core.api.sponge.SpongeNetBuilder;
 import de.fekl.tran.api.core.IMessage;
 import de.fekl.tran.api.core.ITransformationRoute;
 import de.fekl.tran.api.core.ITransformer;

@@ -1,6 +1,6 @@
 package de.fekl.tran.impl;
 
-import de.fekl.baut.RandomNames;
+import de.fekl.dine.util.RandomNames;
 
 public class RouteNames {
 

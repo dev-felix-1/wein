@@ -2,7 +2,8 @@ package de.fekl.tran.api.core;
 
 import java.util.List;
 
-import de.fekl.dine.api.node.INodeFactory;
+import de.fekl.dine.core.api.node.INodeFactory;
+
 
 public interface ITransformerFactory extends INodeFactory<ITransformer<?, ?>> {
 

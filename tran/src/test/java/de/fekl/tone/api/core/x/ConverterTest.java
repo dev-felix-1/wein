@@ -3,7 +3,7 @@ package de.fekl.tone.api.core.x;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import de.fekl.baut.Precondition;
+import de.fekl.dine.util.Precondition;
 import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.IConversion;
 import de.fekl.tran.api.core.IConverter;

@@ -1,6 +1,6 @@
 package de.fekl.tran.impl;
 
-import de.fekl.dine.api.node.AbstractNodeBuilder;
+import de.fekl.dine.core.api.node.AbstractNodeBuilder;
 import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.ITransformation;
 import de.fekl.tran.api.core.ITransformer;

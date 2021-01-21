@@ -1,6 +1,6 @@
 package de.fekl.tran.api.core;
 
-import de.fekl.dine.api.state.IToken;
+import de.fekl.stat.core.api.token.IToken;
 
 public interface IMessageContainer extends IToken {
 

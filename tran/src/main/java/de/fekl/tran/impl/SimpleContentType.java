@@ -2,7 +2,7 @@ package de.fekl.tran.impl;
 
 import java.util.Objects;
 
-import de.fekl.baut.Precondition;
+import de.fekl.dine.util.Precondition;
 import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.IFormat;
 

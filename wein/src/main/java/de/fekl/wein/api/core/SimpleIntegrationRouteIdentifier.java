@@ -2,7 +2,7 @@ package de.fekl.wein.api.core;
 
 import java.util.Objects;
 
-import de.fekl.baut.Precondition;
+import de.fekl.dine.util.Precondition;
 import de.fekl.tran.api.core.IContentType;
 
 public class SimpleIntegrationRouteIdentifier<S, T> implements IIntegrationRouteIdentifier<S, T> {

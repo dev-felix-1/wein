@@ -1,6 +1,6 @@
 package de.fekl.tran.impl;
 
-import de.fekl.baut.Precondition;
+import de.fekl.dine.util.Precondition;
 import de.fekl.tran.api.core.IContentType;
 import de.fekl.tran.api.core.IMessage;
 import de.fekl.tran.api.core.ITransformation;
