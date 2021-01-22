@@ -8,13 +8,9 @@ import de.fekl.stat.core.impl.events.SimpleEventBus;
 public class SimpleStateContainer<S> extends AbstractStateContainer<S> {
 
 	public SimpleStateContainer(S initialState) {
-		this(initialState, 256);
+		this(initialState, new SimpleEventBus<>());
 	}
 
-	public SimpleStateContainer(S initialState, int eventQueueSize) {
-		super(initialState, new SimpleEventBus<>(eventQueueSize));
-	}
-	
 	public SimpleStateContainer(S initialState, IEventBus<IEvent> eventBus) {
 		super(initialState, eventBus);
 	}

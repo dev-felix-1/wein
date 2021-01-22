@@ -1,9 +1,12 @@
 package de.fekl.stat.core.api.events;
 
-public interface IEndNodeReachedEvent extends IEvent {
+import de.fekl.dine.core.api.node.INode;
+import de.fekl.stat.core.api.token.IToken;
 
-	String getNodeId();
+public interface IEndNodeReachedEvent<N extends INode, T extends IToken> extends IEvent {
 
-	String getTokenId();
+	N getNode();
+
+	T getToken();
 
 }

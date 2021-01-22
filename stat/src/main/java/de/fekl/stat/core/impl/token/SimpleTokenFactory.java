@@ -21,6 +21,9 @@ public class SimpleTokenFactory implements ITokenFactory<SimpleToken> {
 
 	@Override
 	public SimpleToken mergeToken(List<SimpleToken> tokens) {
+		if (tokens.size() == 1) {
+			return tokens.get(0);
+		}
 		return createToken(tokens.stream().map(IToken::getId).collect(Collectors.joining("+")));
 	}
 

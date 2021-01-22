@@ -1,17 +1,16 @@
 package de.fekl.wein.groovy.support
 
-import de.fekl.stat.util.LogManager
-import de.fekl.stat.util.NullLogger
 import de.fekl.tran.groovy.support.GRouteBuilder
 import de.fekl.tran.groovy.support.GTransformerBuilder
 import de.fekl.tran.impl.SimpleTransformerRegistry
 import de.fekl.tran.impl.StandardContentTypes
 import de.fekl.tran.impl.TransformationRouteProcessor
+import groovy.transform.CompileStatic
+
 
 class MainTest {
 
 	static void main(String[]args) {
-		LogManager.getInstance().setLogger(new NullLogger())
 
 		def reader = System.'in'.newReader()
 

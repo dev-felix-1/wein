@@ -1,23 +1,27 @@
 package de.fekl.stat.core.impl.events;
 
+import de.fekl.dine.core.api.node.INode;
 import de.fekl.stat.core.api.events.IEndNodeReachedEvent;
+import de.fekl.stat.core.api.token.IToken;
 
-public class EndNodeReachedEvent implements IEndNodeReachedEvent {
+public class EndNodeReachedEvent<N extends INode, T extends IToken> implements IEndNodeReachedEvent<N, T> {
 
-	private final String endNode;
-	private final String token;
+	private final N node;
+	private final T token;
 
-	public EndNodeReachedEvent(String endNode, String token) {
+	public EndNodeReachedEvent(N endNode, T token) {
 		super();
-		this.endNode = endNode;
+		this.node = endNode;
 		this.token = token;
 	}
 
-	public String getNodeId() {
-		return endNode;
+	@Override
+	public N getNode() {
+		return node;
 	}
 
-	public String getTokenId() {
+	@Override
+	public T getToken() {
 		return token;
 	}
 

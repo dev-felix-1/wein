@@ -8,7 +8,11 @@ public interface ITokenStore<T extends IToken> {
 
 	void putToken(String nodeId, T token);
 
-	void removeToken(String nodeId, String tokenId);
+	T removeToken(String nodeId, String tokenId);
+
+	default T removeToken(String nodeId, T token) {
+		return removeToken(nodeId, token.getId());
+	}
 
 	Set<T> getTokens(String nodeId);
 
@@ -20,9 +24,15 @@ public interface ITokenStore<T extends IToken> {
 
 	String getPosition(String tokenId);
 
+	default String getPosition(T token) {
+		return getPosition(token.getId());
+	}
+
 	Map<String, String> getTokenPositions();
 
 	T getToken(String tokenId);
+
+	void clear();
 
 	public static String print(ITokenStore<?> store) {
 		//@formatter:off

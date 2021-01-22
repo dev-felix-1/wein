@@ -1,11 +1,13 @@
 package de.fekl.stat.core.impl.state.net;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.Set;
 
 import de.fekl.stat.core.api.state.IStateChangeOperation;
+import de.fekl.stat.core.api.state.net.ITokenCreationOperation;
+import de.fekl.stat.core.api.state.net.ITokenMergeOperation;
+import de.fekl.stat.core.api.state.net.ITokenRemovalOperation;
 import de.fekl.stat.core.api.state.net.ITokenTransitionOperation;
 import de.fekl.stat.core.api.token.IToken;
 import de.fekl.stat.core.api.token.ITokenFactory;
@@ -22,12 +24,10 @@ public class ColouredNetOperations {
 		return newState;
 	}
 
-	public static class PutToken<T extends IToken> implements ITokenTransitionOperation<T> {
+	public static class PutToken<T extends IToken> implements ITokenCreationOperation<T> {
 
 		private String nodeId;
 		private T token;
-
-		private final List<T> transitionedToken = new ArrayList<>();
 
 		private PutToken(String sourceNodeId, T token) {
 			this.nodeId = sourceNodeId;
@@ -43,13 +43,12 @@ public class ColouredNetOperations {
 		public ITokenStore<T> apply(ITokenStore<T> state) {
 			ITokenStore<T> newState = cloneTokenStore(state);
 			newState.putToken(nodeId, token);
-			transitionedToken.add(token);
 			return newState;
 		}
 
 		@Override
-		public List<T> getTransitionedToken() {
-			return transitionedToken;
+		public T getCreatedToken() {
+			return token;
 		}
 
 		@Override
@@ -58,47 +57,55 @@ public class ColouredNetOperations {
 		}
 	}
 
-	public static class RemoveToken<T extends IToken> implements IStateChangeOperation<ITokenStore<T>> {
+	public static class RemoveToken<T extends IToken> implements ITokenRemovalOperation<T> {
 
-		private String sourceNodeId;
-		private String tokenId;
+		private String targetNodeId;
+		private T token;
 
-		private RemoveToken(String sourceNodeId, String tokenId) {
-			this.sourceNodeId = sourceNodeId;
-			this.tokenId = tokenId;
+		private RemoveToken(String targetNodeId, T token) {
+			this.targetNodeId = targetNodeId;
+			this.token = token;
 		}
 
 		@Override
 		public String toString() {
-			return String.format("Remove Token %s from %s", tokenId, sourceNodeId);
+			return String.format("Remove Token %s from %s", token, targetNodeId);
 		}
 
 		@Override
 		public ITokenStore<T> apply(ITokenStore<T> state) {
 			ITokenStore<T> newState = cloneTokenStore(state);
-			newState.removeToken(sourceNodeId, tokenId);
+			newState.removeToken(targetNodeId, token);
 			return newState;
+		}
+
+		@Override
+		public T getRemovedToken() {
+			return token;
+		}
+
+		@Override
+		public String getTargetNodeId() {
+			return targetNodeId;
 		}
 	}
 
-	public static class MergeToken<T extends IToken> implements ITokenTransitionOperation<T> {
+	public static class MergeToken<T extends IToken> implements ITokenMergeOperation<T> {
 
 		private String targetNodeId;
-		private List<String> tokenIds;
-		private ITokenFactory<T> factory;
+		private List<T> tokens;
+		private T resultToken;
 
-		private final List<T> transitionedToken = new ArrayList<>();
-
-		private MergeToken(ITokenFactory<T> factory, String targetNodeId, String[] tokenIds) {
+		private MergeToken(ITokenFactory<T> factory, String targetNodeId, T[] tokens) {
 			this.targetNodeId = targetNodeId;
-			this.tokenIds = Arrays.asList(tokenIds);
-			this.factory = factory;
+			this.tokens = Arrays.asList(tokens);
+			this.resultToken = factory.mergeToken(tokens);
 		}
 
-		private MergeToken(ITokenFactory<T> factory, String targetNodeId, List<String> tokenIds) {
+		private MergeToken(ITokenFactory<T> factory, String targetNodeId, List<T> tokens) {
 			this.targetNodeId = targetNodeId;
-			this.tokenIds = tokenIds;
-			this.factory = factory;
+			this.tokens = tokens;
+			this.resultToken = factory.mergeToken(tokens);
 		}
 
 		@Override
@@ -109,27 +116,31 @@ public class ColouredNetOperations {
 		@Override
 		public ITokenStore<T> apply(ITokenStore<T> state) {
 			ITokenStore<T> newState = cloneTokenStore(state);
-			List<T> tokens = new ArrayList<>(tokenIds.size());
-			for (String tokenId : tokenIds) {
-				String position = state.getPosition(tokenId);
-				T token = state.getToken(tokenId);
-				tokens.add(token);
-				newState.removeToken(position, tokenId);
+			for (T token : tokens) {
+				Set<T> tokensOnNode = state.getTokens(targetNodeId);
+				if (!tokensOnNode.contains(token)) {
+					throw new IllegalStateException(
+							String.format("Token %s cannot be found on node %s", token, targetNodeId));
+				}
+				newState.removeToken(targetNodeId, token);
 			}
-			T mergedToken = factory.mergeToken(tokens);
-			newState.putToken(targetNodeId, mergedToken);
-			transitionedToken.add(mergedToken);
+			newState.putToken(targetNodeId, resultToken);
 			return newState;
-		}
-
-		@Override
-		public List<T> getTransitionedToken() {
-			return transitionedToken;
 		}
 
 		@Override
 		public String getTargetNodeId() {
 			return targetNodeId;
+		}
+
+		@Override
+		public List<T> mergedTokens() {
+			return tokens;
+		}
+
+		@Override
+		public T getResultToken() {
+			return resultToken;
 		}
 	}
 
@@ -137,96 +148,76 @@ public class ColouredNetOperations {
 
 		private String sourceNodeId;
 		private String targetNodeId;
-		private String tokenId;
+		private T token;
 
-		private final List<T> transitionedToken = new ArrayList<>();
-
-		private MoveToken(String sourceNodeId, String targetNodeId, String tokenId) {
+		private MoveToken(String sourceNodeId, String targetNodeId, T token) {
 			this.sourceNodeId = sourceNodeId;
 			this.targetNodeId = targetNodeId;
-			this.tokenId = tokenId;
+			this.token = token;
 		}
 
 		@Override
 		public String toString() {
-			return String.format("Move Token %s from %s to %s", tokenId, sourceNodeId, targetNodeId);
+			return String.format("Move Token %s from %s to %s", token, sourceNodeId, targetNodeId);
 		}
 
 		@Override
 		public ITokenStore<T> apply(ITokenStore<T> state) {
-			T token = state.getToken(tokenId);
 			ITokenStore<T> newState = cloneTokenStore(state);
-			newState.removeToken(sourceNodeId, tokenId);
+			T removedToken = newState.removeToken(sourceNodeId, token);
+			if (removedToken == null) {
+				throw new IllegalStateException(String.format("Cannot find token %s on node %s", token, sourceNodeId));
+			}
 			newState.putToken(targetNodeId, token);
-			transitionedToken.add(token);
 			return newState;
 		}
 
 		@Override
-		public List<T> getTransitionedToken() {
-			return transitionedToken;
+		public T getTransitionedToken() {
+			return token;
 		}
 
 		@Override
 		public String getTargetNodeId() {
 			return targetNodeId;
+		}
+
+		@Override
+		public String getSourceNodeId() {
+			return sourceNodeId;
 		}
 	}
 
-	public static class CopyToken<T extends IToken> implements ITokenTransitionOperation<T> {
+	public static class CopyToken<T extends IToken> implements ITokenCreationOperation<T> {
 
 		private final String targetNodeId;
-		private final ITokenFactory<T> factory;
-		private final String tokenId;
-		private final int numberOfCopies;
+		private final T token;
 
-		private final List<T> transitionedToken = new ArrayList<>();
-
-		private CopyToken(String tokenId, int numberOfCopies, ITokenFactory<T> factory) {
-			this.factory = factory;
-			this.tokenId = tokenId;
-			this.numberOfCopies = numberOfCopies;
-			this.targetNodeId = null;
-		}
-
-		private CopyToken(String targetNodeId, String tokenId, ITokenFactory<T> factory) {
-			this.factory = factory;
-			this.tokenId = tokenId;
-			this.numberOfCopies = 1;
+		private CopyToken(String targetNodeId, T token, ITokenFactory<T> factory) {
+			this.token = factory.copyToken(token);
 			this.targetNodeId = targetNodeId;
 		}
 
 		@Override
 		public String toString() {
-			return String.format("Copy Token %s %s times", tokenId, numberOfCopies);
+			return String.format("Copy Token %s", token);
 		}
 
 		@Override
 		public ITokenStore<T> apply(ITokenStore<T> state) {
 			ITokenStore<T> newState = cloneTokenStore(state);
-			final String nodeId;
-			if (targetNodeId == null) {
-				nodeId = newState.getPosition(tokenId);
-			} else {
-				nodeId = targetNodeId;
-			}
-			T token = state.getToken(tokenId);
-			IntStream.range(0, numberOfCopies).forEach(i -> {
-				T tokenCopy = factory.copyToken(token);
-				newState.putToken(nodeId, tokenCopy);
-				transitionedToken.add(tokenCopy);
-			});
+			newState.putToken(targetNodeId, token);
 			return newState;
-		}
-
-		@Override
-		public List<T> getTransitionedToken() {
-			return transitionedToken;
 		}
 
 		@Override
 		public String getTargetNodeId() {
 			return targetNodeId;
+		}
+
+		@Override
+		public T getCreatedToken() {
+			return token;
 		}
 	}
 
@@ -234,38 +225,27 @@ public class ColouredNetOperations {
 
 	}
 
-	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> putToken(String nodeId, String tokenId,
-			T token) {
+	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> putToken(String nodeId, T token) {
 		return new PutToken<>(nodeId, token);
 	}
 
-	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> removeToken(String nodeId, String tokenId) {
-		return new RemoveToken<>(nodeId, tokenId);
+	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> removeToken(String nodeId, T token) {
+		return new RemoveToken<>(nodeId, token);
 	}
 
 	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> moveToken(String sourceNodeId,
-			String targetNodeId, String tokenId) {
-		return new MoveToken<>(sourceNodeId, targetNodeId, tokenId);
+			String targetNodeId, T token) {
+		return new MoveToken<>(sourceNodeId, targetNodeId, token);
 	}
 
 	public static <T extends IToken, F extends ITokenFactory<T>> IStateChangeOperation<ITokenStore<T>> copyToken(
-			String targetNodeId, String tokenId, F factory) {
-		return new CopyToken<>(targetNodeId, tokenId, factory);
+			String targetNodeId, T token, F factory) {
+		return new CopyToken<>(targetNodeId, token, factory);
 	}
 
-	public static <T extends IToken, F extends ITokenFactory<T>> IStateChangeOperation<ITokenStore<T>> copyToken(
-			String tokenId, int numberOfCopies, F factory) {
-		return new CopyToken<>(tokenId, numberOfCopies, factory);
-	}
-
-	public static <T extends IToken, F extends ITokenFactory<T>> IStateChangeOperation<ITokenStore<T>> mergeTokens(
-			F factory, String targetNodeId, String... tokenIds) {
-		return new MergeToken<>(factory, targetNodeId, tokenIds);
-	}
-
-	public static <T extends IToken, F extends ITokenFactory<T>> IStateChangeOperation<ITokenStore<T>> mergeTokens(
-			F factory, String targetNodeId, List<String> tokenIds) {
-		return new MergeToken<>(factory, targetNodeId, tokenIds);
+	public static <T extends IToken, F extends ITokenFactory<T>> ITokenMergeOperation<T> mergeToken(String targetNodeId,
+			List<T> tokens, F factory) {
+		return new MergeToken<>(factory, targetNodeId, tokens);
 	}
 
 }

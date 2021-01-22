@@ -4,6 +4,16 @@ plugins {
 	id 'maven-publish'
 }
 
+java {
+	withJavadocJar()
+	withSourcesJar()
+}
+
+javadoc.options {
+	addBooleanOption('-enable-preview', true)
+	addStringOption('-release', '15')
+}
+
 publishing {
 	publications {
 		stat(MavenPublication) {

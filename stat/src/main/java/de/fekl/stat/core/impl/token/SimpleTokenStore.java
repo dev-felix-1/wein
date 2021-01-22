@@ -54,7 +54,12 @@ public class SimpleTokenStore<T extends IToken> implements ITokenStore<T> {
 	@Override
 	public Set<T> getTokens(String nodeId) {
 		Precondition.isNotEmpty(nodeId);
-		return Collections.unmodifiableSet(tokenMapping.get(nodeId));
+		Set<T> set = tokenMapping.get(nodeId);
+		if (set == null) {
+			return Collections.emptySet();
+		} else {
+			return Collections.unmodifiableSet(set);
+		}
 	}
 
 	@Override
@@ -63,11 +68,11 @@ public class SimpleTokenStore<T extends IToken> implements ITokenStore<T> {
 	}
 
 	@Override
-	public synchronized void removeToken(String nodeId, String tokenId) {
+	public synchronized T removeToken(String nodeId, String tokenId) {
 		Precondition.isNotEmpty(nodeId);
 		Precondition.isNotEmpty(nodeId);
 		T removed = tokens.remove(tokenId);
-		if (removed!=null) {
+		if (removed != null) {
 			Set<T> set = tokenMapping.get(nodeId);
 			if (set != null) {
 				Optional<T> token = set.stream().filter(t -> t.getId().equals(tokenId)).findFirst();
@@ -77,6 +82,7 @@ public class SimpleTokenStore<T extends IToken> implements ITokenStore<T> {
 			}
 			tokenPositionsValid = false;
 		}
+		return removed;
 	}
 
 	@Override
@@ -110,5 +116,13 @@ public class SimpleTokenStore<T extends IToken> implements ITokenStore<T> {
 	private Map<String, String> calculateTokenPositions() {
 		return tokens.entrySet().stream().collect(Collectors.<Entry<String, T>, String, String>toMap(e -> e.getKey(),
 				e -> getPosition(e.getValue().getId())));
+	}
+
+	@Override
+	public void clear() {
+		tokens.clear();
+		tokenMapping.clear();
+		tokenPositions.clear();
+		tokenPositionsValid = false;
 	}
 }

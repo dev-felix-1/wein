@@ -36,7 +36,7 @@ public class TransformationRouteProcessor {
 		} catch (TimeoutException e) {
 			throw new IllegalStateException(e);
 		}
-		processingContainer.shutdown();
+//		processingContainer.shutdown();
 		return processedMessageContainer.getMessage();
 	}
 
@@ -62,7 +62,7 @@ public class TransformationRouteProcessor {
 		resultList.addAll(processingContainer.getAllCurrentlyProcessed().stream()
 				.map(mc -> (IMessage<T>) mc.getMessage()).collect(Collectors.toList()));
 		System.err.println("hello5");
-		processingContainer.shutdown();
+//		processingContainer.shutdown();
 		System.err.println("hello6");
 		executor.shutdown();
 		return resultList;

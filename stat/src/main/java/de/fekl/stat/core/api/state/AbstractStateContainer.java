@@ -7,8 +7,8 @@ import de.fekl.stat.core.impl.events.SimpleStateChangedEvent;
 
 public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 
-	private IStateContainerContext context;
 	private S currentState;
+	private S initialState;
 	private IEventBus<IEvent> eventBus;
 
 	protected AbstractStateContainer(S initialState, IEventBus<IEvent> eventBus) {
@@ -16,6 +16,7 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 		Precondition.isNotNull(initialState);
 		Precondition.isNotNull(eventBus);
 		this.currentState = initialState;
+		this.initialState = initialState;
 		this.eventBus = eventBus;
 	}
 
@@ -35,6 +36,11 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 	protected <O extends IStateChangeOperation<S>> void postStateChangedEvent(O operation, S sourceState,
 			S targetState) {
 		eventBus.post(new SimpleStateChangedEvent<>(operation, sourceState, targetState));
+	}
+
+	@Override
+	public void reset() {
+		currentState = initialState;
 	}
 
 }
