@@ -202,7 +202,7 @@ public class TransformationNetProcessingContainer
 		}
 		return poll;
 	}
-
+//
 	public List<MessageContainer> getAllCurrentlyProcessed() throws InterruptedException {
 		List<MessageContainer> result = new ArrayList<>();
 		MessageContainer mc = null;

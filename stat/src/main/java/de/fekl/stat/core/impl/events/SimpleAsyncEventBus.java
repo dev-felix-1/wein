@@ -1,7 +1,9 @@
 package de.fekl.stat.core.impl.events;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -27,7 +29,7 @@ public class SimpleAsyncEventBus<E extends IEvent> implements IAsyncEventBus<E>,
 		this.internalQueue = new SimpleEventQueue<>(capacity);
 	}
 
-	private final List<IEventListener<E>> listeners = new ArrayList<>();
+	private final Map<Class<? extends IEvent>, IEventListener<? extends E>> listeners = new HashMap<>();
 
 	ReentrantLock lock = new ReentrantLock();
 	Condition handlersFinish = lock.newCondition();
@@ -43,7 +45,7 @@ public class SimpleAsyncEventBus<E extends IEvent> implements IAsyncEventBus<E>,
 
 	@Override
 	public void register(IEventListener<E> listener) {
-		listeners.add(listener);
+		listeners.put(IEvent.class, listener);
 	}
 
 	public void abort() {
@@ -74,11 +76,22 @@ public class SimpleAsyncEventBus<E extends IEvent> implements IAsyncEventBus<E>,
 		running = false;
 	}
 
+	@Override
+	public <T extends E> void register(Class<T> clazz, IEventListener<T> listener) {
+		listeners.put(clazz, listener);
+	}
+
 	protected void handleEvent(E event) {
 		if (event != null) {
-			for (IEventListener<E> listener : listeners) {
-				listener.handleEvent(event);
+			Class<? extends IEvent> eventType = event.getClass();
+			for (Class<? extends IEvent> type : listeners.keySet()) {
+				if (type.isAssignableFrom(eventType)) {
+					@SuppressWarnings("unchecked")
+					IEventListener<E> listener = (IEventListener<E>) listeners.get(type);
+					listener.handleEvent(event);
+				}
 			}
+
 		}
 	}
 

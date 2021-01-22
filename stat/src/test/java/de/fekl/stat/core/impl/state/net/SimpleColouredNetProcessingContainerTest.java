@@ -1,6 +1,10 @@
 package de.fekl.stat.core.impl.state.net;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,11 +14,12 @@ import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
 import de.fekl.dine.core.api.sponge.SpongeNetBuilder;
 import de.fekl.dine.core.impl.node.SimpleNode;
-import de.fekl.stat.core.api.events.IEndNodeReachedEvent;
+import de.fekl.stat.core.api.events.IProcessFinishedEvent;
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.api.events.IStepStartedEvent;
+import de.fekl.stat.core.api.node.IAutoSplitNode;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
-import de.fekl.stat.core.api.state.net.ITokenRemovalOperation;
+import de.fekl.stat.core.api.state.net.ITokenCreationOperation;
 import de.fekl.stat.core.api.state.net.ITokenTransitionOperation;
 import de.fekl.stat.core.api.token.ITokenFactory;
 import de.fekl.stat.core.api.token.ITokenStore;
@@ -141,13 +146,15 @@ public class SimpleColouredNetProcessingContainerTest {
 
 	}
 
-	private static abstract class ValueModifierNode extends SimpleNode {
+	private static class ValueModifierNode extends SimpleNode {
 
 		ValueModifierNode(String id) {
 			super(id);
 		}
 
-		public abstract String modify(String value);
+		public String modify(String value) {
+			return value + getId();
+		}
 
 	}
 
@@ -158,31 +165,23 @@ public class SimpleColouredNetProcessingContainerTest {
 
 		public ValueHolderProcessingContainer(ISpongeNet<ValueModifierNode> net) {
 			super(net, new ValueHolderTokenFactory());
-			onProcessingEvent(e -> {
+			onProcessingEvent(IStepStartedEvent.class, e -> {
 				LOG.debug(e.getClass().getName());
-				if (e instanceof IStepStartedEvent stepStartedEvent) {
-					LOG.debug("Processing container %s, step %s with state: %s", "this", stepStartedEvent.getStep(),
-							ITokenStore.print(getStateContainer().getCurrentState()));
-				} else if (e instanceof IEndNodeReachedEvent<?, ?>endNodeReached) {
-					ValueModifierNode node = (ValueModifierNode) endNodeReached.getNode();
-					ValueHolderToken token = (ValueHolderToken) endNodeReached.getToken();
-					token.value = node.modify(token.value);
-				}
+				LOG.debug("Processing container %s, step %s with state: %s", "this", e.getStep(),
+						ITokenStore.print(getStateContainer().getCurrentState()));
 			});
-			onStateChangeEvent(e -> {
+			onStateChangeEvent(IStateHasChangedEvent.class, e -> {
 				LOG.debug(e.getClass().getName());
-				if (e instanceof IStateHasChangedEvent<?>stateChangedEvent) {
-					if (stateChangedEvent.getSourceOperation() instanceof ITokenTransitionOperation<?>transition) {
-						String sourceNodeId = transition.getSourceNodeId();
-						ValueModifierNode node = getNet().getNode(sourceNodeId);
-						ValueHolderToken transitionedToken = (ValueHolderToken) transition.getTransitionedToken();
-						transitionedToken.value = node.modify(transitionedToken.value);
-					} else if (stateChangedEvent.getSourceOperation() instanceof ITokenRemovalOperation<?>removal) {
-						String sourceNodeId = removal.getTargetNodeId();
-						ValueModifierNode node = getNet().getNode(sourceNodeId);
-						ValueHolderToken transitionedToken = (ValueHolderToken) removal.getRemovedToken();
-						transitionedToken.value = node.modify(transitionedToken.value);
-					}
+				if (e.getSourceOperation() instanceof ITokenTransitionOperation<?>transition) {
+					String id = transition.getTargetNodeId();
+					ValueModifierNode node = getNet().getNode(id);
+					ValueHolderToken tokn = (ValueHolderToken) transition.getTransitionedToken();
+					tokn.value = node.modify(tokn.value);
+				} else if (e.getSourceOperation() instanceof ITokenCreationOperation<?>creation) {
+					String id = creation.getTargetNodeId();
+					ValueModifierNode node = getNet().getNode(id);
+					ValueHolderToken token = (ValueHolderToken) creation.getCreatedToken();
+					token.value = node.modify(token.value);
 				}
 			});
 		}
@@ -193,27 +192,9 @@ public class SimpleColouredNetProcessingContainerTest {
 		//@formatter:off
 		ISpongeNet<ValueModifierNode> spongeNet = new SpongeNetBuilder<ValueModifierNode>()
 				.setGraph(new DirectedGraphBuilder<ValueModifierNode>()
-					.addNode(new ValueModifierNode("A") {
-						
-						@Override
-						public String modify(String value) {
-							return value+"A";
-						}
-					})
-					.addNode(new ValueModifierNode("B") {
-						
-						@Override
-						public String modify(String value) {
-							return value+"B";
-						}
-					})
-					.addNode(new ValueModifierNode("C") {
-						
-						@Override
-						public String modify(String value) {
-							return value+"C";
-						}
-					})
+					.addNode(new ValueModifierNode("A"))
+					.addNode(new ValueModifierNode("B"))
+					.addNode(new ValueModifierNode("C"))
 					.addEdge("A","B")
 					.addEdge("B","C"))
 				.setStartNode("A")
@@ -228,6 +209,61 @@ public class SimpleColouredNetProcessingContainerTest {
 		String endNode = processingContainer.getCurrentState().getPosition(valueHolderToken);
 		Assertions.assertEquals("C", endNode);
 		Assertions.assertEquals("helloABC", valueHolderToken.value);
+
+	}
+
+	private static class SplitterNode extends ValueModifierNode implements IAutoSplitNode {
+
+		SplitterNode(String id) {
+			super(id);
+		}
+	}
+
+	private static class MultiResultProcessingContainer extends ValueHolderProcessingContainer {
+
+		private static class LatchHolder {
+			private CountDownLatch latch;
+		}
+
+		private LatchHolder latchHolder = new LatchHolder();
+
+		public MultiResultProcessingContainer(ISpongeNet<ValueModifierNode> net) {
+			super(net);
+			onProcessingFinished(e -> latchHolder.latch.countDown());
+		}
+
+		List<ValueHolderToken> processForMultiResult(ValueHolderToken token) throws InterruptedException {
+			latchHolder.latch = new CountDownLatch(1);
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			executor.submit(() -> process(token));
+			latchHolder.latch.await();
+			return getCurrentState().getTokenPositions().keySet().stream().map(k -> getCurrentState().getToken(k))
+					.collect(Collectors.toList());
+		}
+
+	}
+
+	@Test
+	public void testMultiResultProcessing() throws InterruptedException {
+		//@formatter:off
+		ISpongeNet<ValueModifierNode> spongeNet = new SpongeNetBuilder<ValueModifierNode>()
+				.setGraph(new DirectedGraphBuilder<ValueModifierNode>()
+					.addNode(new SplitterNode("A"))
+					.addNode(new ValueModifierNode("B"))
+					.addNode(new ValueModifierNode("C"))
+					.addEdge("A","B")
+					.addEdge("A","C"))
+		.build();
+		//@formatter:on
+
+		MultiResultProcessingContainer processingContainer = new MultiResultProcessingContainer(spongeNet);
+
+		ValueHolderToken valueHolderToken = new ValueHolderToken("initId", "hello");
+		List<ValueHolderToken> processForMultiResult = processingContainer.processForMultiResult(valueHolderToken);
+
+		Assertions.assertEquals(2, processForMultiResult.size());
+		Assertions.assertTrue(processForMultiResult.get(0).value.equals("helloAB"));
+		Assertions.assertTrue(processForMultiResult.get(1).value.equals("helloAC"));
 
 	}
 

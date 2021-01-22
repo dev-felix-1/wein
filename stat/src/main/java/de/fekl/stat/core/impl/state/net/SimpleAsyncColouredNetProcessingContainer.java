@@ -32,6 +32,7 @@ import de.fekl.stat.core.impl.state.SimpleStateContainer;
 import de.fekl.stat.util.ILogger;
 import de.fekl.stat.util.LogManager;
 
+@Deprecated
 public class SimpleAsyncColouredNetProcessingContainer<N extends INode, T extends IToken>
 		implements IColouredNetProcessingContainer<T> {
 
@@ -241,7 +242,7 @@ public class SimpleAsyncColouredNetProcessingContainer<N extends INode, T extend
 	@Override
 	public void reset() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

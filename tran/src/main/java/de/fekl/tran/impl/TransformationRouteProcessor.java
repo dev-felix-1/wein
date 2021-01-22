@@ -1,6 +1,5 @@
 package de.fekl.tran.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,29 +42,23 @@ public class TransformationRouteProcessor {
 	@SuppressWarnings("unchecked")
 	protected <T> List<IMessage<T>> processForMultiResult(MessageContainer messageContainer,
 			TransformationNetProcessingContainer processingContainer) throws InterruptedException {
+
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		executor.submit(() -> processingContainer.process(messageContainer));
-		List<IMessage<T>> resultList = new ArrayList<>();
-		System.err.println("hello1");
-		processingContainer.waitForStart();
-		System.err.println("hello2");
-		while (processingContainer.isRunning()) { 
-			try {
-				resultList.add(processingContainer.getNextProcessed().getMessage()); 
-			} catch (TimeoutException e) {
-				throw new IllegalStateException(e);
-			}
-		}
-		System.err.println("hello3");
+
 		processingContainer.waitForFinish();
-		System.err.println("hello4");
-		resultList.addAll(processingContainer.getAllCurrentlyProcessed().stream()
-				.map(mc -> (IMessage<T>) mc.getMessage()).collect(Collectors.toList()));
-		System.err.println("hello5");
-//		processingContainer.shutdown();
-		System.err.println("hello6");
+
+		var result = (List<IMessage<T>>) (List<?>) processingContainer.getAllCurrentlyProcessed().stream()
+				.map(mc -> mc.getMessage()).collect(Collectors.toList());
+
 		executor.shutdown();
-		return resultList;
+		return result;
+
+//		Set<String> tokens = processingContainer.getCurrentState().getTokenPositions().keySet();
+//
+//		return (List<IMessage<T>>) (List<?>) tokens.stream()
+//				.map(k -> processingContainer.getCurrentState().getToken(k).getMessage()).collect(Collectors.toList());
+
 	}
 
 	// -- sync - blocking

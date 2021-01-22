@@ -8,6 +8,8 @@ import de.fekl.dine.core.api.sponge.ISpongeNet;
 import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.events.IEventBus;
 import de.fekl.stat.core.api.events.IEventListener;
+import de.fekl.stat.core.api.events.IProcessFinishedEvent;
+import de.fekl.stat.core.api.node.IAutoMergeNode;
 import de.fekl.stat.core.api.node.IAutoSplitNode;
 import de.fekl.stat.core.api.state.IStateContainer;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
@@ -102,6 +104,10 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 		return node instanceof IAutoSplitNode;
 	}
 
+	protected boolean isMergerNode(N node) {
+		return node instanceof IAutoMergeNode;
+	}
+
 	protected <C extends IStateContainer<ITokenStore<T>>> void handleTokenSplitTransition(C stateContainer, T token,
 			N currentNode, List<IEdge> outgoingEdges) {
 		for (int i = 0; i < outgoingEdges.size(); i++) {
@@ -158,8 +164,20 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 		processingEventBus.register(listener);
 	}
 
+	protected <E extends IEvent> void onProcessingEvent(Class<E> type, IEventListener<E> listener) {
+		processingEventBus.register(type, listener);
+	}
+
+	protected <E extends IEvent> void onProcessingFinished(IEventListener<IProcessFinishedEvent> listener) {
+		processingEventBus.register(IProcessFinishedEvent.class, listener);
+	}
+
 	protected void onStateChangeEvent(IEventListener<IEvent> listener) {
 		stateChangedEventBus.register(listener);
+	}
+
+	protected <E extends IEvent> void onStateChangeEvent(Class<E> type, IEventListener<E> listener) {
+		stateChangedEventBus.register(type, listener);
 	}
 
 	@Override

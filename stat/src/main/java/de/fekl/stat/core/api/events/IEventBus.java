@@ -6,4 +6,6 @@ public interface IEventBus<E extends IEvent> {
 
 	void register(IEventListener<E> listener);
 
+	<T extends E> void register(Class<T> clazz, IEventListener<T> listener);
+
 }
