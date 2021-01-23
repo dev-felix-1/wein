@@ -14,7 +14,6 @@ import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
 import de.fekl.dine.core.api.sponge.SpongeNetBuilder;
 import de.fekl.dine.core.impl.node.SimpleNode;
-import de.fekl.stat.core.api.events.IProcessFinishedEvent;
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.api.events.IStepStartedEvent;
 import de.fekl.stat.core.api.node.IAutoSplitNode;
@@ -265,6 +264,37 @@ public class SimpleColouredNetProcessingContainerTest {
 		Assertions.assertTrue(processForMultiResult.get(0).value.equals("helloAB"));
 		Assertions.assertTrue(processForMultiResult.get(1).value.equals("helloAC"));
 
+	}
+
+	@Test
+	public void testProcessingHistory() {
+		//@formatter:off
+		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
+				.setGraph(new DirectedGraphBuilder<SimpleNode>()
+					.addEdge("A","B")
+					.addEdge("B","C")
+					.addEdge("C","D"))
+		.build();
+		//@formatter:on
+
+		SimpleTokenFactory simpleTokenFactory = new SimpleTokenFactory();
+
+		var processingContainer = new SimpleColouredNetProcessingContainer<>(
+				spongeNet, simpleTokenFactory);
+
+		SimpleToken token = simpleTokenFactory.createToken();
+		processingContainer.process(token);
+		var history = processingContainer.getHistory();
+		var initialState = history.getInitialState();
+		var iterator = history.getChanges().iterator();
+		ITokenStore<SimpleToken> currentState = initialState;
+		System.out.println(ITokenStore.print(currentState));
+		while(iterator.hasNext()) {
+			var next = iterator.next();
+			var sourceOperation = next.getSourceOperation();
+			currentState = sourceOperation.apply(currentState);
+			System.out.println(ITokenStore.print(currentState));
+		}
 	}
 
 }

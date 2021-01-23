@@ -13,6 +13,7 @@ import de.fekl.stat.core.api.events.IProcessStartedEvent;
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.api.node.IAutoMergeNode;
 import de.fekl.stat.core.api.node.IAutoSplitNode;
+import de.fekl.stat.core.api.state.IHistory;
 import de.fekl.stat.core.api.state.IStateContainer;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
 import de.fekl.stat.core.api.token.IToken;
@@ -207,7 +208,10 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 	@Override
 	public void onStart(IEventListener<IProcessStartedEvent> listener) {
 		processingEventBus.register(IProcessStartedEvent.class, listener);
-
+	}
+	
+	public IHistory<ITokenStore<T>> getHistory() {
+		return getStateContainer().getHistory();
 	}
 
 }
