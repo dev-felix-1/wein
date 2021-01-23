@@ -1,5 +1,6 @@
 package de.fekl.stat.core.impl.token;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -124,5 +125,11 @@ public class SimpleTokenStore<T extends IToken> implements ITokenStore<T> {
 		tokenMapping.clear();
 		tokenPositions.clear();
 		tokenPositionsValid = false;
+	}
+
+	@Override
+	public Set<T> getTokens() {
+		Collection<T> values = tokens.values();
+		return new HashSet<>(values);
 	}
 }

@@ -1,8 +1,12 @@
 package de.fekl.stat.core.api.state;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import de.fekl.dine.util.Precondition;
 import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.events.IEventBus;
+import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.impl.events.SimpleStateChangedEvent;
 
 public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
@@ -10,6 +14,8 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 	private S currentState;
 	private S initialState;
 	private IEventBus<IEvent> eventBus;
+
+	private List<IStateHasChangedEvent<S>> stateChangeEvents = new LinkedList<>();
 
 	protected AbstractStateContainer(S initialState, IEventBus<IEvent> eventBus) {
 		super();
@@ -35,12 +41,21 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 
 	protected <O extends IStateChangeOperation<S>> void postStateChangedEvent(O operation, S sourceState,
 			S targetState) {
-		eventBus.post(new SimpleStateChangedEvent<>(operation, sourceState, targetState));
+		var stateChangedEvent = new SimpleStateChangedEvent<>(operation, sourceState, targetState);
+		stateChangeEvents.add(stateChangedEvent);
+		eventBus.post(stateChangedEvent);
 	}
 
 	@Override
 	public void reset() {
 		currentState = initialState;
+	}
+
+	@Override
+	public IHistory<S> getHistory() {
+		return new AbstractHistory<S>(initialState, stateChangeEvents) {
+
+		};
 	}
 
 }

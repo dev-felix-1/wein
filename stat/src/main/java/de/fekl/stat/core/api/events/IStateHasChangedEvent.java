@@ -7,7 +7,7 @@ public interface IStateHasChangedEvent<T> extends IEvent {
 	IStateChangeOperation<T> getSourceOperation();
 
 	T getSourceState();
-	
+
 	T getTargetState();
 
 }

@@ -9,6 +9,8 @@ import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.events.IEventBus;
 import de.fekl.stat.core.api.events.IEventListener;
 import de.fekl.stat.core.api.events.IProcessFinishedEvent;
+import de.fekl.stat.core.api.events.IProcessStartedEvent;
+import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.api.node.IAutoMergeNode;
 import de.fekl.stat.core.api.node.IAutoSplitNode;
 import de.fekl.stat.core.api.state.IStateContainer;
@@ -168,12 +170,11 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 		processingEventBus.register(type, listener);
 	}
 
-	protected <E extends IEvent> void onProcessingFinished(IEventListener<IProcessFinishedEvent> listener) {
-		processingEventBus.register(IProcessFinishedEvent.class, listener);
-	}
-
-	protected void onStateChangeEvent(IEventListener<IEvent> listener) {
-		stateChangedEventBus.register(listener);
+	@Override
+	@SuppressWarnings("unchecked")
+	public void onStateChangedEvent(IEventListener<IStateHasChangedEvent<T>> listener) {
+		stateChangedEventBus.register((Class<IStateHasChangedEvent<T>>) (Class<?>) IStateHasChangedEvent.class,
+				listener);
 	}
 
 	protected <E extends IEvent> void onStateChangeEvent(Class<E> type, IEventListener<E> listener) {
@@ -195,6 +196,18 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 	@Override
 	public boolean isRunning() {
 		return running;
+	}
+
+	@Override
+	public void onFinish(IEventListener<IProcessFinishedEvent> listener) {
+		processingEventBus.register(IProcessFinishedEvent.class, listener);
+
+	}
+
+	@Override
+	public void onStart(IEventListener<IProcessStartedEvent> listener) {
+		processingEventBus.register(IProcessStartedEvent.class, listener);
+
 	}
 
 }

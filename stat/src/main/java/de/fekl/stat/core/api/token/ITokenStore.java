@@ -29,6 +29,8 @@ public interface ITokenStore<T extends IToken> {
 	}
 
 	Map<String, String> getTokenPositions();
+	
+	Set<T> getTokens();
 
 	T getToken(String tokenId);
 

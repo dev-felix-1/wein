@@ -16,6 +16,9 @@ import de.fekl.stat.core.api.edge.conditional.IConditionalEdge;
 import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.events.IEventListener;
 import de.fekl.stat.core.api.events.IEventQueue;
+import de.fekl.stat.core.api.events.IProcessFinishedEvent;
+import de.fekl.stat.core.api.events.IProcessStartedEvent;
+import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.api.state.IStateContainer;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingCondition;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
@@ -33,11 +36,11 @@ import de.fekl.stat.util.ILogger;
 import de.fekl.stat.util.LogManager;
 
 @Deprecated
-public class SimpleAsyncColouredNetProcessingContainer<N extends INode, T extends IToken>
+public class AsyncColouredNetProcessingContainer<N extends INode, T extends IToken>
 		implements IColouredNetProcessingContainer<T> {
 
 	private static final ILogger LOG = LogManager.getInstance()
-			.getLogger(SimpleAsyncColouredNetProcessingContainer.class);
+			.getLogger(AsyncColouredNetProcessingContainer.class);
 
 	private final IStateContainer<ITokenStore<T>> stateContainer;
 	private final ISpongeNet<N> net;
@@ -57,11 +60,11 @@ public class SimpleAsyncColouredNetProcessingContainer<N extends INode, T extend
 	private boolean stateChanedEventBusDaemon = false;
 	private boolean processingEventBusDaemon = false;
 
-	public SimpleAsyncColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
+	public AsyncColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
 			ITokenFactory<T> tokenFactory) {
 		this.net = net;
 		this.tokenFactory = tokenFactory;
-		processingContainerId = RandomNames.getRandomName(SimpleAsyncColouredNetProcessingContainer.class.getName(),
+		processingContainerId = RandomNames.getRandomName(AsyncColouredNetProcessingContainer.class.getName(),
 				"processor_", 15);
 		running = false;
 		abort = false;
@@ -243,6 +246,24 @@ public class SimpleAsyncColouredNetProcessingContainer<N extends INode, T extend
 	public void reset() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void onFinish(IEventListener<IProcessFinishedEvent> listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStart(IEventListener<IProcessStartedEvent> listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStateChangedEvent(IEventListener<IStateHasChangedEvent<T>> listener) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

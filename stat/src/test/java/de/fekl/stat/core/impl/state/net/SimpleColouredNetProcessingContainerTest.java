@@ -229,7 +229,7 @@ public class SimpleColouredNetProcessingContainerTest {
 
 		public MultiResultProcessingContainer(ISpongeNet<ValueModifierNode> net) {
 			super(net);
-			onProcessingFinished(e -> latchHolder.latch.countDown());
+			onFinish(e -> latchHolder.latch.countDown());
 		}
 
 		List<ValueHolderToken> processForMultiResult(ValueHolderToken token) throws InterruptedException {
