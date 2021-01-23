@@ -16,7 +16,7 @@ public class SimpleNode extends AbstractIdHolder<String> implements INode {
 
 	@Override
 	public int hashCode() {
-		return this.getClass().hashCode() + getId().getBytes().hashCode();
+		return this.getClass().hashCode() + getId().hashCode();
 	}
 
 	@Override

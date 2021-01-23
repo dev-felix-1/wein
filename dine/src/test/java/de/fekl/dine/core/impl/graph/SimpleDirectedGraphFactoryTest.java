@@ -1,4 +1,4 @@
-package de.fekl.dine.todo;
+package de.fekl.dine.core.impl.graph;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,11 +6,9 @@ import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import de.fekl.dine.core.impl.graph.SimpleDirectedGraph;
-import de.fekl.dine.core.impl.graph.SimpleDirectedGraphFactory;
 import de.fekl.dine.core.impl.node.SimpleNode;
 
-public class DirectedGraphFactoryTest {
+public class SimpleDirectedGraphFactoryTest {
 
 	// DEFAULT IMPL
 	@Test

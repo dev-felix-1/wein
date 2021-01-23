@@ -1,10 +1,8 @@
-package de.fekl.dine.todo;
+package de.fekl.dine.core.api.graph;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import de.fekl.dine.core.api.graph.DirectedGraphBuilder;
-import de.fekl.dine.core.api.graph.IDirectedGraph;
 import de.fekl.dine.core.api.node.AbstractNodeBuilder;
 import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.core.api.node.INodeFactory;

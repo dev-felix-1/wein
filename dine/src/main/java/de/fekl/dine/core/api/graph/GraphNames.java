@@ -14,8 +14,11 @@ public class GraphNames {
 
 	}
 
+	public static final String PREFIX = "graph_";
+	public static final int LENGTH = 14;
+
 	public static String generateName() {
-		return RandomNames.getRandomName(GraphNames.class.getName(), "graph_", 14);
+		return RandomNames.getRandomName(GraphNames.class.getName(), PREFIX, LENGTH);
 	}
 
 }

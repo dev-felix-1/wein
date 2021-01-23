@@ -15,8 +15,11 @@ public class NodeNames {
 
 	}
 
+	public static final String PREFIX = "node_";
+	public static final int LENGTH = 13;
+
 	public static String generateNodeName() {
-		return RandomNames.getRandomName(NodeNames.class.getName(), "node_", 13);
+		return RandomNames.getRandomName(NodeNames.class.getName(), PREFIX, LENGTH);
 	}
 
 }

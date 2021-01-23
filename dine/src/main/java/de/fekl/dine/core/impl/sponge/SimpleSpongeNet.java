@@ -33,7 +33,7 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 			throw new IllegalArgumentException("startNode is not part of the graph");
 		}
 		checkIsConnected(graph, startNode);
-		if (isCyclic(graph)) {
+		if (hasCycle(graph, startNode)) {
 			throw new IllegalArgumentException("graph is cyclic");
 		}
 		this.graph = graph;
@@ -71,6 +71,9 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 		String current = startNode;
 		List<IEdge> outgoingEdges = null;
 		while ((outgoingEdges = graph.getOutgoingEdges(current)).size() == 1) {
+			if (visited.contains(current)) {
+				return current;
+			}
 			visited.add(current);
 			current = outgoingEdges.get(0).getTarget();
 		}
@@ -83,6 +86,9 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 		String current = startNode;
 		List<IEdge> incomingEdges = null;
 		while ((incomingEdges = graph.getIncomingEdges(current)).size() == 1) {
+			if (visited.contains(current)) {
+				return current;
+			}
 			visited.add(current);
 			current = incomingEdges.get(0).getSource();
 		}
@@ -123,41 +129,44 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 		return leafs;
 	}
 
-	private static <N extends INode> boolean isCyclic(IDirectedGraph<N> graph) {
-		String next = graph.getNodes().iterator().next().getId();
-		return hasCycle(graph, next);
+	private static boolean isLoopingEdge(IEdge edge) {
+		return edge.getSource().equals(edge.getTarget());
 	}
 
-	private static <N extends INode> boolean hasCycle(IDirectedGraph<N> graph, String startNode, Set<String> visited) {
+	private static boolean edgeLeadsToCycle(Set<String> ancestors, IEdge edge) {
+		return isLoopingEdge(edge) || ancestors.contains(edge.getTarget());
+	}
 
-		// try to search on one way path first
+	private static <N extends INode> boolean hasCycle(IDirectedGraph<N> graph, String startNode,
+			Set<String> ancestors) {
+
 		String current = startNode;
-		List<IEdge> outgoingEdges = graph.getOutgoingEdges(current);
+
+		// try to search on one way path first - avoid recursion for stackoverflow
+		// issues in very big graphs
+		List<IEdge> outgoingEdges;
 		while ((outgoingEdges = graph.getOutgoingEdges(current)).size() == 1) {
-			visited.add(current);
+			ancestors.add(current);
 			IEdge edge = outgoingEdges.get(0);
-			if (edge.getSource().equals(edge.getTarget())) {
-				return true;
-			}
-			if (visited.contains(edge.getTarget())) {
+			if (edgeLeadsToCycle(ancestors, edge)) {
 				return true;
 			}
 			current = edge.getTarget();
 		}
 
-		visited.add(current);
+		ancestors.add(current);
 
 		// explore
 		for (IEdge edge : graph.getOutgoingEdges(current)) {
-			if (edge.getSource().equals(edge.getTarget())) {
-				return true;
-			}
-			if (visited.contains(edge.getTarget())) {
+			if (edgeLeadsToCycle(ancestors, edge)) {
 				return true;
 			} else {
-				return hasCycle(graph, edge.getTarget(), visited);
+				if (hasCycle(graph, edge.getTarget(), new HashSet<>(ancestors))) {
+					return true;
+				}
 			}
 		}
+
 		return false;
 	}
 

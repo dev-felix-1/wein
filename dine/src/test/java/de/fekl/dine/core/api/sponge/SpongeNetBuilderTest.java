@@ -12,5 +12,10 @@ public class SpongeNetBuilderTest {
 	public void testEmptyStartNode() {
 		ISpongeNet<INode> spongeNet = new SpongeNetBuilder<>(new DirectedGraphBuilder<>().addEdge("A", "B")).build();
 		Assertions.assertEquals("A", spongeNet.getRootId());
+		spongeNet = new SpongeNetBuilder<>(new DirectedGraphBuilder<>().addEdge("A", "B").addEdge("B", "C")).build();
+		Assertions.assertEquals("A", spongeNet.getRootId());
+		spongeNet = new SpongeNetBuilder<>(
+				new DirectedGraphBuilder<>().addNode("A").addNode("B").addEdge("A", "B").addEdge("B", "C")).build();
+		Assertions.assertEquals("A", spongeNet.getRootId());
 	}
 }
