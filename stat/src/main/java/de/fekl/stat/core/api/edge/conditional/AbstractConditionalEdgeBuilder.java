@@ -1,6 +1,6 @@
 package de.fekl.stat.core.api.edge.conditional;
 
-import de.fekl.dine.core.impl.edge.AbstractEdgeBuilder;
+import de.fekl.dine.core.api.edge.AbstractEdgeBuilder;
 
 public abstract class AbstractConditionalEdgeBuilder<
 //@formatter:off

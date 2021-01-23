@@ -1,8 +1,4 @@
-package de.fekl.dine.core.impl.edge;
-
-import de.fekl.dine.core.api.edge.IEdge;
-import de.fekl.dine.core.api.edge.IEdgeBuilder;
-import de.fekl.dine.core.api.edge.IEdgeFactory;
+package de.fekl.dine.core.api.edge;
 
 public abstract class AbstractEdgeBuilder<E extends IEdge, F extends IEdgeFactory<E>, B extends AbstractEdgeBuilder<E, F, B>>
 		implements IEdgeBuilder<E, F, B> {

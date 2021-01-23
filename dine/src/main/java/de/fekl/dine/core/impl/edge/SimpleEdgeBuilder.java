@@ -1,5 +1,7 @@
 package de.fekl.dine.core.impl.edge;
 
+import de.fekl.dine.core.api.edge.AbstractEdgeBuilder;
+
 public class SimpleEdgeBuilder extends AbstractEdgeBuilder<SimpleEdge, SimpleEdgeFactory, SimpleEdgeBuilder> {
 
 	public SimpleEdgeBuilder() {
