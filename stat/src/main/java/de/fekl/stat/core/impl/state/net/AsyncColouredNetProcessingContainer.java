@@ -12,6 +12,7 @@ import de.fekl.dine.core.api.edge.IEdge;
 import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
 import de.fekl.dine.util.RandomNames;
+import de.fekl.stat.core.api.edge.conditional.IColouredNetProcessingCondition;
 import de.fekl.stat.core.api.edge.conditional.IConditionalEdge;
 import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.events.IEventListener;
@@ -20,7 +21,6 @@ import de.fekl.stat.core.api.events.IProcessFinishedEvent;
 import de.fekl.stat.core.api.events.IProcessStartedEvent;
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.api.state.IStateContainer;
-import de.fekl.stat.core.api.state.net.IColouredNetProcessingCondition;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
 import de.fekl.stat.core.api.token.IToken;
 import de.fekl.stat.core.api.token.ITokenFactory;
@@ -195,7 +195,7 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 			if (conditionalEdge.getCondition() instanceof IColouredNetProcessingCondition condition) {
 				N sourceNode = getNet().getNode(sourceNodeId);
 				N targetNode = getNet().getNode(edge.getTarget());
-				shouldTrigger = condition.evaluate(token, sourceNode, targetNode);
+				shouldTrigger = condition.evaluate(sourceNode, targetNode, token);
 			} else {
 				LOG.debug("Ignoring unsupported Condition %s of type on edge %s...",
 						conditionalEdge.getCondition().getClass().getSimpleName(), edge);
