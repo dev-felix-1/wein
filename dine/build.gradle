@@ -1,21 +1,25 @@
-
 plugins {
-    id 'java'
+	id 'java'
 	id 'maven-publish'
 	id 'eclipse'
-	id 'jacoco'
 }
+
+if (!System.env.NEXUS_REPO_ALL_URL) {
+	plugins {
+
+		id 'jacoco'
+	}
+} 
 
 java {
 	withJavadocJar()
 	withSourcesJar()
 }
 
-repositories {
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-}
-jacoco {
-    toolVersion = '0.8.7-SNAPSHOT'
+if (!System.env.NEXUS_REPO_ALL_URL) {
+	jacoco {
+		toolVersion = '0.8.7-SNAPSHOT'
+	}
 }
 
 javadoc.options {
@@ -32,21 +36,21 @@ publishing {
 
 	repositories {
 		if (project.hasProperty('maven_local_repo')) {
-		println maven_local_repo
-		maven {
-			url maven_local_repo
-		}
+			println maven_local_repo
+			maven {
+				url maven_local_repo
+			}
 		}	 else {
-		mavenLocal()
+			mavenLocal()
 		}
 	}
 }
 
 repositories {
 	if (project.hasProperty('maven_local_repo')) {
-	    maven {
+		maven {
 			url maven_local_repo
-		} 
+		}
 	} else {
 		mavenLocal()
 	}
@@ -62,13 +66,13 @@ repositories {
 		maven {
 			url = uri('https://repo.maven.apache.org/maven2/')
 		}
+		maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	}
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0'
-    testRuntimeOnly  'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+	testRuntimeOnly  'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
 group = 'de.fekl'
@@ -77,7 +81,7 @@ description = 'dine'
 java.sourceCompatibility = JavaVersion.VERSION_15
 
 compileJava {
-    options.compilerArgs += ['--enable-preview']
+	options.compilerArgs += ['--enable-preview']
 }
 compileTestJava {
 	options.compilerArgs += ['--enable-preview']

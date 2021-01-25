@@ -2,8 +2,6 @@ package de.fekl.dine.core.impl.edge;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 import de.fekl.dine.core.api.edge.IEdge;
 
@@ -16,10 +14,11 @@ public class SimpleEdgeFactoryTest {
 		Assertions.assertNotNull(createEdge);
 	}
 
-	@ParameterizedTest
-	@CsvSource({ ",", ",TEST", "TEST," })
-	public void testCreateSimpleEdgeWithEmptyStrings(String src, String trgt) {
-		Assertions.assertThrows(IllegalArgumentException.class, () -> new SimpleEdgeFactory().createEdge(src, trgt));
+	@Test
+	public void testCreateSimpleEdgeWithEmptyStrings() {
+		Assertions.assertThrows(IllegalArgumentException.class, () -> new SimpleEdgeFactory().createEdge("", ""));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> new SimpleEdgeFactory().createEdge("", "TEST"));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> new SimpleEdgeFactory().createEdge("TEST", ""));
 	}
 
 	public void testCreateSimpleEdgeWithNullStrings() {
