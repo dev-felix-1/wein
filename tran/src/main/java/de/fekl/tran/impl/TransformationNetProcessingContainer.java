@@ -8,16 +8,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import de.fekl.dine.core.api.edge.IEdge;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
 import de.fekl.stat.core.api.events.IEndNodeReachedEvent;
-import de.fekl.stat.core.api.events.IProcessFinishedEvent;
-import de.fekl.stat.core.api.events.IProcessStartedEvent;
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.api.events.IStepStartedEvent;
 import de.fekl.stat.core.api.state.IStateChangeOperation;
@@ -47,39 +42,34 @@ public class TransformationNetProcessingContainer
 
 	private final BlockingQueue<MessageContainer> processedTokens = new ArrayBlockingQueue<>(64);
 
-	private volatile CountDownLatch waitForStart = new CountDownLatch(1);
-	private volatile CountDownLatch waitForFinish = new CountDownLatch(1);
-
 	public TransformationNetProcessingContainer(ISpongeNet<ITransformer<?, ?>> net,
 			ITokenStore<MessageContainer> initialState) {
 		super(net, initialState, new MessageContainerFactory());
 
-		onStateChangeEvent(event -> {
-			if (event instanceof IStateHasChangedEvent<?>stateChangedEvent) {
-				if (stateChangedEvent.getSourceOperation() instanceof ITokenTransitionOperation<?>tokenTransition) {
+		onStateChangedEvent(event -> {
+			if (event.getSourceOperation() instanceof ITokenTransitionOperation tokenTransition) {
 
-					IToken transitionedToken = tokenTransition.getTransitionedToken();
-					String targetNodeId = tokenTransition.getTargetNodeId();
-					ITransformer<?, ?> transformer = getNet().getNode(targetNodeId);
-					if (transformer instanceof IMerger) {
-						// skip
-					} else {
-						handleTransformation(transformer, (IMessageContainer) transitionedToken);
-					}
-				} else if (stateChangedEvent.getSourceOperation() instanceof ITokenCreationOperation<?>tokenCreation) {
-
-					IToken transitionedToken = tokenCreation.getCreatedToken();
-					String targetNodeId = tokenCreation.getTargetNodeId();
-					ITransformer<?, ?> transformer = getNet().getNode(targetNodeId);
+				IToken transitionedToken = tokenTransition.getTransitionedToken();
+				String targetNodeId = tokenTransition.getTargetNodeId();
+				ITransformer<?, ?> transformer = getNet().getNode(targetNodeId);
+				if (transformer instanceof IMerger) {
+					// skip
+				} else {
 					handleTransformation(transformer, (IMessageContainer) transitionedToken);
-				}else if (stateChangedEvent.getSourceOperation() instanceof ITokenMergeOperation<?>tokenMerge) {
-
-					List<MessageContainer> mergedToken = (List<MessageContainer>) tokenMerge.mergedTokens();
-					IToken resultToken = tokenMerge.getResultToken();
-					String targetNodeId = tokenMerge.getTargetNodeId();
-					IMerger<?> merger = (IMerger<?>) getNet().getNode(targetNodeId);
-					handleTransformation(merger, (IMessageContainer) resultToken);
 				}
+			} else if (event.getSourceOperation() instanceof ITokenCreationOperation tokenCreation) {
+
+				IToken transitionedToken = tokenCreation.getCreatedToken();
+				String targetNodeId = tokenCreation.getTargetNodeId();
+				ITransformer<?, ?> transformer = getNet().getNode(targetNodeId);
+				handleTransformation(transformer, (IMessageContainer) transitionedToken);
+			} else if (event.getSourceOperation() instanceof ITokenMergeOperation tokenMerge) {
+
+				List<MessageContainer> mergedToken = (List<MessageContainer>) tokenMerge.mergedTokens();
+				IToken resultToken = tokenMerge.getResultToken();
+				String targetNodeId = tokenMerge.getTargetNodeId();
+				IMerger<?> merger = (IMerger<?>) getNet().getNode(targetNodeId);
+				handleTransformation(merger, (IMessageContainer) resultToken);
 			}
 		});
 
@@ -87,9 +77,6 @@ public class TransformationNetProcessingContainer
 			if (event instanceof IEndNodeReachedEvent endNodeReachedEvent) {
 				MessageContainer token = (MessageContainer) endNodeReachedEvent.getToken();
 				processedTokens.add(token);
-				IStateChangeOperation<ITokenStore<MessageContainer>> removeTokenOp = ColouredNetOperations
-						.removeToken(endNodeReachedEvent.getNode().getId(), token);
-				getStateContainer().changeState(removeTokenOp);
 			}
 		});
 
@@ -99,18 +86,6 @@ public class TransformationNetProcessingContainer
 						((IStepStartedEvent) event).getStep(),
 						ITokenStore.print(getStateContainer().getCurrentState()));
 
-			}
-		});
-
-		onProcessingEvent(event -> {
-			if (event instanceof IProcessStartedEvent) {
-				waitForStart.countDown();
-			}
-		});
-
-		onProcessingEvent(event -> {
-			if (event instanceof IProcessFinishedEvent) {
-				waitForFinish.countDown();
 			}
 		});
 	}
@@ -159,11 +134,10 @@ public class TransformationNetProcessingContainer
 			}
 		}
 		if (incomingEdges.stream().allMatch(e -> tokensAwaitingMerge.values().contains(e))) {
-			
+
 			List<Entry<String, IEdge>> collect = tokensAwaitingMerge.entrySet().stream()
-					.filter(e -> incomingEdges.contains(e.getValue()))
-					.collect(Collectors.toList());
-			
+					.filter(e -> incomingEdges.contains(e.getValue())).collect(Collectors.toList());
+
 			List<MessageContainer> tokensToMerge = new ArrayList<>();
 			for (var entry : collect) {
 				String tokenId = entry.getKey();
@@ -195,14 +169,6 @@ public class TransformationNetProcessingContainer
 		((MessageContainer) messageContainer).setMessage(transformedMessage);
 	}
 
-	public MessageContainer getNextProcessed() throws InterruptedException, TimeoutException {
-		MessageContainer poll = processedTokens.poll(3, TimeUnit.SECONDS);
-		if (poll == null) {
-			throw new TimeoutException();
-		}
-		return poll;
-	}
-//
 	public List<MessageContainer> getAllCurrentlyProcessed() throws InterruptedException {
 		List<MessageContainer> result = new ArrayList<>();
 		MessageContainer mc = null;
@@ -210,14 +176,6 @@ public class TransformationNetProcessingContainer
 			result.add(mc);
 		}
 		return result;
-	}
-
-	public void waitForStart() throws InterruptedException {
-		waitForStart.await();
-	}
-
-	public void waitForFinish() throws InterruptedException {
-		waitForFinish.await();
 	}
 
 }

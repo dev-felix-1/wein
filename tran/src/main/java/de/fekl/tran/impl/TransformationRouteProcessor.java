@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import de.fekl.tran.api.core.IMessage;
@@ -29,14 +28,7 @@ public class TransformationRouteProcessor {
 	protected <T> IMessage<T> process(MessageContainer messageContainer,
 			TransformationNetProcessingContainer processingContainer) throws InterruptedException {
 		processingContainer.process(messageContainer);
-		MessageContainer processedMessageContainer;
-		try {
-			processedMessageContainer = processingContainer.getNextProcessed();
-		} catch (TimeoutException e) {
-			throw new IllegalStateException(e);
-		}
-//		processingContainer.shutdown();
-		return processedMessageContainer.getMessage();
+		return processingContainer.getAllCurrentlyProcessed().get(0).getMessage();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -46,18 +38,11 @@ public class TransformationRouteProcessor {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		executor.submit(() -> processingContainer.process(messageContainer));
 
-		processingContainer.waitForFinish();
-
 		var result = (List<IMessage<T>>) (List<?>) processingContainer.getAllCurrentlyProcessed().stream()
 				.map(mc -> mc.getMessage()).collect(Collectors.toList());
 
 		executor.shutdown();
 		return result;
-
-//		Set<String> tokens = processingContainer.getCurrentState().getTokenPositions().keySet();
-//
-//		return (List<IMessage<T>>) (List<?>) tokens.stream()
-//				.map(k -> processingContainer.getCurrentState().getToken(k).getMessage()).collect(Collectors.toList());
 
 	}
 
