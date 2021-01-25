@@ -4,11 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import de.fekl.stat.core.api.state.IStateChangeOperation;
-import de.fekl.stat.core.api.state.net.ITokenCreationOperation;
-import de.fekl.stat.core.api.state.net.ITokenMergeOperation;
-import de.fekl.stat.core.api.state.net.ITokenRemovalOperation;
-import de.fekl.stat.core.api.state.net.ITokenTransitionOperation;
+import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
+import de.fekl.stat.core.api.state.operations.ITokenCreationOperation;
+import de.fekl.stat.core.api.state.operations.ITokenMergeOperation;
+import de.fekl.stat.core.api.state.operations.ITokenRemovalOperation;
+import de.fekl.stat.core.api.state.operations.ITokenTransitionOperation;
 import de.fekl.stat.core.api.token.IToken;
 import de.fekl.stat.core.api.token.ITokenFactory;
 import de.fekl.stat.core.api.token.ITokenStore;

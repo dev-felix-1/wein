@@ -14,14 +14,16 @@ import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
 import de.fekl.dine.core.api.sponge.SpongeNetBuilder;
 import de.fekl.dine.core.impl.node.SimpleNode;
+import de.fekl.stat.core.api.events.IProcessWaitingEvent;
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.api.events.IStepStartedEvent;
 import de.fekl.stat.core.api.node.IAutoSplitNode;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
-import de.fekl.stat.core.api.state.net.ITokenCreationOperation;
-import de.fekl.stat.core.api.state.net.ITokenTransitionOperation;
+import de.fekl.stat.core.api.state.operations.ITokenCreationOperation;
+import de.fekl.stat.core.api.state.operations.ITokenTransitionOperation;
 import de.fekl.stat.core.api.token.ITokenFactory;
 import de.fekl.stat.core.api.token.ITokenStore;
+import de.fekl.stat.core.impl.edge.conditional.SimpleConditionalEdge;
 import de.fekl.stat.core.impl.token.SimpleToken;
 import de.fekl.stat.core.impl.token.SimpleTokenFactory;
 import de.fekl.stat.util.ILogger;
@@ -49,6 +51,57 @@ public class SimpleColouredNetProcessingContainerTest {
 		SimpleToken token = simpleTokenFactory.createToken();
 		processingContainer.process(token);
 		String position = processingContainer.getCurrentState().getPosition(token);
+		Assertions.assertEquals("D", position);
+	}
+
+	@Test
+	public void testConditionalRouteProcessing() {
+
+		var conditionHolder = new Object() {
+			boolean value = false;
+		};
+		//@formatter:off
+		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
+				.setGraph(new DirectedGraphBuilder<SimpleNode>()
+						.addEdge("A","B")
+						.addEdge(new SimpleConditionalEdge("B", "C", (a,b,c)-> conditionHolder.value))
+						.addEdge("C","D"))
+				.setStartNode("A")
+				.build();
+		//@formatter:on
+
+		SimpleTokenFactory simpleTokenFactory = new SimpleTokenFactory();
+
+		IColouredNetProcessingContainer<SimpleToken> processingContainer = new SimpleColouredNetProcessingContainer<>(
+				spongeNet, simpleTokenFactory);
+
+		processingContainer.onProcessingEvent(e -> {
+			if (e instanceof IProcessWaitingEvent) {
+				conditionHolder.value = true;
+				processingContainer.update();
+			}
+		});
+		
+		
+		CountDownLatch latch = new CountDownLatch(1);
+		processingContainer.onFinish(e -> {
+			latch.countDown();
+		});
+
+		SimpleToken token = simpleTokenFactory.createToken();
+		ExecutorService exe = Executors.newSingleThreadExecutor();
+		exe.execute(() -> processingContainer.process(token));
+		
+		try {
+			latch.await();
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
+		String position = processingContainer.getCurrentState().getPosition(token);
+		exe.shutdown();
 		Assertions.assertEquals("D", position);
 	}
 
@@ -279,8 +332,7 @@ public class SimpleColouredNetProcessingContainerTest {
 
 		SimpleTokenFactory simpleTokenFactory = new SimpleTokenFactory();
 
-		var processingContainer = new SimpleColouredNetProcessingContainer<>(
-				spongeNet, simpleTokenFactory);
+		var processingContainer = new SimpleColouredNetProcessingContainer<>(spongeNet, simpleTokenFactory);
 
 		SimpleToken token = simpleTokenFactory.createToken();
 		processingContainer.process(token);
@@ -289,7 +341,7 @@ public class SimpleColouredNetProcessingContainerTest {
 		var iterator = history.getChanges().iterator();
 		ITokenStore<SimpleToken> currentState = initialState;
 		System.out.println(ITokenStore.print(currentState));
-		while(iterator.hasNext()) {
+		while (iterator.hasNext()) {
 			var next = iterator.next();
 			var sourceOperation = next.getSourceOperation();
 			currentState = sourceOperation.apply(currentState);

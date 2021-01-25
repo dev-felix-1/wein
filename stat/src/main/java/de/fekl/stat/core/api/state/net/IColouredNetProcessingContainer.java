@@ -1,5 +1,6 @@
 package de.fekl.stat.core.api.state.net;
 
+import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.events.IEventListener;
 import de.fekl.stat.core.api.events.IProcessFinishedEvent;
 import de.fekl.stat.core.api.events.IProcessStartedEvent;
@@ -22,4 +23,10 @@ public interface IColouredNetProcessingContainer<T extends IToken> {
 	void onStart(IEventListener<IProcessStartedEvent> listener);
 	
 	void onStateChangedEvent(IEventListener<IStateHasChangedEvent<T>> listener);
+	
+	void onProcessingEvent(IEventListener<IEvent> listener);
+	
+	void update();
+	
+	boolean isWaiting();
 }

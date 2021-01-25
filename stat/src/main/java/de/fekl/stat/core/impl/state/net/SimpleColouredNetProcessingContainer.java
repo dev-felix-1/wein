@@ -1,10 +1,15 @@
 package de.fekl.stat.core.impl.state.net;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import de.fekl.dine.core.api.edge.IEdge;
 import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
+import de.fekl.stat.core.api.edge.conditional.ICondition;
+import de.fekl.stat.core.api.edge.conditional.IConditionalEdge;
 import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.events.IEventBus;
 import de.fekl.stat.core.api.events.IEventListener;
@@ -22,6 +27,7 @@ import de.fekl.stat.core.api.token.ITokenStore;
 import de.fekl.stat.core.impl.events.EndNodeReachedEvent;
 import de.fekl.stat.core.impl.events.ProcessFinishedEvent;
 import de.fekl.stat.core.impl.events.ProcessStartedEvent;
+import de.fekl.stat.core.impl.events.ProcessWaitingEvent;
 import de.fekl.stat.core.impl.events.SimpleEventBus;
 import de.fekl.stat.core.impl.events.StepFinishedEvent;
 import de.fekl.stat.core.impl.events.StepStartedEvent;
@@ -39,6 +45,9 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 	private ITokenFactory<T> tokenFactory;
 	private boolean running;
 	private long stepCounter;
+	private CountDownLatch waitForUpdate;
+
+	private final List<T> waitingTokens = new ArrayList<>();
 
 	public SimpleColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
 			ITokenFactory<T> tokenFactory) {
@@ -78,6 +87,12 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 				.allMatch(e -> net.isLeaf(e.getValue()));
 	}
 
+	protected List<T> getUnfinishedTokens() {
+		return stateContainer.getCurrentState().getTokenPositions().entrySet().stream()
+				.filter(e -> !net.isLeaf(e.getValue())).map(e -> stateContainer.getCurrentState().getToken(e.getKey()))
+				.collect(Collectors.toList());
+	}
+
 	private void step() {
 		boolean finished = isFinished();
 
@@ -99,6 +114,17 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 			setRunning(false);
 			processingEventBus.post(new ProcessFinishedEvent());
 		} else {
+			if (waitingTokens.size() > 0) {
+				List<T> relevantTokens = getUnfinishedTokens();
+				if (relevantTokens.size() == waitingTokens.size()) {
+					try {
+						processingEventBus.post(new ProcessWaitingEvent());
+						waitForUpdate.await();
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}
+			}
 			step();
 		}
 	}
@@ -140,15 +166,39 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 
 	protected <C extends IStateContainer<ITokenStore<T>>> void handleTokenCopyTransition(C stateContainer, T token,
 			IEdge edge) {
-		String target = edge.getTarget();
-		stateContainer.changeState(ColouredNetOperations.copyToken(target, token, tokenFactory));
+		if (edgeCanTransition(token, edge)) {
+			String target = edge.getTarget();
+			stateContainer.changeState(ColouredNetOperations.copyToken(target, token, tokenFactory));
+		} else {
+			waitingTokens.add(token);
+			waitForUpdate = new CountDownLatch(1);
+		}
+	}
+
+	protected boolean edgeCanTransition(T token, IEdge edge) {
+		if (edge instanceof IConditionalEdge<?, ?>conditionalEdge) {
+			String target = edge.getTarget();
+			String source = edge.getSource();
+			N sourceNode = getNet().getNode(source);
+			N targetNode = getNet().getNode(target);
+			@SuppressWarnings("unchecked")
+			ICondition<N, T> condition = ((IConditionalEdge<N, T>) conditionalEdge).getCondition();
+			return condition.evaluate(sourceNode, targetNode, token);
+		} else {
+			return true;
+		}
 	}
 
 	protected <C extends IStateContainer<ITokenStore<T>>> void handleTokenMoveTransition(C stateContainer, T token,
 			IEdge edge) {
-		String target = edge.getTarget();
-		String source = edge.getSource();
-		stateContainer.changeState(ColouredNetOperations.moveToken(source, target, token));
+		if (edgeCanTransition(token, edge)) {
+			String target = edge.getTarget();
+			String source = edge.getSource();
+			stateContainer.changeState(ColouredNetOperations.moveToken(source, target, token));
+		} else {
+			waitingTokens.add(token);
+			waitForUpdate = new CountDownLatch(1);
+		}
 	}
 
 	protected ISpongeNet<N> getNet() {
@@ -163,7 +213,8 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 		return tokenFactory;
 	}
 
-	protected void onProcessingEvent(IEventListener<IEvent> listener) {
+	@Override
+	public void onProcessingEvent(IEventListener<IEvent> listener) {
 		processingEventBus.register(listener);
 	}
 
@@ -209,9 +260,21 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 	public void onStart(IEventListener<IProcessStartedEvent> listener) {
 		processingEventBus.register(IProcessStartedEvent.class, listener);
 	}
-	
+
 	public IHistory<ITokenStore<T>> getHistory() {
 		return getStateContainer().getHistory();
+	}
+
+	@Override
+	public void update() {
+		if (waitForUpdate != null) {
+			waitForUpdate.countDown();
+		}
+	}
+
+	@Override
+	public boolean isWaiting() {
+		return waitForUpdate != null && waitForUpdate.getCount() > 0;
 	}
 
 }

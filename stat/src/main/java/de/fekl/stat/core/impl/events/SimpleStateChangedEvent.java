@@ -1,7 +1,7 @@
 package de.fekl.stat.core.impl.events;
 
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
-import de.fekl.stat.core.api.state.IStateChangeOperation;
+import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
 
 public class SimpleStateChangedEvent<T> implements IStateHasChangedEvent<T> {
 

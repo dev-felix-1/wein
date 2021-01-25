@@ -1,6 +1,5 @@
-package de.fekl.stat.core.api.state.net;
+package de.fekl.stat.core.api.state.operations;
 
-import de.fekl.stat.core.api.state.IStateChangeOperation;
 import de.fekl.stat.core.api.token.IToken;
 import de.fekl.stat.core.api.token.ITokenStore;
 

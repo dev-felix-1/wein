@@ -39,8 +39,7 @@ import de.fekl.stat.util.LogManager;
 public class AsyncColouredNetProcessingContainer<N extends INode, T extends IToken>
 		implements IColouredNetProcessingContainer<T> {
 
-	private static final ILogger LOG = LogManager.getInstance()
-			.getLogger(AsyncColouredNetProcessingContainer.class);
+	private static final ILogger LOG = LogManager.getInstance().getLogger(AsyncColouredNetProcessingContainer.class);
 
 	private final IStateContainer<ITokenStore<T>> stateContainer;
 	private final ISpongeNet<N> net;
@@ -228,7 +227,8 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 		return running;
 	}
 
-	protected void onProcessingEvent(IEventListener<IEvent> listener) {
+	@Override
+	public void onProcessingEvent(IEventListener<IEvent> listener) {
 		processingEventBus.register(listener);
 	}
 
@@ -251,19 +251,31 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 	@Override
 	public void onFinish(IEventListener<IProcessFinishedEvent> listener) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onStart(IEventListener<IProcessStartedEvent> listener) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onStateChangedEvent(IEventListener<IStateHasChangedEvent<T>> listener) {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	@Override
+	public void update() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public boolean isWaiting() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

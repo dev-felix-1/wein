@@ -1,4 +1,4 @@
-package de.fekl.stat.core.api.state;
+package de.fekl.stat.core.api.state.operations;
 
 @FunctionalInterface
 public interface IStateChangeOperation<T> {

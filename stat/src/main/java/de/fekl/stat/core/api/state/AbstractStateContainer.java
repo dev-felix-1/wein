@@ -7,6 +7,7 @@ import de.fekl.dine.util.Precondition;
 import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.events.IEventBus;
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
+import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
 import de.fekl.stat.core.impl.events.SimpleStateChangedEvent;
 
 public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
