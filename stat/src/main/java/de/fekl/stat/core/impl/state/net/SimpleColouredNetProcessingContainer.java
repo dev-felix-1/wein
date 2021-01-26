@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
@@ -150,27 +151,29 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 		for (N mergeNode : getMergeNodes()) {
 			Map<String, List<T>> tokenBuffer = tokenBuffers.computeIfAbsent(mergeNode.getId(), s -> new HashMap<>());
 			List<IEdge> incomingEdges = getNet().getIncomingEdges(mergeNode);
-			boolean doMerge = incomingEdges.size() > 0;
-			for (IEdge edge : incomingEdges) {
-				List<T> bufferedTokensForSource = tokenBuffer.get(edge.getSource());
-				if (bufferedTokensForSource == null || bufferedTokensForSource.isEmpty()) {
-					doMerge = false;
-					break;
-				}
-			}
-			if (doMerge) {
-				List<T> tokensToBeMerged = new ArrayList<>(incomingEdges.size());
+			if (tokenBuffer.size() > 0) {
+				boolean doMerge = incomingEdges.size() > 0;
 				for (IEdge edge : incomingEdges) {
 					List<T> bufferedTokensForSource = tokenBuffer.get(edge.getSource());
-					tokensToBeMerged.add(bufferedTokensForSource.remove(0));
+					if (bufferedTokensForSource == null || bufferedTokensForSource.isEmpty()) {
+						doMerge = false;
+						break;
+					}
 				}
-				handleTokenMerge(tokensToBeMerged, mergeNode.getId());
+				if (doMerge) {
+					List<T> tokensToBeMerged = new ArrayList<>(incomingEdges.size());
+					for (IEdge edge : incomingEdges) {
+						List<T> bufferedTokensForSource = tokenBuffer.get(edge.getSource());
+						tokensToBeMerged.add(bufferedTokensForSource.remove(0));
+					}
+					handleTokenMerge(tokensToBeMerged, mergeNode.getId());
+				}
 			}
 		}
 	}
 
 	protected void handleTokenMerge(List<T> tokens, String targetNode) {
-		changeState(ColouredNetOperations.mergeToken(targetNode, tokens, tokenFactory));
+		changeState(ColouredNetOperations.mergeToken(targetNode, tokens, getTokenFactory()));
 	}
 
 	protected void handleTransitions() {
@@ -196,6 +199,9 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 	protected void handleTokenSplitTransition(T token, N currentNode, List<IEdge> outgoingEdges) {
 		for (int i = 0; i < outgoingEdges.size(); i++) {
 			IEdge edge = outgoingEdges.get(i);
+			if (edge instanceof IConditionalEdge) {
+				throw new IllegalStateException("Conditional Edge on Splitter-Node currently not supported!");
+			}
 			if (i == outgoingEdges.size() - 1) {
 				handleTokenMoveTransition(token, edge);
 			} else {
@@ -210,29 +216,39 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 			if (isSplitterNode(currentNode)) {
 				handleTokenSplitTransition(token, currentNode, outgoingEdges);
 			} else if (isMergerNode(currentNode)) {
-				handleTokenMerge(token, currentNode, outgoingEdges);
+				handleTokenWaitingForMerge(token, currentNode, outgoingEdges);
 			} else {
-				IEdge firstEdge = outgoingEdges.get(0);
-				handleTokenMoveTransition(token, firstEdge);
+				Optional<IEdge> firstEdge = outgoingEdges.stream().filter(e -> edgeCanTransition(token, e)).findFirst();
+				if (firstEdge.isPresent()) {
+					handleTokenMoveTransition(token, firstEdge.get());
+				} else {
+					waitingTokens.add(token);
+					waitForUpdate = new CountDownLatch(1);
+				}
 			}
 		} else {
 			postProcessingEvent(new EndNodeReachedEvent<>(currentNode, token));
 		}
 	}
 
-	private void handleTokenMerge(T token, N currentNode, List<IEdge> outgoingEdges) {
+	private void handleTokenWaitingForMerge(T token, N currentNode, List<IEdge> outgoingEdges) {
 		List<T> allBufferedTokens = tokenBuffers.computeIfAbsent(currentNode.getId(), s -> new HashMap<>()).values()
 				.stream().flatMap(Collection::stream).collect(Collectors.toList());
 		if (!allBufferedTokens.contains(token)) {
-			IEdge firstEdge = outgoingEdges.get(0);
-			handleTokenMoveTransition(token, firstEdge);
+			Optional<IEdge> firstEdge = outgoingEdges.stream().filter(e -> edgeCanTransition(token, e)).findFirst();
+			if (firstEdge.isPresent()) {
+				handleTokenMoveTransition(token, firstEdge.get());
+			} else {
+				waitingTokens.add(token);
+				waitForUpdate = new CountDownLatch(1);
+			}
 		}
 	}
 
 	protected void handleTokenCopyTransition(T token, IEdge edge) {
 		if (edgeCanTransition(token, edge)) {
 			String target = edge.getTarget();
-			changeState(ColouredNetOperations.copyToken(target, token, tokenFactory));
+			changeState(ColouredNetOperations.copyToken(target, token, getTokenFactory()));
 		} else {
 			waitingTokens.add(token);
 			waitForUpdate = new CountDownLatch(1);
@@ -254,17 +270,13 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 	}
 
 	protected void handleTokenMoveTransition(T token, IEdge edge) {
-		if (edgeCanTransition(token, edge)) {
-			String target = edge.getTarget();
-			String source = edge.getSource();
-			stateContainer.changeState(ColouredNetOperations.moveToken(source, target, token));
-			if (isMergerNode(getNet().getNode(target))) {
-				handleTokenArrivedOnMergeNode(source, target, token);
-			}
-		} else {
-			waitingTokens.add(token);
-			waitForUpdate = new CountDownLatch(1);
+		String target = edge.getTarget();
+		String source = edge.getSource();
+		stateContainer.changeState(ColouredNetOperations.moveToken(source, target, token));
+		if (isMergerNode(getNet().getNode(target))) {
+			handleTokenArrivedOnMergeNode(source, target, token);
 		}
+
 	}
 
 	protected void handleTokenArrivedOnMergeNode(String sourceNodeId, String mergerNodeId, T token) {

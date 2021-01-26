@@ -129,6 +129,29 @@ public class SimpleColouredNetProcessingContainerTest {
 	}
 
 	@Test
+	public void testConditionalRouteOnSplitterNodeProcessing() {
+
+		//@formatter:off
+		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
+				.setGraph(new DirectedGraphBuilder<SimpleNode>()
+						.addNode(new SimpleAutoSplitNode("B"))
+						.addEdge("A","B")
+						.addEdge(new SimpleConditionalEdge<>("B", "C", (a,b,c)-> true))
+						.addEdge("C","D"))
+				.build();
+		//@formatter:on
+
+		SimpleTokenFactory simpleTokenFactory = new SimpleTokenFactory();
+
+		IColouredNetProcessingContainer<SimpleToken> processingContainer = new SimpleColouredNetProcessingContainer<>(
+				spongeNet, simpleTokenFactory);
+
+		Assertions.assertThrows(IllegalStateException.class,
+				() -> processingContainer.process(simpleTokenFactory.createToken()));
+
+	}
+
+	@Test
 	public void testSimpleSpongeProcessing() {
 		//@formatter:off
 		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
@@ -187,22 +210,36 @@ public class SimpleColouredNetProcessingContainerTest {
 				.setGraph(new DirectedGraphBuilder<SimpleNode>()
 						.addNode(new SimpleAutoSplitNode("A"))
 						.addNode(new SimpleAutoMergeNode<>("D"))
-						.addEdge("A","B")
+						.addEdge("A","A2")
+						.addEdge("A2","B")
 						.addEdge("A","C")
 						.addEdge("B","D")
-						.addEdge("C","D"))
+						.addEdge("C","D")
+						.addEdge("D","E"))
 				.build();
 		//@formatter:on
 
 		SimpleTokenFactory simpleTokenFactory = new SimpleTokenFactory();
 
-		IColouredNetProcessingContainer<SimpleToken> processingContainer = new SimpleColouredNetProcessingContainer<>(
+		SimpleColouredNetProcessingContainer<SimpleNode, SimpleToken> processingContainer = new SimpleColouredNetProcessingContainer<>(
 				spongeNet, simpleTokenFactory);
 
 		SimpleToken token = simpleTokenFactory.createToken();
 		processingContainer.process(token);
-		System.err.println(ITokenStore.print(processingContainer.getCurrentState()));
+//		System.err.println(ITokenStore.print(processingContainer.getCurrentState()));
 		Assertions.assertEquals(1, processingContainer.getCurrentState().getTokenPositions().size());
+
+		var history = processingContainer.getHistory();
+		var initialState = history.getInitialState();
+		var iterator = history.getChanges().iterator();
+		ITokenStore<SimpleToken> currentState = initialState;
+		System.out.println(ITokenStore.print(currentState));
+		while (iterator.hasNext()) {
+			var next = iterator.next();
+			var sourceOperation = next.getSourceOperation();
+			currentState = sourceOperation.apply(currentState);
+			System.out.println(ITokenStore.print(currentState));
+		}
 	}
 
 	@Test

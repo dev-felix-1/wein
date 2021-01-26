@@ -2,11 +2,16 @@
 plugins {
     id 'java'
 	id 'maven-publish'
+	id 'jacoco'
 }
 
 java {
 	withJavadocJar()
 	withSourcesJar()
+}
+
+jacoco {
+	toolVersion = '0.8.7-SNAPSHOT'
 }
 
 javadoc.options {
@@ -52,6 +57,7 @@ repositories {
 		maven {
 			url = uri('https://repo.maven.apache.org/maven2/')
 		}
+		maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	}
 }
 
