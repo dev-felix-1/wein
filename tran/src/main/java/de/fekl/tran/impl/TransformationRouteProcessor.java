@@ -6,10 +6,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import de.fekl.stat.core.impl.state.net.SimpleColouredNetProcessor;
 import de.fekl.tran.api.core.IMessage;
 import de.fekl.tran.api.core.ITransformationRoute;
 
-public class TransformationRouteProcessor {
+public class TransformationRouteProcessor extends SimpleColouredNetProcessor {
 
 	protected <T> MessageContainer wrapMessage(IMessage<T> message) {
 		MessageContainer messageContainer = new MessageContainer();

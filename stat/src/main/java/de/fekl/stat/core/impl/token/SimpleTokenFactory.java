@@ -16,7 +16,7 @@ public class SimpleTokenFactory implements ITokenFactory<SimpleToken> {
 
 	@Override
 	public SimpleToken copyToken(SimpleToken token) {
-		return createToken(TokenNames.generateTokenName());
+		return new SimpleTokenCopy(TokenNames.generateTokenName() + "_copy:" + token.getId(), token);
 	}
 
 	@Override
@@ -24,7 +24,7 @@ public class SimpleTokenFactory implements ITokenFactory<SimpleToken> {
 		if (tokens.size() == 1) {
 			return tokens.get(0);
 		}
-		return createToken(tokens.stream().map(IToken::getId).collect(Collectors.joining("+")));
+		return new SimpleAutoMergedToken(tokens.stream().map(IToken::getId).collect(Collectors.joining("+")), tokens);
 	}
 
 }

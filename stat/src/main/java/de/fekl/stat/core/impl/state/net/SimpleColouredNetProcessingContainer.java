@@ -1,7 +1,11 @@
 package de.fekl.stat.core.impl.state.net;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
@@ -16,11 +20,17 @@ import de.fekl.stat.core.api.events.IEventListener;
 import de.fekl.stat.core.api.events.IProcessFinishedEvent;
 import de.fekl.stat.core.api.events.IProcessStartedEvent;
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
+import de.fekl.stat.core.api.events.IStepFinishedEvent;
+import de.fekl.stat.core.api.events.IStepStartedEvent;
+import de.fekl.stat.core.api.events.ITokenCreationEvent;
+import de.fekl.stat.core.api.events.ITokenMergeEvent;
+import de.fekl.stat.core.api.events.ITokenTransitionEvent;
 import de.fekl.stat.core.api.node.IAutoMergeNode;
 import de.fekl.stat.core.api.node.IAutoSplitNode;
 import de.fekl.stat.core.api.state.IHistory;
 import de.fekl.stat.core.api.state.IStateContainer;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
+import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
 import de.fekl.stat.core.api.token.IToken;
 import de.fekl.stat.core.api.token.ITokenFactory;
 import de.fekl.stat.core.api.token.ITokenStore;
@@ -31,7 +41,7 @@ import de.fekl.stat.core.impl.events.ProcessWaitingEvent;
 import de.fekl.stat.core.impl.events.SimpleEventBus;
 import de.fekl.stat.core.impl.events.StepFinishedEvent;
 import de.fekl.stat.core.impl.events.StepStartedEvent;
-import de.fekl.stat.core.impl.state.SimpleStateContainer;
+import de.fekl.stat.core.impl.state.TokenStoreStateContainer;
 import de.fekl.stat.core.impl.token.SimpleTokenStore;
 
 public class SimpleColouredNetProcessingContainer<N extends INode, T extends IToken>
@@ -48,6 +58,7 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 	private CountDownLatch waitForUpdate;
 
 	private final List<T> waitingTokens = new ArrayList<>();
+	private final Map<String, Map<String, List<T>>> tokenBuffers = new HashMap<>();
 
 	public SimpleColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
 			ITokenFactory<T> tokenFactory) {
@@ -57,7 +68,7 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 		stepCounter = 0;
 		stateChangedEventBus = new SimpleEventBus<>();
 		processingEventBus = new SimpleEventBus<>();
-		stateContainer = new SimpleStateContainer<>(initialState, stateChangedEventBus);
+		stateContainer = new TokenStoreStateContainer<>(initialState, stateChangedEventBus);
 	}
 
 	public SimpleColouredNetProcessingContainer(ISpongeNet<N> net, ITokenFactory<T> tokenFactory) {
@@ -65,17 +76,17 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 	}
 
 	public void process(T token) {
-		if (running) {
+		if (isRunning()) {
 			throw new IllegalStateException("There is already a process running on this container");
 		}
 		startProcessing();
-		stateContainer.changeState(ColouredNetOperations.putToken(net.getRootId(), token));
-		step();
+		changeState(ColouredNetOperations.putToken(net.getRootId(), token));
+		keepRunning();
 	}
 
 	protected void startProcessing() {
 		setRunning(true);
-		processingEventBus.post(new ProcessStartedEvent());
+		postProcessingEvent(new ProcessStartedEvent());
 	}
 
 	protected void setRunning(boolean running) {
@@ -83,49 +94,94 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 	}
 
 	protected boolean isFinished() {
-		return stateContainer.getCurrentState().getTokenPositions().entrySet().stream()
-				.allMatch(e -> net.isLeaf(e.getValue()));
+		return getTokenPositions().entrySet().stream().allMatch(e -> net.isLeaf(e.getValue()));
 	}
 
 	protected List<T> getUnfinishedTokens() {
-		return stateContainer.getCurrentState().getTokenPositions().entrySet().stream()
-				.filter(e -> !net.isLeaf(e.getValue())).map(e -> stateContainer.getCurrentState().getToken(e.getKey()))
-				.collect(Collectors.toList());
+		return getTokenPositions().entrySet().stream().filter(e -> !net.isLeaf(e.getValue()))
+				.map(e -> getCurrentState().getToken(e.getKey())).collect(Collectors.toList());
+	}
+
+	protected Map<String, String> getTokenPositions() {
+		return getCurrentState().getTokenPositions();
+	}
+
+	private void keepRunning() {
+		boolean finished = false;
+		do {
+			finished = isFinished();
+			step();
+			waitIfNecessary();
+		} while (!finished);
+		shutdownProcess();
 	}
 
 	private void step() {
-		boolean finished = isFinished();
+		postProcessingEvent(new StepStartedEvent(stepCounter++));
+		handleTransitions();
+		handleMerges();
+		postProcessingEvent(new StepFinishedEvent(stepCounter));
+	}
 
-		processingEventBus.post(new StepStartedEvent(stepCounter++));
-
-		for (var entry : stateContainer.getCurrentState().getTokenPositions().entrySet()) {
-			String nodeId = entry.getValue();
-			String tokenId = entry.getKey();
-			T token = stateContainer.getCurrentState().getToken(tokenId);
-			if (token != null) {
-				N node = net.getNode(nodeId);
-				handleTokenTransition(stateContainer, token, node);
+	protected void waitIfNecessary() {
+		if (waitingTokens.size() > 0) {
+			List<T> relevantTokens = getUnfinishedTokens();
+			if (relevantTokens.size() == waitingTokens.size()) {
+				waitForUpdate();
 			}
 		}
+	}
 
-		processingEventBus.post(new StepFinishedEvent(stepCounter));
+	private void waitForUpdate() {
+		try {
+			postProcessingEvent(new ProcessWaitingEvent());
+			waitForUpdate.await();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
 
-		if (finished) {
-			setRunning(false);
-			processingEventBus.post(new ProcessFinishedEvent());
-		} else {
-			if (waitingTokens.size() > 0) {
-				List<T> relevantTokens = getUnfinishedTokens();
-				if (relevantTokens.size() == waitingTokens.size()) {
-					try {
-						processingEventBus.post(new ProcessWaitingEvent());
-						waitForUpdate.await();
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-					}
+	protected void shutdownProcess() {
+		setRunning(false);
+		postProcessingEvent(new ProcessFinishedEvent());
+	}
+
+	protected void handleMerges() {
+		for (N mergeNode : getMergeNodes()) {
+			Map<String, List<T>> tokenBuffer = tokenBuffers.computeIfAbsent(mergeNode.getId(), s -> new HashMap<>());
+			List<IEdge> incomingEdges = getNet().getIncomingEdges(mergeNode);
+			boolean doMerge = incomingEdges.size() > 0;
+			for (IEdge edge : incomingEdges) {
+				List<T> bufferedTokensForSource = tokenBuffer.get(edge.getSource());
+				if (bufferedTokensForSource == null || bufferedTokensForSource.isEmpty()) {
+					doMerge = false;
+					break;
 				}
 			}
-			step();
+			if (doMerge) {
+				List<T> tokensToBeMerged = new ArrayList<>(incomingEdges.size());
+				for (IEdge edge : incomingEdges) {
+					List<T> bufferedTokensForSource = tokenBuffer.get(edge.getSource());
+					tokensToBeMerged.add(bufferedTokensForSource.remove(0));
+				}
+				handleTokenMerge(tokensToBeMerged, mergeNode.getId());
+			}
+		}
+	}
+
+	protected void handleTokenMerge(List<T> tokens, String targetNode) {
+		changeState(ColouredNetOperations.mergeToken(targetNode, tokens, tokenFactory));
+	}
+
+	protected void handleTransitions() {
+		for (var entry : getTokenPositions().entrySet()) {
+			String nodeId = entry.getValue();
+			String tokenId = entry.getKey();
+			T token = getCurrentState().getToken(tokenId);
+			if (token != null) {
+				N node = getNet().getNode(nodeId);
+				handleTokenTransition(token, node);
+			}
 		}
 	}
 
@@ -137,38 +193,46 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 		return node instanceof IAutoMergeNode;
 	}
 
-	protected <C extends IStateContainer<ITokenStore<T>>> void handleTokenSplitTransition(C stateContainer, T token,
-			N currentNode, List<IEdge> outgoingEdges) {
+	protected void handleTokenSplitTransition(T token, N currentNode, List<IEdge> outgoingEdges) {
 		for (int i = 0; i < outgoingEdges.size(); i++) {
 			IEdge edge = outgoingEdges.get(i);
 			if (i == outgoingEdges.size() - 1) {
-				handleTokenMoveTransition(stateContainer, token, edge);
+				handleTokenMoveTransition(token, edge);
 			} else {
-				handleTokenCopyTransition(stateContainer, token, edge);
+				handleTokenCopyTransition(token, edge);
 			}
 		}
 	}
 
-	protected <C extends IStateContainer<ITokenStore<T>>> void handleTokenTransition(C stateContainer, T token,
-			N currentNode) {
-		List<IEdge> outgoingEdges = net.getOutgoingEdges(currentNode);
+	protected void handleTokenTransition(T token, N currentNode) {
+		List<IEdge> outgoingEdges = getNet().getOutgoingEdges(currentNode);
 		if (!outgoingEdges.isEmpty()) {
 			if (isSplitterNode(currentNode)) {
-				handleTokenSplitTransition(stateContainer, token, currentNode, outgoingEdges);
+				handleTokenSplitTransition(token, currentNode, outgoingEdges);
+			} else if (isMergerNode(currentNode)) {
+				handleTokenMerge(token, currentNode, outgoingEdges);
 			} else {
 				IEdge firstEdge = outgoingEdges.get(0);
-				handleTokenMoveTransition(stateContainer, token, firstEdge);
+				handleTokenMoveTransition(token, firstEdge);
 			}
 		} else {
-			processingEventBus.post(new EndNodeReachedEvent<>(currentNode, token));
+			postProcessingEvent(new EndNodeReachedEvent<>(currentNode, token));
 		}
 	}
 
-	protected <C extends IStateContainer<ITokenStore<T>>> void handleTokenCopyTransition(C stateContainer, T token,
-			IEdge edge) {
+	private void handleTokenMerge(T token, N currentNode, List<IEdge> outgoingEdges) {
+		List<T> allBufferedTokens = tokenBuffers.computeIfAbsent(currentNode.getId(), s -> new HashMap<>()).values()
+				.stream().flatMap(Collection::stream).collect(Collectors.toList());
+		if (!allBufferedTokens.contains(token)) {
+			IEdge firstEdge = outgoingEdges.get(0);
+			handleTokenMoveTransition(token, firstEdge);
+		}
+	}
+
+	protected void handleTokenCopyTransition(T token, IEdge edge) {
 		if (edgeCanTransition(token, edge)) {
 			String target = edge.getTarget();
-			stateContainer.changeState(ColouredNetOperations.copyToken(target, token, tokenFactory));
+			changeState(ColouredNetOperations.copyToken(target, token, tokenFactory));
 		} else {
 			waitingTokens.add(token);
 			waitForUpdate = new CountDownLatch(1);
@@ -189,16 +253,24 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 		}
 	}
 
-	protected <C extends IStateContainer<ITokenStore<T>>> void handleTokenMoveTransition(C stateContainer, T token,
-			IEdge edge) {
+	protected void handleTokenMoveTransition(T token, IEdge edge) {
 		if (edgeCanTransition(token, edge)) {
 			String target = edge.getTarget();
 			String source = edge.getSource();
 			stateContainer.changeState(ColouredNetOperations.moveToken(source, target, token));
+			if (isMergerNode(getNet().getNode(target))) {
+				handleTokenArrivedOnMergeNode(source, target, token);
+			}
 		} else {
 			waitingTokens.add(token);
 			waitForUpdate = new CountDownLatch(1);
 		}
+	}
+
+	protected void handleTokenArrivedOnMergeNode(String sourceNodeId, String mergerNodeId, T token) {
+		List<T> bufferedTokens = tokenBuffers.computeIfAbsent(mergerNodeId, s -> new HashMap<>())
+				.computeIfAbsent(sourceNodeId, s -> new LinkedList<>());
+		bufferedTokens.add(token);
 	}
 
 	protected ISpongeNet<N> getNet() {
@@ -213,6 +285,10 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 		return tokenFactory;
 	}
 
+	protected List<N> getMergeNodes() {
+		return getNet().getNodes().stream().filter(this::isMergerNode).collect(Collectors.toList());
+	}
+
 	@Override
 	public void onProcessingEvent(IEventListener<IEvent> listener) {
 		processingEventBus.register(listener);
@@ -224,8 +300,10 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void onStateChangedEvent(IEventListener<IStateHasChangedEvent<T>> listener) {
-		stateChangedEventBus.register((Class<IStateHasChangedEvent<T>>) (Class<?>) IStateHasChangedEvent.class,
+	public void onStateChangedEvent(
+			IEventListener<IStateHasChangedEvent<ITokenStore<T>, IStateChangeOperation<ITokenStore<T>>>> listener) {
+		stateChangedEventBus.register(
+				(Class<IStateHasChangedEvent<ITokenStore<T>, IStateChangeOperation<ITokenStore<T>>>>) (Class<?>) IStateHasChangedEvent.class,
 				listener);
 	}
 
@@ -275,6 +353,48 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 	@Override
 	public boolean isWaiting() {
 		return waitForUpdate != null && waitForUpdate.getCount() > 0;
+	}
+
+	protected void changeState(IStateChangeOperation<ITokenStore<T>> stateChangeOperation) {
+		stateContainer.changeState(stateChangeOperation);
+	}
+
+	protected void postProcessingEvent(IEvent event) {
+		processingEventBus.post(event);
+	}
+
+	@Override
+	public void onStepStart(IEventListener<IStepStartedEvent> listener) {
+		processingEventBus.register(IStepStartedEvent.class, listener);
+
+	}
+
+	@Override
+	public void onStepFinish(IEventListener<IStepFinishedEvent> listener) {
+		processingEventBus.register(IStepFinishedEvent.class, listener);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void onTokenCreation(IEventListener<ITokenCreationEvent<T>> listener) {
+		stateChangedEventBus.register(ITokenCreationEvent.class,
+				(IEventListener<ITokenCreationEvent>) (IEventListener<?>) listener);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void onTokenTransition(IEventListener<ITokenTransitionEvent<T>> listener) {
+		stateChangedEventBus.register(ITokenTransitionEvent.class,
+				(IEventListener<ITokenTransitionEvent>) (IEventListener<?>) listener);
+
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void onTokenMerge(IEventListener<ITokenMergeEvent<T>> listener) {
+		stateChangedEventBus.register(ITokenMergeEvent.class,
+				(IEventListener<ITokenMergeEvent>) (IEventListener<?>) listener);
+
 	}
 
 }

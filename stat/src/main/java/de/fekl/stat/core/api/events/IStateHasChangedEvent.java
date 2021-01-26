@@ -2,12 +2,12 @@ package de.fekl.stat.core.api.events;
 
 import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
 
-public interface IStateHasChangedEvent<T> extends IEvent {
+public interface IStateHasChangedEvent<S, O extends IStateChangeOperation<S>> extends IEvent {
 
-	IStateChangeOperation<T> getSourceOperation();
+	O getSourceOperation();
 
-	T getSourceState();
+	S getSourceState();
 
-	T getTargetState();
+	S getTargetState();
 
 }

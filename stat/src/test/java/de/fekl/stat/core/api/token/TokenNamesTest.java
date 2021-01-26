@@ -20,7 +20,7 @@ public class TokenNamesTest {
 	@Test
 	public void testQuickCollision() {
 		List<String> tokenNames = new LinkedList<>();
-		for (int i = 0; i < 24000; i++) {
+		for (int i = 0; i < 12000; i++) {
 			tokenNames.add(TokenNames.generateTokenName());
 		}
 		Assertions.assertEquals(tokenNames.size(), new HashSet<>(tokenNames).size());

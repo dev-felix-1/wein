@@ -17,10 +17,10 @@ class MainTest {
 		reader.readLine()
 
 
-		int initialSplit = 50
-		int numberOfRoutes = 500
-		int numberOfTransformers = 400
-		int addRandomEdgesNumber = 90
+		int initialSplit = 60
+		int numberOfRoutes = 600
+		int numberOfTransformers = 500
+		int addRandomEdgesNumber = 110
 
 		def registry = new SimpleTransformerRegistry();
 		def routeBuilder = new GRouteBuilder()

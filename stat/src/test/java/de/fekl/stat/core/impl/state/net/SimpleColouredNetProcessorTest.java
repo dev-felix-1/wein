@@ -13,9 +13,11 @@ import de.fekl.dine.core.api.sponge.SpongeNetBuilder;
 import de.fekl.dine.core.impl.node.SimpleNode;
 import de.fekl.stat.core.api.events.IEventListener;
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
+import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
 import de.fekl.stat.core.api.state.operations.ITokenCreationOperation;
 import de.fekl.stat.core.api.state.operations.ITokenTransitionOperation;
 import de.fekl.stat.core.api.token.ITokenFactory;
+import de.fekl.stat.core.api.token.ITokenStore;
 import de.fekl.stat.core.impl.token.SimpleToken;
 import de.fekl.stat.core.impl.token.SimpleTokenFactory;
 
@@ -109,7 +111,8 @@ public class SimpleColouredNetProcessorTest {
 		var processor = new SimpleColouredNetProcessor();
 		var tokenFactory = new ValueHolderTokenFactory();
 
-		IEventListener<IStateHasChangedEvent<ValueHolderToken>> stateChangedEventHandler = (e) -> {
+		IEventListener<IStateHasChangedEvent<ITokenStore<ValueHolderToken>, IStateChangeOperation<ITokenStore<ValueHolderToken>>>> stateChangedEventHandler = (
+				e) -> {
 			if (ITokenTransitionOperation.class.isAssignableFrom(e.getSourceOperation().getClass())) {
 				@SuppressWarnings({ "unchecked", "rawtypes" })
 				var transition = (ITokenTransitionOperation<ValueHolderToken>) (ITokenTransitionOperation) e

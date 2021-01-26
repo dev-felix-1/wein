@@ -8,7 +8,7 @@ import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.events.IEventBus;
 import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
-import de.fekl.stat.core.impl.events.SimpleStateChangedEvent;
+import de.fekl.stat.core.impl.events.AbstractStateHasChangedEvent;
 
 public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 
@@ -16,7 +16,7 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 	private S initialState;
 	private IEventBus<IEvent> eventBus;
 
-	private List<IStateHasChangedEvent<S>> stateChangeEvents = new LinkedList<>();
+	private List<IStateHasChangedEvent<S, IStateChangeOperation<S>>> stateChangeEvents = new LinkedList<>();
 
 	protected AbstractStateContainer(S initialState, IEventBus<IEvent> eventBus) {
 		super();
@@ -40,11 +40,17 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 		postStateChangedEvent(operation, sourceState, targetState);
 	}
 
+	@SuppressWarnings("unchecked")
 	protected <O extends IStateChangeOperation<S>> void postStateChangedEvent(O operation, S sourceState,
 			S targetState) {
-		var stateChangedEvent = new SimpleStateChangedEvent<>(operation, sourceState, targetState);
+		IStateHasChangedEvent<S, IStateChangeOperation<S>> stateChangedEvent = createEventForStateChangeOperation(
+				operation, sourceState, targetState);
+		if (stateChangedEvent == null) {
+			stateChangedEvent = (IStateHasChangedEvent<S, IStateChangeOperation<S>>) new AbstractStateHasChangedEvent.DefaultEvent<S, O>(
+					operation, sourceState, targetState);
+		}
 		stateChangeEvents.add(stateChangedEvent);
-		eventBus.post(stateChangedEvent);
+		eventBus.post((IEvent) stateChangedEvent);
 	}
 
 	@Override
@@ -57,6 +63,11 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 		return new AbstractHistory<S>(initialState, stateChangeEvents) {
 
 		};
+	}
+
+	protected IStateHasChangedEvent<S, IStateChangeOperation<S>> createEventForStateChangeOperation(
+			IStateChangeOperation<S> operation, S sourceState, S targetState) {
+		return null;
 	}
 
 }

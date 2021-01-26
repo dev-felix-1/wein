@@ -4,23 +4,22 @@ plugins {
 	id 'eclipse'
 }
 
-if (!System.env.NEXUS_REPO_ALL_URL) {
-	plugins {
-
-		id 'jacoco'
-	}
-} 
+//if (!System.env.NEXUS_REPO_ALL_URL) {
+//	plugins {
+//		id 'jacoco'
+//	}
+//} 
 
 java {
 	withJavadocJar()
 	withSourcesJar()
 }
 
-if (!System.env.NEXUS_REPO_ALL_URL) {
-	jacoco {
-		toolVersion = '0.8.7-SNAPSHOT'
-	}
-}
+//if (!System.env.NEXUS_REPO_ALL_URL) {
+//	jacoco {
+//		toolVersion = '0.8.7-SNAPSHOT'
+//	}
+//}
 
 javadoc.options {
 	addBooleanOption('-enable-preview', true)

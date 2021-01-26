@@ -22,7 +22,7 @@ public class SimpleMerger<T> extends SimpleTransformer<List<?>, T> implements IM
 			ITransformation<List<?>, T> transformation, String id, boolean autoSplit) {
 		super(CONTENT_TYPE, targetContentType, transformation, id, autoSplit);
 		this.sourceContentTypes = sourceContentTypes;
-		Precondition.hasClass(transformation, IMerge.class); 
+		Precondition.hasClass(transformation, IMerge.class);
 	}
 
 	@Override

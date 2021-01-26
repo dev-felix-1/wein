@@ -8,8 +8,8 @@ public interface IConditionalEdgeBuilder<
 //@formatter:off
 	N extends INode,
 	T extends IToken,
-	E extends IConditionalEdge, 
-	F extends IConditionalEdgeFactory<E>, 
+	E extends IConditionalEdge<N, T>, 
+	F extends IConditionalEdgeFactory<N, T, E>, 
 	B extends IConditionalEdgeBuilder<N, T, E, F, B>
 >
 //@formatter:on

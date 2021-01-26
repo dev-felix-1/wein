@@ -24,12 +24,37 @@ import de.fekl.stat.core.api.state.operations.ITokenTransitionOperation;
 import de.fekl.stat.core.api.token.ITokenFactory;
 import de.fekl.stat.core.api.token.ITokenStore;
 import de.fekl.stat.core.impl.edge.conditional.SimpleConditionalEdge;
+import de.fekl.stat.core.impl.node.SimpleAutoMergeNode;
+import de.fekl.stat.core.impl.node.SimpleAutoSplitNode;
 import de.fekl.stat.core.impl.token.SimpleToken;
 import de.fekl.stat.core.impl.token.SimpleTokenFactory;
 import de.fekl.stat.util.ILogger;
 import de.fekl.stat.util.LogManager;
 
 public class SimpleColouredNetProcessingContainerTest {
+
+	@Test
+	public void testReuseContainer() {
+		//@formatter:off
+		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
+				.setGraph(new DirectedGraphBuilder<SimpleNode>()
+						.addEdge("A","B")
+						.addEdge("B","C")).build();//@formatter:on
+
+		SimpleTokenFactory simpleTokenFactory = new SimpleTokenFactory();
+
+		IColouredNetProcessingContainer<SimpleToken> processingContainer = new SimpleColouredNetProcessingContainer<>(
+				spongeNet, simpleTokenFactory);
+
+		SimpleToken token = simpleTokenFactory.createToken();
+		processingContainer.process(token);
+		String position = processingContainer.getCurrentState().getPosition(token);
+		Assertions.assertEquals("C", position);
+		processingContainer.reset();
+		processingContainer.process(token);
+		position = processingContainer.getCurrentState().getPosition(token);
+		Assertions.assertEquals("C", position);
+	}
 
 	@Test
 	public void testSimpleRouteProcessing() {
@@ -64,7 +89,7 @@ public class SimpleColouredNetProcessingContainerTest {
 		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
 				.setGraph(new DirectedGraphBuilder<SimpleNode>()
 						.addEdge("A","B")
-						.addEdge(new SimpleConditionalEdge("B", "C", (a,b,c)-> conditionHolder.value))
+						.addEdge(new SimpleConditionalEdge<>("B", "C", (a,b,c)-> conditionHolder.value))
 						.addEdge("C","D"))
 				.setStartNode("A")
 				.build();
@@ -81,8 +106,7 @@ public class SimpleColouredNetProcessingContainerTest {
 				processingContainer.update();
 			}
 		});
-		
-		
+
 		CountDownLatch latch = new CountDownLatch(1);
 		processingContainer.onFinish(e -> {
 			latch.countDown();
@@ -91,15 +115,14 @@ public class SimpleColouredNetProcessingContainerTest {
 		SimpleToken token = simpleTokenFactory.createToken();
 		ExecutorService exe = Executors.newSingleThreadExecutor();
 		exe.execute(() -> processingContainer.process(token));
-		
+
 		try {
 			latch.await();
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-		
+
 		String position = processingContainer.getCurrentState().getPosition(token);
 		exe.shutdown();
 		Assertions.assertEquals("D", position);
@@ -129,6 +152,57 @@ public class SimpleColouredNetProcessingContainerTest {
 		processingContainer.process(token);
 		String position = processingContainer.getCurrentState().getPosition(token);
 		Assertions.assertEquals("F", position);
+	}
+
+	@Test
+	public void testSplit() {
+		//@formatter:off
+		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
+				.setGraph(new DirectedGraphBuilder<SimpleNode>()
+						.addNode(new SimpleAutoSplitNode("A"))
+						.addEdge("A","B")
+						.addEdge("A","C")
+						.addEdge("B","D")
+						.addEdge("C","D"))
+				.build();
+		//@formatter:on
+
+		SimpleTokenFactory simpleTokenFactory = new SimpleTokenFactory();
+
+		IColouredNetProcessingContainer<SimpleToken> processingContainer = new SimpleColouredNetProcessingContainer<>(
+				spongeNet, simpleTokenFactory);
+
+		SimpleToken token = simpleTokenFactory.createToken();
+		processingContainer.process(token);
+		String position = processingContainer.getCurrentState().getPosition(token);
+
+		Assertions.assertEquals(2, processingContainer.getCurrentState().getTokenPositions().size());
+		Assertions.assertEquals("D", position);
+	}
+
+	@Test
+	public void testSplitAndMerge() {
+		//@formatter:off
+		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
+				.setGraph(new DirectedGraphBuilder<SimpleNode>()
+						.addNode(new SimpleAutoSplitNode("A"))
+						.addNode(new SimpleAutoMergeNode<>("D"))
+						.addEdge("A","B")
+						.addEdge("A","C")
+						.addEdge("B","D")
+						.addEdge("C","D"))
+				.build();
+		//@formatter:on
+
+		SimpleTokenFactory simpleTokenFactory = new SimpleTokenFactory();
+
+		IColouredNetProcessingContainer<SimpleToken> processingContainer = new SimpleColouredNetProcessingContainer<>(
+				spongeNet, simpleTokenFactory);
+
+		SimpleToken token = simpleTokenFactory.createToken();
+		processingContainer.process(token);
+		System.err.println(ITokenStore.print(processingContainer.getCurrentState()));
+		Assertions.assertEquals(1, processingContainer.getCurrentState().getTokenPositions().size());
 	}
 
 	@Test

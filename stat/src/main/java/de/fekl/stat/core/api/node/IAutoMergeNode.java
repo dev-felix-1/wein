@@ -1,5 +1,7 @@
 package de.fekl.stat.core.api.node;
 
-public interface IAutoMergeNode {
+import de.fekl.dine.core.api.node.INode;
+
+public interface IAutoMergeNode extends INode {
 
 }

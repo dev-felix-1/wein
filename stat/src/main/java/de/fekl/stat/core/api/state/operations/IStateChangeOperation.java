@@ -1,9 +1,9 @@
 package de.fekl.stat.core.api.state.operations;
 
 @FunctionalInterface
-public interface IStateChangeOperation<T> {
+public interface IStateChangeOperation<S> {
 
 	//FIXME should be called applyTo
-	public T apply(T state);
+	public S apply(S state);
 
 }
