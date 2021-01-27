@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class NodeNamesTest {
 
 	@Test
-	public void testGetRandomName() {;
+	public void testGetRandomName() {
 
 		String nodeName = NodeNames.generateNodeName();
 		Assertions.assertNotNull(nodeName);
@@ -20,11 +20,20 @@ public class NodeNamesTest {
 
 	@Test
 	public void testQuickCollision() {
+
 		List<String> randomNames = new LinkedList<>();
 		for (int i = 0; i < 24000; i++) {
 			randomNames.add(NodeNames.generateNodeName());
 		}
-		Assertions.assertEquals(randomNames.size(), new HashSet<>(randomNames).size());
+		// hashCode Collision
+		boolean collisionCandidate = (randomNames.size() != new HashSet<>(randomNames).size());
+		if (collisionCandidate) {
+			// string Collision (real collision)
+			while (randomNames.size() > 0) {
+				String removed = randomNames.remove(0);
+				Assertions.assertFalse(randomNames.stream().anyMatch(name -> name.equals(removed)));
+			}
+		}
 	}
 
 }
