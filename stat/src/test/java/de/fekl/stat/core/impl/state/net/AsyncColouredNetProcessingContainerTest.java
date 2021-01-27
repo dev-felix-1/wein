@@ -33,29 +33,29 @@ import de.fekl.stat.util.LogManager;
 
 public class AsyncColouredNetProcessingContainerTest {
 
-//	@Test
-//	public void testReuseContainer() {
-//		//@formatter:off
-//		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
-//				.setGraph(new DirectedGraphBuilder<SimpleNode>()
-//						.addEdge("A","B")
-//						.addEdge("B","C")).build();//@formatter:on
-//
-//		SimpleTokenFactory simpleTokenFactory = new SimpleTokenFactory();
-//
-//		IColouredNetProcessingContainer<SimpleToken> processingContainer = new AsyncColouredNetProcessingContainer<>(
-//				spongeNet, simpleTokenFactory);
-//
-//		SimpleToken token = simpleTokenFactory.createToken();
-//		processingContainer.process(token);
-//		String position = processingContainer.getCurrentState().getPosition(token);
-//		Assertions.assertEquals("C", position);
-//		processingContainer.reset();
-//		
-//		processingContainer.process(simpleTokenFactory.createToken());
-//		position = processingContainer.getCurrentState().getPosition(token);
-//		Assertions.assertEquals("C", position);
-//	}
+	@Test
+	public void testReuseContainer() {
+		//@formatter:off
+		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
+				.setGraph(new DirectedGraphBuilder<SimpleNode>()
+						.addEdge("A","B")
+						.addEdge("B","C")).build();//@formatter:on
+
+		SimpleTokenFactory simpleTokenFactory = new SimpleTokenFactory();
+
+		IColouredNetProcessingContainer<SimpleToken> processingContainer = new AsyncColouredNetProcessingContainer<>(
+				spongeNet, simpleTokenFactory);
+
+		SimpleToken token = simpleTokenFactory.createToken();
+		processingContainer.process(token);
+		String position = processingContainer.getCurrentState().getPosition(token);
+		Assertions.assertEquals("C", position);
+		processingContainer.reset();
+		
+		processingContainer.process(token);
+		position = processingContainer.getCurrentState().getPosition(token);
+		Assertions.assertEquals("C", position);
+	}
 
 	@Test
 	public void testSimpleRouteProcessing() {
@@ -80,7 +80,7 @@ public class AsyncColouredNetProcessingContainerTest {
 		Assertions.assertEquals("D", position);
 	}
 
-//	@Test
+	@Test
 	public void testConditionalRouteProcessing() {
 
 		var conditionHolder = new Object() {
@@ -103,6 +103,7 @@ public class AsyncColouredNetProcessingContainerTest {
 
 		processingContainer.onProcessingEvent(e -> {
 			if (e instanceof IProcessWaitingEvent) {
+				System.err.println("got waiting notification");
 				conditionHolder.value = true;
 				processingContainer.update();
 			}

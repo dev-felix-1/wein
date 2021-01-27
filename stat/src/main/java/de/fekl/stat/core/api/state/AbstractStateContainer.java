@@ -19,12 +19,16 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 	private List<IStateHasChangedEvent<S, IStateChangeOperation<S>>> stateChangeEvents = new LinkedList<>();
 
 	protected AbstractStateContainer(S initialState, IEventBus<IEvent> eventBus) {
+		this(initialState);
+		Precondition.isNotNull(eventBus);
+		this.eventBus = eventBus;
+	}
+	
+	protected AbstractStateContainer(S initialState) {
 		super();
 		Precondition.isNotNull(initialState);
-		Precondition.isNotNull(eventBus);
 		this.currentState = initialState;
 		this.initialState = initialState;
-		this.eventBus = eventBus;
 	}
 
 	@Override
@@ -68,6 +72,10 @@ public abstract class AbstractStateContainer<S> implements IStateContainer<S> {
 	protected IStateHasChangedEvent<S, IStateChangeOperation<S>> createEventForStateChangeOperation(
 			IStateChangeOperation<S> operation, S sourceState, S targetState) {
 		return null;
+	}
+	
+	public void setEventBus(IEventBus<IEvent> eventBus) {
+		this.eventBus = eventBus;
 	}
 
 }

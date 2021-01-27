@@ -15,14 +15,9 @@ import java.util.stream.Collectors;
 import de.fekl.dine.core.api.edge.IEdge;
 import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
-import de.fekl.stat.core.api.edge.conditional.ICondition;
 import de.fekl.stat.core.api.edge.conditional.IConditionalEdge;
-import de.fekl.stat.core.api.events.IEndNodeReachedEvent;
-import de.fekl.stat.core.api.node.IAutoMergeNode;
-import de.fekl.stat.core.api.node.IAutoSplitNode;
 import de.fekl.stat.core.api.state.IHistory;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
-import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
 import de.fekl.stat.core.api.state.operations.ITokenCreationOperation;
 import de.fekl.stat.core.api.state.operations.ITokenMergeOperation;
 import de.fekl.stat.core.api.token.IToken;
@@ -32,6 +27,8 @@ import de.fekl.stat.core.impl.events.EndNodeReachedEvent;
 import de.fekl.stat.core.impl.events.ProcessFinishedEvent;
 import de.fekl.stat.core.impl.events.ProcessStartedEvent;
 import de.fekl.stat.core.impl.events.ProcessWaitingEvent;
+import de.fekl.stat.core.impl.events.SimpleEventBus;
+import de.fekl.stat.core.impl.state.TokenStoreStateContainer;
 import de.fekl.stat.core.impl.token.SimpleTokenStore;
 
 public class AsyncColouredNetProcessingContainer<N extends INode, T extends IToken>
@@ -126,6 +123,9 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 				}
 			} else {
 				postProcessingEvent(new EndNodeReachedEvent<>(currentNode, token));
+				if (isFinished()) {
+					shutdownProcess();
+				}
 			}
 		}
 
@@ -144,12 +144,13 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 	protected void startTokenProcessing(T token) {
 		var tokenProcessor = new TokenProcessingThread(token);
 		tokenProcessors.add(tokenProcessor);
-		executorService.execute(new TokenProcessingThread(token));
+		executorService.execute(tokenProcessor);
 	}
 
 	public AsyncColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
 			ITokenFactory<T> tokenFactory) {
-		super(net, initialState, tokenFactory);
+		super(net, new TokenStoreStateContainer<>(initialState), tokenFactory, new SimpleEventBus<>(),
+				new SimpleEventBus<>());
 		setRunning(false);
 	}
 
@@ -164,12 +165,6 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 		startProcessing();
 		changeState(ColouredNetOperations.putToken(getNet().getRootId(), token));
 		startTokenProcessing(token);
-
-		onProcessingEvent(IEndNodeReachedEvent.class, e -> {
-			if (isFinished()) {
-				shutdownProcess();
-			}
-		});
 
 		onStateChangedEvent(e -> {
 			System.err.println(ITokenStore.print(getCurrentState()));
@@ -191,19 +186,6 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 
 	protected void setRunning(boolean running) {
 		this.running = running;
-	}
-
-	protected boolean isFinished() {
-		return getTokenPositions().entrySet().stream().allMatch(e -> getNet().isLeaf(e.getValue()));
-	}
-
-	protected List<T> getUnfinishedTokens() {
-		return getTokenPositions().entrySet().stream().filter(e -> !getNet().isLeaf(e.getValue()))
-				.map(e -> getCurrentState().getToken(e.getKey())).collect(Collectors.toList());
-	}
-
-	protected Map<String, String> getTokenPositions() {
-		return getCurrentState().getTokenPositions();
 	}
 
 	private void shutdownProcess() {
@@ -243,34 +225,12 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 		startTokenProcessing(mergeToken.getResultToken());
 	}
 
-	protected boolean isSplitterNode(N node) {
-		return node instanceof IAutoSplitNode;
-	}
-
-	protected boolean isMergerNode(N node) {
-		return node instanceof IAutoMergeNode;
-	}
-
 	private void handleTokenCopyTransition(T token, IEdge edge) {
 		String target = edge.getTarget();
 		ITokenCreationOperation<T> copyTokenOperation = ColouredNetOperations.copyToken(target, token,
 				getTokenFactory());
 		changeState(copyTokenOperation);
 		startTokenProcessing(copyTokenOperation.getCreatedToken());
-	}
-
-	private boolean edgeCanTransition(T token, IEdge edge) {
-		if (edge instanceof IConditionalEdge<?, ?>conditionalEdge) {
-			String target = edge.getTarget();
-			String source = edge.getSource();
-			N sourceNode = getNet().getNode(source);
-			N targetNode = getNet().getNode(target);
-			@SuppressWarnings("unchecked")
-			ICondition<N, T> condition = ((IConditionalEdge<N, T>) conditionalEdge).getCondition();
-			return condition.evaluate(sourceNode, targetNode, token);
-		} else {
-			return true;
-		}
 	}
 
 	private void handleTokenMoveTransition(T token, IEdge edge) {
@@ -288,7 +248,7 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 		bufferedTokens.add(token);
 	}
 
-	protected List<N> getMergeNodes() {
+	private List<N> getMergeNodes() {
 		return getNet().getNodes().stream().filter(this::isMergerNode).collect(Collectors.toList());
 	}
 
@@ -320,9 +280,4 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 	public boolean isWaiting() {
 		return tokenProcessors.stream().anyMatch(p -> p.isWaiting());
 	}
-
-	protected void changeState(IStateChangeOperation<ITokenStore<T>> stateChangeOperation) {
-		getStateContainer().changeState(stateChangeOperation);
-	}
-
 }

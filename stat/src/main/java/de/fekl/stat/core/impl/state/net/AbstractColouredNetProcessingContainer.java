@@ -1,7 +1,13 @@
 package de.fekl.stat.core.impl.state.net;
 
+import java.util.Map;
+
+import de.fekl.dine.core.api.edge.IEdge;
 import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
+import de.fekl.dine.util.Precondition;
+import de.fekl.stat.core.api.edge.conditional.ICondition;
+import de.fekl.stat.core.api.edge.conditional.IConditionalEdge;
 import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.events.IEventBus;
 import de.fekl.stat.core.api.events.IEventListener;
@@ -11,14 +17,14 @@ import de.fekl.stat.core.api.events.IStateHasChangedEvent;
 import de.fekl.stat.core.api.events.ITokenCreationEvent;
 import de.fekl.stat.core.api.events.ITokenMergeEvent;
 import de.fekl.stat.core.api.events.ITokenTransitionEvent;
+import de.fekl.stat.core.api.node.IAutoMergeNode;
+import de.fekl.stat.core.api.node.IAutoSplitNode;
 import de.fekl.stat.core.api.state.IStateContainer;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
 import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
 import de.fekl.stat.core.api.token.IToken;
 import de.fekl.stat.core.api.token.ITokenFactory;
 import de.fekl.stat.core.api.token.ITokenStore;
-import de.fekl.stat.core.impl.events.SimpleEventBus;
-import de.fekl.stat.core.impl.state.TokenStoreStateContainer;
 
 public abstract class AbstractColouredNetProcessingContainer<T extends IToken, N extends INode>
 		implements IColouredNetProcessingContainer<T> {
@@ -27,16 +33,22 @@ public abstract class AbstractColouredNetProcessingContainer<T extends IToken, N
 	private final ISpongeNet<N> net;
 	private final IEventBus<IEvent> stateChangedEventBus;
 	private final IEventBus<IEvent> processingEventBus;
+	private final ITokenFactory<T> tokenFactory;
 
-	private ITokenFactory<T> tokenFactory;
-
-	public AbstractColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
-			ITokenFactory<T> tokenFactory) {
+	public AbstractColouredNetProcessingContainer(ISpongeNet<N> net, IStateContainer<ITokenStore<T>> stateContainer,
+			ITokenFactory<T> tokenFactory, IEventBus<IEvent> stateChangedEventBus,
+			IEventBus<IEvent> processingEventBus) {
+		Precondition.isNotNull(net);
+		Precondition.isNotNull(tokenFactory);
+		Precondition.isNotNull(stateChangedEventBus);
+		Precondition.isNotNull(processingEventBus);
+		Precondition.isNotNull(stateContainer);
 		this.net = net;
 		this.tokenFactory = tokenFactory;
-		stateChangedEventBus = new SimpleEventBus<>();
-		processingEventBus = new SimpleEventBus<>();
-		stateContainer = new TokenStoreStateContainer<>(initialState, stateChangedEventBus);
+		this.stateChangedEventBus = stateChangedEventBus;
+		this.processingEventBus = processingEventBus;
+		this.stateContainer = stateContainer;
+		this.stateContainer.setEventBus(stateChangedEventBus);
 	}
 
 	@Override
@@ -113,6 +125,48 @@ public abstract class AbstractColouredNetProcessingContainer<T extends IToken, N
 
 	protected <E extends IEvent> void onStateChangeEvent(Class<E> type, IEventListener<E> listener) {
 		stateChangedEventBus.register(type, listener);
+	}
+
+	protected Map<String, String> getTokenPositions() {
+		return getCurrentState().getTokenPositions();
+	}
+
+	protected boolean isSplitterNode(N node) {
+		return node instanceof IAutoSplitNode;
+	}
+
+	protected boolean isMergerNode(N node) {
+		return node instanceof IAutoMergeNode;
+	}
+
+	protected void changeState(IStateChangeOperation<ITokenStore<T>> stateChangeOperation) {
+		getStateContainer().changeState(stateChangeOperation);
+	}
+
+	protected boolean isConditionalEdge(IEdge edge) {
+		return edge instanceof IConditionalEdge<?, ?>;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected boolean evaluateEdgeCondition(N sourceNode, N targetNode, T token, IEdge edge) {
+		ICondition<N, T> condition = ((IConditionalEdge<N, T>) edge).getCondition();
+		return condition.evaluate(sourceNode, targetNode, token);
+	}
+
+	protected boolean edgeCanTransition(T token, IEdge edge) {
+		if (isConditionalEdge(edge)) {
+			String target = edge.getTarget();
+			String source = edge.getSource();
+			N sourceNode = getNet().getNode(source);
+			N targetNode = getNet().getNode(target);
+			return evaluateEdgeCondition(sourceNode, targetNode, token, edge);
+		} else {
+			return true;
+		}
+	}
+	
+	protected boolean isFinished() {
+		return getTokenPositions().entrySet().stream().allMatch(e -> getNet().isLeaf(e.getValue()));
 	}
 
 }

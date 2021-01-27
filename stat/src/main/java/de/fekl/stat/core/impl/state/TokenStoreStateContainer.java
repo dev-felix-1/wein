@@ -20,6 +20,10 @@ public class TokenStoreStateContainer<T extends IToken> extends SimpleStateConta
 	public TokenStoreStateContainer(ITokenStore<T> initialState, IEventBus<IEvent> eventBus) {
 		super(initialState, eventBus);
 	}
+	
+	public TokenStoreStateContainer(ITokenStore<T> initialState) {
+		super(initialState);
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override

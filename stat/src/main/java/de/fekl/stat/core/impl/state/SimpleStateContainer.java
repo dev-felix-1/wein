@@ -9,6 +9,10 @@ public class SimpleStateContainer<S> extends AbstractStateContainer<S> {
 	public SimpleStateContainer(S initialState, IEventBus<IEvent> eventBus) {
 		super(initialState, eventBus);
 	}
+	
+	public SimpleStateContainer(S initialState) {
+		super(initialState);
+	}
 
 
 }
