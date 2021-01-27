@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'maven-publish'
 	id 'eclipse'
+	id 'signing'
 }
 
 //if (!System.env.NEXUS_REPO_ALL_URL) {
@@ -15,10 +16,19 @@ java {
 	withSourcesJar()
 }
 
+//https://central.sonatype.org/pages/gradle.html
+
 //if (!System.env.NEXUS_REPO_ALL_URL) {
 //	jacoco {
 //		toolVersion = '0.8.7-SNAPSHOT'
 //	}
+//}
+
+artifacts {
+	archives javadocJar, sourcesJar
+}
+//signing {
+//	sign configurations.archives
 //}
 
 javadoc.options {
