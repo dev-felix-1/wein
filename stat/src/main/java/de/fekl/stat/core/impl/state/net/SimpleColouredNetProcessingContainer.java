@@ -375,13 +375,11 @@ public class SimpleColouredNetProcessingContainer<N extends INode, T extends ITo
 		processingEventBus.post(event);
 	}
 
-	@Override
 	public void onStepStart(IEventListener<IStepStartedEvent> listener) {
 		processingEventBus.register(IStepStartedEvent.class, listener);
 
 	}
 
-	@Override
 	public void onStepFinish(IEventListener<IStepFinishedEvent> listener) {
 		processingEventBus.register(IStepFinishedEvent.class, listener);
 	}

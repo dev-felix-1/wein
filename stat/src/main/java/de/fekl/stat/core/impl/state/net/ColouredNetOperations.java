@@ -238,7 +238,7 @@ public class ColouredNetOperations {
 		return new MoveToken<>(sourceNodeId, targetNodeId, token);
 	}
 
-	public static <T extends IToken, F extends ITokenFactory<T>> IStateChangeOperation<ITokenStore<T>> copyToken(
+	public static <T extends IToken, F extends ITokenFactory<T>> ITokenCreationOperation<T> copyToken(
 			String targetNodeId, T token, F factory) {
 		return new CopyToken<>(targetNodeId, token, factory);
 	}
