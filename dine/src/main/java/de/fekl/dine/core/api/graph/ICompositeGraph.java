@@ -2,6 +2,8 @@ package de.fekl.dine.core.api.graph;
 
 import java.util.List;
 
+import de.fekl.dine.core.api.node.INode;
+
 /**
  * @author <a href="mailto:kleinfhq@gmail.com">Felix Kleine-Wilde</a>
  *
@@ -10,9 +12,6 @@ import java.util.List;
  * @param <N> specifices the kind of nodes the graph holdes
  * @param <G> specifices the kind of graphs this graph is composed of
  */
-
-import de.fekl.dine.core.api.node.INode;
-
 public interface ICompositeGraph<G extends IGraph<N>, N extends INode> extends IGraph<N> {
 
 	/**

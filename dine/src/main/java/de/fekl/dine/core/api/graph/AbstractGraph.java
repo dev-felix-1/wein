@@ -9,6 +9,17 @@ import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.util.AbstractIdHolder;
 import de.fekl.dine.util.Precondition;
 
+/**
+ * Abstract implementation for a graph that has nodes. Edges are not defined
+ * yet.
+ * 
+ * @author <a href="mailto:kleinfhq@gmail.com">Felix Kleine-Wilde</a>
+ *
+ * @since 1.0.0
+ *
+ * @param <N> specifices the kind of nodes the graph holdes
+ * 
+ */
 public abstract class AbstractGraph<N extends INode> extends AbstractIdHolder<String> implements IGraph<N> {
 
 	public static volatile boolean ALLOW_EMPTY_NODE_SET = false;
@@ -58,6 +69,10 @@ public abstract class AbstractGraph<N extends INode> extends AbstractIdHolder<St
 		return nodeNamesMap.get(nodeId);
 	}
 
+	/**
+	 * 
+	 * @return an internal map of (nodeId) -> (nodeObject)
+	 */
 	protected Map<String, N> getNodeNamesMap() {
 		return nodeNamesMap;
 	}

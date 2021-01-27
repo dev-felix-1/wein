@@ -99,6 +99,10 @@ public class DirectedGraphBuilder<N extends INode> {
 		return this;
 	}
 
+	/**
+	 * 
+	 * @return a directed graph implementation
+	 */
 	public IDirectedGraph<N> build() {
 		for (String nodeId : nodesToCreateByName) {
 			if (nodeBuilderHolder == null || nodeBuilderHolder.nodeBuilder == null) {
@@ -118,7 +122,7 @@ public class DirectedGraphBuilder<N extends INode> {
 		if (LOOK_UP_NODES_FROM_EDGES) {
 			for (IEdge edge : edges) {
 				List<String> nodeNames = nodes.stream().map(n -> n.getId()).collect(Collectors.toList());
-				List<String> addedNodeNames = new ArrayList<>(edges.size()/2);
+				List<String> addedNodeNames = new ArrayList<>(edges.size() / 2);
 				if (nodeBuilderHolder != null && nodeBuilderHolder.nodeBuilder != null) {
 					if (!nodeNames.contains(edge.getSource()) && !addedNodeNames.contains(edge.getSource())) {
 						N node = nodeBuilderHolder.nodeBuilder.id(edge.getSource()).build();
