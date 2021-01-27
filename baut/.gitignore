@@ -1,9 +1,0 @@
-.settings
-.gradle
-.project
-.classpath
-target/
-gradle/
-build/
-gradle.properties
-bin/
