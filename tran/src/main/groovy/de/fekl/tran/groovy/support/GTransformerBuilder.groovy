@@ -111,7 +111,7 @@ class GTransformerBuilder extends BuilderSupport {
 	}
 
 	def createTransformer () {
-		def result = new CompositeTransformerBuilder();
+		def result = new GTransformerBuilderTransformerBuilder();
 		result.registry = transformerRegistry
 		result.autoRegister = autoRegister
 		return result
@@ -128,7 +128,7 @@ class GTransformerBuilder extends BuilderSupport {
 	}
 	
 	def setSplit(Boolean value) {
-		if (current instanceof CompositeTransformerBuilder) {
+		if (current instanceof GTransformerBuilderTransformerBuilder) {
 			current.autoSplit(value)
 			return current
 		}
@@ -137,7 +137,7 @@ class GTransformerBuilder extends BuilderSupport {
 
 	@CompileDynamic
 	def setNodeSourceType(Object value) {
-		if (current instanceof CompositeTransformerBuilder) {
+		if (current instanceof GTransformerBuilderTransformerBuilder) {
 			current.source(value)
 			return current
 		}
@@ -146,7 +146,7 @@ class GTransformerBuilder extends BuilderSupport {
 
 	@CompileDynamic
 	def setNodeTargetType(Object value) {
-		if (current instanceof CompositeTransformerBuilder) {
+		if (current instanceof GTransformerBuilderTransformerBuilder) {
 			current.target(value)
 			return current
 		}
@@ -159,7 +159,7 @@ class GTransformerBuilder extends BuilderSupport {
 	}
 
 	def setId(String value) {
-		if (current instanceof CompositeTransformerBuilder) {
+		if (current instanceof GTransformerBuilderTransformerBuilder) {
 			current.id(value)
 			return current
 		}
@@ -167,7 +167,7 @@ class GTransformerBuilder extends BuilderSupport {
 	}
 	
 	def setMerge(IMerge value) {
-		if (current instanceof CompositeTransformerBuilder) {
+		if (current instanceof GTransformerBuilderTransformerBuilder) {
 			current.merger = true
 			current.transformation(value)
 			return current
@@ -176,46 +176,11 @@ class GTransformerBuilder extends BuilderSupport {
 	}
 
 	def setTransformation(ITransformation value) {
-		if (current instanceof CompositeTransformerBuilder) {
+		if (current instanceof GTransformerBuilderTransformerBuilder) {
 			current.transformation(value)
 			return current
 		}
 		throw new IllegalStateException();
-	}
-
-	static class CompositeTransformerBuilder extends TransformerBuilder {
-		boolean merger = false
-		List<IContentType> sourceContentTypes = []
-		
-		@Override
-		public TransformerBuilder source(IContentType sourceContentType) {
-			sourceContentTypes+=sourceContentType
-			return this
-		}
-		
-		@Override
-		public TransformerBuilder source(String sourceContentType) {
-			sourceContentTypes+=StandardContentTypes.byName(sourceContentType)
-			return this
-		}
-		
-		public ITransformer build() {
-			if (merger) {
-				def mergerBuilder = new MergerBuilder()
-				mergerBuilder.autoLookUp = autoLookUp
-				mergerBuilder.autoRegister = autoRegister
-				mergerBuilder.autoSplit = autoSplit
-				mergerBuilder.id(id)
-				mergerBuilder.registry = registry
-				mergerBuilder.sourceContentTypes = sourceContentTypes
-				mergerBuilder.targetContentType = targetContentType
-				mergerBuilder.transformation = transformation as IMerge
-				return mergerBuilder.build()
-			} else {
-				super.source(sourceContentTypes.last())
-				return super.build()
-			}
-		}
 	}
 	
 	@CompileDynamic

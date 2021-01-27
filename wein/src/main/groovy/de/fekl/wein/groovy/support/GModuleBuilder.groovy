@@ -276,28 +276,24 @@ class GModuleBuilder extends BuilderSupport {
 
 
 	def createNodes () {
-		if (current instanceof GModuleBuilderRouteBuilder) {
-			def child = new CompositeNodesBuilder()
-			current.nodesBuilder = child
-			return child
-		}
-		throw new IllegalStateException();
+		assert current instanceof GModuleBuilderRouteBuilder
+		def child = new CompositeNodesBuilder()
+		current.nodesBuilder = child
+		return child
 	}
 
 	def createEdges () {
-		if (current instanceof GModuleBuilderRouteBuilder) {
-			def child = new CompositeEdgesBuilder()
-			child.parent = current
-			current.edgesBuilder = child
-			return child
-		}
-		throw new IllegalStateException();
+		current instanceof GModuleBuilderRouteBuilder
+		def child = new CompositeEdgesBuilder()
+		child.parent = current
+		current.edgesBuilder = child
+		return child
 	}
 
 	def createNode () {
 		if (current instanceof CompositeNodesBuilder ) {
 			def child = new CompositeNodeBuilder()
-			current._nodeBuilders += child
+			current.add(child)
 			return child
 		} else if (current instanceof GModuleBuilderRouteBuilder) {
 			def child = new CompositeNodeBuilder()
@@ -313,15 +309,13 @@ class GModuleBuilder extends BuilderSupport {
 	}
 
 	def createRouteNode (Map map) {
-		if (current instanceof GModuleBuilderRouteBuilder) {
-			def child = createRouteNodeBuilder(map.id as String)
-			child.transformation = map.transformation as ITransformation
-			child.source = map.source?:map.input?:map.'in'?:map.'i/o'
-			child.target = map.target?:map.output?:map.'out'?:map.'i/o'
-			current.nodeBuilders += child
-			return child
-		}
-		throw new IllegalStateException();
+		assert current instanceof GModuleBuilderRouteBuilder
+		def child = createRouteNodeBuilder(map.id as String)
+		child.transformation = map.transformation as ITransformation
+		child.source = map.source?:map.input?:map.'in'?:map.'i/o'
+		child.target = map.target?:map.output?:map.'out'?:map.'i/o'
+		current.nodeBuilders += child
+		return child
 	}
 
 	def createRouteNode (String id) {
@@ -331,7 +325,7 @@ class GModuleBuilder extends BuilderSupport {
 			return child
 		} else if (current instanceof CompositeNodesBuilder) {
 			def child = createRouteNodeBuilder(id)
-			current._nodeBuilders += child
+			current.add(child)
 			return current
 		}
 		throw new IllegalStateException();
@@ -342,12 +336,10 @@ class GModuleBuilder extends BuilderSupport {
 	}
 
 	def createEdge () {
-		if (current instanceof CompositeEdgesBuilder) {
-			def child = new CompositeEdgeBuilder()
-			current.edgeBuilders += child
-			return child
-		}
-		throw new IllegalStateException();
+		assert current instanceof CompositeEdgesBuilder
+		def child = new CompositeEdgeBuilder()
+		current.add(child)
+		return child
 	}
 
 	def List<CompositeNodeBuilder> createRouteNodeBuilders(Collection names) {
@@ -355,26 +347,24 @@ class GModuleBuilder extends BuilderSupport {
 	}
 
 	def createEdge (Map map) {
-		if (current instanceof CompositeEdgesBuilder) {
-			if (map.target instanceof Collection) {
-				def edges = map.target.collect {
-					new CompositeEdgeBuilder().source(map.source as String).target(it as String)
-				}
-				current.edgeBuilders += edges
-				return current
-			} else if (map.source instanceof Collection) {
-				def edges = map.source.collect {
-					new CompositeEdgeBuilder().source(it as String).target(map.target as String)
-				}
-				current.edgeBuilders += edges
-				return current
-			} else {
-				def child = new CompositeEdgeBuilder().source(map.source as String).target(map.target as String)
-				current.edgeBuilders += child
-				return child
+		assert current instanceof CompositeEdgesBuilder
+		if (map.target instanceof Collection) {
+			def edges = map.target.collect {
+				new CompositeEdgeBuilder().source(map.source as String).target(it as String)
 			}
+			current.addAll(edges)
+			return current
+		} else if (map.source instanceof Collection) {
+			def edges = map.source.collect {
+				new CompositeEdgeBuilder().source(it as String).target(map.target as String)
+			}
+			current.addAll(edges)
+			return current
+		} else {
+			def child = new CompositeEdgeBuilder().source(map.source as String).target(map.target as String)
+			current.add(child)
+			return child
 		}
-		throw new IllegalStateException();
 	}
 
 	def setSplit(Boolean value) {
@@ -470,7 +460,7 @@ class GModuleBuilder extends BuilderSupport {
 		//@formatter:on
 		if (current instanceof GModuleBuilderRouteBuilder && !current.nodesBuilder) {
 			current.nodesBuilder = new CompositeNodesBuilder()
-			current.nodesBuilder._nodeBuilders += nodeNames.collect { createRouteNodeBuilder(it as String) }
+			current.nodesBuilder.addAll( nodeNames.collect { createRouteNodeBuilder(it as String) } )
 			return current
 		} else {
 			throw new IllegalStateException();
@@ -479,25 +469,14 @@ class GModuleBuilder extends BuilderSupport {
 
 	def injectRouteNode(String nodeName) {
 		//@formatter:off
-		if (current instanceof CompositeNodesBuilder) { current.addNodeBuilder(createRouteNodeBuilder(nodeName)) }
+		if (current instanceof CompositeNodesBuilder) { current.add(createRouteNodeBuilder(nodeName)) }
 		else 									      { throw new IllegalStateException() }
 		//@formatter:on
 	}
 
-	@Builder(builderStrategy = SimpleStrategy, prefix= '')
-	static class CompositeNodesBuilder {
-		List<CompositeNodeBuilder> _nodeBuilders = []
+	static class CompositeNodesBuilder extends GListBuilder<CompositeNodeBuilder,GModuleBuilderRouteBuilder>{}
 
-		def CompositeNodesBuilder addNodeBuilder(CompositeNodeBuilder nb) {
-			_nodeBuilders += nb
-			return this
-		}
-	}
-
-	static class CompositeEdgesBuilder {
-		GModuleBuilderRouteBuilder parent
-		List<CompositeEdgeBuilder> edgeBuilders = []
-	}
+	static class CompositeEdgesBuilder extends GListBuilder<CompositeEdgeBuilder,GModuleBuilderRouteBuilder>{}
 
 	@Builder(builderStrategy = SimpleStrategy, prefix= '')
 	static class CompositeNodeBuilder {
