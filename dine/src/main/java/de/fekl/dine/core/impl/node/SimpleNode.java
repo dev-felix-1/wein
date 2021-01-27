@@ -21,7 +21,11 @@ public class SimpleNode extends AbstractIdHolder<String> implements INode {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof INode node && getId().equals(node.getId());
+		if (obj instanceof INode) {
+			INode node = (INode) obj;
+			return getId().equals(node.getId());
+		}
+		return false;
 	}
 
 }

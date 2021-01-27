@@ -32,7 +32,7 @@ artifacts {
 //}
 
 javadoc.options {
-	addBooleanOption('-enable-preview', true)
+//	addBooleanOption('-enable-preview', true)
 	addStringOption('-release', '15')
 }
 
@@ -111,15 +111,15 @@ version = '1.0.0-SNAPSHOT'
 description = 'dine'
 java.sourceCompatibility = JavaVersion.VERSION_15
 
-compileJava {
-	options.compilerArgs += ['--enable-preview']
-}
-compileTestJava {
-	options.compilerArgs += ['--enable-preview']
-}
+//compileJava {
+//	options.compilerArgs += ['--enable-preview']
+//}
+//compileTestJava {
+//	options.compilerArgs += ['--enable-preview']
+//}
 test {
 	useJUnitPlatform{
 		includeEngines 'junit-jupiter'
 	}
-	jvmArgs(['--enable-preview'])
+//	jvmArgs(['--enable-preview'])
 }
