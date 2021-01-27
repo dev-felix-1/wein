@@ -13,7 +13,7 @@ import de.fekl.dine.core.impl.sponge.SimpleSpongeNetFactory;
  *
  * @since 1.0.0
  *
- * @param <N>
+ * @param <N> specifies the kind of nodes the graph holdes
  */
 public class SpongeNetBuilder<N extends INode> {
 

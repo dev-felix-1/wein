@@ -6,7 +6,7 @@ package de.fekl.dine.core.api.node;
  *
  * @since 1.0.0
  *
- * @param <N>
+ * @param <N> specifies the kind of nodes the graph holdes
  */
 public interface ISimpleNodeFactory<N extends INode> extends INodeFactory<N> {
 

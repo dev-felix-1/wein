@@ -1,5 +1,7 @@
 package de.fekl.dine.core.api.edge;
 
+import de.fekl.dine.core.api.base.IDirectedIdHolderConnector;
+
 /**
  * 
  * @author <a href="mailto:kleinfhq@gmail.com">Felix Kleine-Wilde</a>
@@ -7,10 +9,6 @@ package de.fekl.dine.core.api.edge;
  * @since 1.0.0
  * 
  */
-public interface IEdge {
-
-	String getSource();
-
-	String getTarget();
+public interface IEdge extends IDirectedIdHolderConnector<String> {
 
 }

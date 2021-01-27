@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.fekl.dine.core.api.graph.GraphNames;
 import de.fekl.dine.core.api.graph.IGraph;
 import de.fekl.dine.core.api.graph.IGraphRegistry;
 import de.fekl.dine.core.api.node.INode;
@@ -15,14 +14,9 @@ public class SimpleGraphRegistry<N extends INode, G extends IGraph<N>> implement
 	private final Map<String, G> map = new HashMap<>();
 
 	@Override
-	public synchronized String register(G graph) {
+	public synchronized void register(G graph) {
 		Precondition.isNotNull(graph);
-		String generatedName;
-		do {
-			generatedName = GraphNames.generateName();
-		} while (contains(generatedName));
-		map.put(generatedName, graph);
-		return generatedName;
+		map.put(graph.getId(), graph);
 	}
 
 	@Override
@@ -38,16 +32,6 @@ public class SimpleGraphRegistry<N extends INode, G extends IGraph<N>> implement
 	@Override
 	public Map<String, G> getMap() {
 		return Collections.unmodifiableMap(map);
-	}
-
-	@Override
-	public synchronized void register(String graphId, G graph) {
-		Precondition.isNotEmpty(graphId);
-		Precondition.isNotNull(graph);
-		if (contains(graphId)) {
-			throw new IllegalArgumentException(String.format("The id %s is already associated with a graph", graph));
-		}
-		map.put(graphId, graph);
 	}
 
 	@Override

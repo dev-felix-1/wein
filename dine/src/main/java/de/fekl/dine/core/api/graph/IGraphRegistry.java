@@ -9,14 +9,12 @@ import de.fekl.dine.core.api.node.INode;
  *
  * @since 1.0.0
  *
- * @param <N>
+ * @param <N> specifies the kind of nodes the graph holdes
  * @param <G>
  */
 public interface IGraphRegistry<N extends INode, G extends IGraph<N>> {
 
-	public String register(G graph);
-
-	public void register(String graphId, G graph);
+	public void register(G graph);
 
 	public void unRegister(String graphId);
 

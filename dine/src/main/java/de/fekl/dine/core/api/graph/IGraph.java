@@ -2,6 +2,7 @@ package de.fekl.dine.core.api.graph;
 
 import java.util.Collection;
 
+import de.fekl.dine.core.api.base.IIdHolder;
 import de.fekl.dine.core.api.node.INode;
 
 /**
@@ -9,9 +10,9 @@ import de.fekl.dine.core.api.node.INode;
  *
  * @since 1.0.0
  *
- * @param <N>
+ * @param <N> specifies the kind of nodes the graph holdes
  */
-public interface IGraph<N extends INode> {
+public interface IGraph<N extends INode> extends IIdHolder<String> {
 
 	Collection<N> getNodes();
 

@@ -6,8 +6,8 @@ package de.fekl.dine.core.api.base;
  *
  * @since 1.0.0
  * 
- * @param <I>
- * @param <N>
+ * @param <I> the type of the id the node will have
+ * @param <N> specifies the kind of nodes the graph holdes
  */
 public interface IFactory<I, N extends IIdHolder<I>> {
 

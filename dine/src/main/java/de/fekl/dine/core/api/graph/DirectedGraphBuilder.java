@@ -24,7 +24,7 @@ import de.fekl.dine.core.impl.node.SimpleNodeBuilder;
  *
  * @since 1.0.0
  *
- * @param <N>
+ * @param <N> specifies the kind of nodes the graph holdes
  */
 public class DirectedGraphBuilder<N extends INode> {
 

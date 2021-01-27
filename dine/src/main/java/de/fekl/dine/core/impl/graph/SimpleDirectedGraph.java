@@ -1,7 +1,6 @@
 package de.fekl.dine.core.impl.graph;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -10,15 +9,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.fekl.dine.core.api.edge.IEdge;
+import de.fekl.dine.core.api.graph.AbstractGraph;
+import de.fekl.dine.core.api.graph.GraphNames;
 import de.fekl.dine.core.api.graph.IDirectedGraph;
 import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.util.Precondition;
 
-public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
+public class SimpleDirectedGraph<N extends INode> extends AbstractGraph<N> implements IDirectedGraph<N> {
 
-	public static volatile boolean ALLOW_EMPTY_NODE_SET = false;
-
-	private final Map<String, N> nodes;
 	private final List<IEdge> edges;
 
 	// caching
@@ -27,38 +25,28 @@ public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 	private String prettyString = null;
 
 	public SimpleDirectedGraph(Set<N> nodes, List<IEdge> edges) {
-		if (!ALLOW_EMPTY_NODE_SET) {
-			Precondition.isNotEmpty(nodes);
-		}
-		Precondition.isNotNull(edges);
-		Map<String, N> nodeNamesMap = nodes.stream().collect(Collectors.toUnmodifiableMap(n -> n.getId(), n -> n));
-		for (IEdge edge : edges) {
-			if (!nodeNamesMap.containsKey(edge.getSource())) {
-				throw new IllegalArgumentException(String.format("Edge Source %s is not part of the nodes set %s",
-						edge.getSource(), nodeNamesMap.keySet().stream().collect(Collectors.joining(", "))));
-			}
-			if (!nodeNamesMap.containsKey(edge.getTarget())) {
-				throw new IllegalArgumentException(String.format("Edge Target %s is not part of the nodes set %s",
-						edge.getTarget(), nodeNamesMap.keySet().stream().collect(Collectors.joining(", "))));
-			}
-		}
-		this.nodes = nodeNamesMap;
-		this.edges = Collections.unmodifiableList(new ArrayList<>(edges));
+		this(GraphNames.generateName(), nodes, edges);
 	}
 
-	@Override
-	public Collection<N> getNodes() {
-		return nodes.values();
+	public SimpleDirectedGraph(String id, Set<N> nodes, List<IEdge> edges) {
+		super(id, nodes);
+		Precondition.isNotNull(edges);
+		for (IEdge edge : edges) {
+			if (!contains(edge.getSource())) {
+				throw new IllegalArgumentException(String.format("Edge Source %s is not part of the nodes set %s",
+						edge.getSource(), getNodeIds().stream().collect(Collectors.joining(", "))));
+			}
+			if (!contains(edge.getTarget())) {
+				throw new IllegalArgumentException(String.format("Edge Target %s is not part of the nodes set %s",
+						edge.getTarget(), getNodeIds().stream().collect(Collectors.joining(", "))));
+			}
+		}
+		this.edges = Collections.unmodifiableList(new ArrayList<>(edges));
 	}
 
 	@Override
 	public List<IEdge> getEdges() {
 		return edges;
-	}
-
-	@Override
-	public boolean contains(String name) {
-		return nodes.containsKey(name);
 	}
 
 	@Override
@@ -110,23 +98,8 @@ public class SimpleDirectedGraph<N extends INode> implements IDirectedGraph<N> {
 				}
 				""";
 		return String.format(printTemplate, this.getClass().getSimpleName(), 
-				nodes.keySet().stream().collect(Collectors.joining(", ")),
+				getNodeIds().stream().collect(Collectors.joining(", ")),
 				edges.stream().map(IEdge::toString).collect(Collectors.joining(", ")));
 		//@formatter:on
-	}
-
-	@Override
-	public boolean contains(N node) {
-		return nodes.containsValue(node);
-	}
-
-	@Override
-	public N getNode(String nodeId) {
-		return nodes.get(nodeId);
-	}
-
-	@Override
-	public Collection<String> getNodeIds() {
-		return nodes.keySet();
 	}
 }

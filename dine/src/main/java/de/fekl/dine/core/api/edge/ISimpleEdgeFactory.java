@@ -6,7 +6,7 @@ package de.fekl.dine.core.api.edge;
  *
  * @since 1.0.0
  *
- * @param <E>
+ * @param <E> the kind of edge that is build
  */
 public interface ISimpleEdgeFactory<E extends IEdge> extends IEdgeFactory<E> {
 

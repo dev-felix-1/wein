@@ -8,7 +8,7 @@ import de.fekl.dine.core.api.base.IFactory;
  *
  * @since 1.0.0
  *
- * @param <N>
+ * @param <N> specifies the kind of nodes the graph holdes
  */
 public interface INodeFactory<N extends INode> extends IFactory<String, N> {
 

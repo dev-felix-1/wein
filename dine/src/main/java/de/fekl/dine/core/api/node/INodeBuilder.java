@@ -8,7 +8,7 @@ import de.fekl.dine.core.api.base.IBuilder;
  *
  * @since 1.0.0
  *
- * @param <N>
+ * @param <N> specifies the kind of nodes the graph holdes
  * @param <F>
  * @param <B>
  */

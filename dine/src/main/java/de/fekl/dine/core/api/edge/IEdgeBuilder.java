@@ -6,9 +6,9 @@ package de.fekl.dine.core.api.edge;
  *
  * @since 1.0.0
  *
- * @param <E>
- * @param <F>
- * @param <B>
+ * @param <E> the kind of edge that is build
+ * @param <F> the factory that is used create build the edge implementation
+ * @param <B> the edgebuilder itself (SELF-PATTERN)
  */
 public interface IEdgeBuilder<E extends IEdge, F extends IEdgeFactory<E>, B extends IEdgeBuilder<E, F, B>> {
 

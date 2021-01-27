@@ -327,4 +327,9 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 		return getLeafs().stream().map(INode::getId).collect(Collectors.toSet());
 	}
 
+	@Override
+	public String getId() {
+		return graph.getId();
+	}
+
 }
