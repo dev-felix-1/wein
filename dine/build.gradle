@@ -5,11 +5,13 @@ plugins {
 	id 'signing'
 }
 
-//if (!System.env.NEXUS_REPO_ALL_URL) {
+group = 'io.github.feklwi'
+version = '1.0.0-SNAPSHOT'
+description = 'dine'
+
 //	plugins {
 //		id 'jacoco'
 //	}
-//} 
 
 java {
 	withJavadocJar()
@@ -18,11 +20,9 @@ java {
 
 //https://central.sonatype.org/pages/gradle.html
 
-//if (!System.env.NEXUS_REPO_ALL_URL) {
 //	jacoco {
 //		toolVersion = '0.8.7-SNAPSHOT'
 //	}
-//}
 
 artifacts {
 	archives javadocJar, sourcesJar
@@ -32,7 +32,6 @@ artifacts {
 //}
 
 javadoc.options {
-//	addBooleanOption('-enable-preview', true)
 	addStringOption('-release', '15')
 }
 
@@ -58,9 +57,10 @@ publishing {
 				}
 			}
 			
-			groupId = 'io.github.feklwi'
+			groupId = "$group"
 			artifactId = 'dine'
-			version = '1.0.0'
+			version = "$version"
+			
 			from components.java
 		}
 	}
@@ -106,20 +106,10 @@ dependencies {
 	testRuntimeOnly  'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
-group = 'de.fekl'
-version = '1.0.0-SNAPSHOT'
-description = 'dine'
 java.sourceCompatibility = JavaVersion.VERSION_15
 
-//compileJava {
-//	options.compilerArgs += ['--enable-preview']
-//}
-//compileTestJava {
-//	options.compilerArgs += ['--enable-preview']
-//}
 test {
 	useJUnitPlatform{
 		includeEngines 'junit-jupiter'
 	}
-//	jvmArgs(['--enable-preview'])
 }

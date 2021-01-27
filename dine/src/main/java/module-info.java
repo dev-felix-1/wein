@@ -5,4 +5,5 @@ module de.fekl.dine.core.api {
 	exports de.fekl.dine.core.api.edge;
 	exports de.fekl.dine.core.api.graph;
 	exports de.fekl.dine.core.api.sponge;
+	exports de.fekl.dine.util;
 }
