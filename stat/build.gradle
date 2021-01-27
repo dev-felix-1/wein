@@ -62,13 +62,13 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.fekl:dine:1.1.0'
+    implementation 'de.fekl:dine:1.0.0-SNAPSHOT'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
 group = 'de.fekl'
-version = '1.0.0'
+version = '1.0.0-SNAPSHOT'
 description = 'start'
 java.sourceCompatibility = JavaVersion.VERSION_15
 

@@ -48,14 +48,14 @@ repositories {
 
 dependencies {
     implementation 'org.codehaus.groovy:groovy:3.0.7'
-    implementation 'de.fekl:dine:1.1.0'
-    implementation 'de.fekl:stat:1.0.0'
+    implementation 'de.fekl:dine:1.0.0-SNAPSHOT'
+    implementation 'de.fekl:stat:1.0.0-SNAPSHOT'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
 group = 'de.fekl'
-version = '1.0.2'
+version = '1.0.0-SNAPSHOT'
 description = 'tran'
 java.sourceCompatibility = JavaVersion.VERSION_15
 
@@ -69,3 +69,26 @@ test {
 	useJUnitPlatform()
 	jvmArgs(['--enable-preview'])
 }
+
+//task customFatJar(type: Jar) {
+//	manifest {
+//						attributes 'Implementation-Title': 'TranComplete',
+//				'Implementation-Version': version,
+//				'Built-By': System.getProperty('user.name'),
+//				'Built-Date': new Date(),
+//				'Built-JDK': System.getProperty('java.version')
+//	}
+//	baseName = 'all-in-one-jar'
+//	from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } } 
+//	{
+//		exclude "META-INF/*.SF"
+//		exclude "META-INF/*.DSA"
+//		exclude "META-INF/*.RSA"
+//		exclude "org/*"
+//		exclude "groovy*/*"
+//	  }
+//	with jar
+//}
+
+
+

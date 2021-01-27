@@ -29,6 +29,28 @@ javadoc.options {
 publishing {
 	publications {
 		dine(MavenPublication) {
+			pom {
+				name = 'io.github.feklwi:dine'
+				description = 'A Library for creating Directed Graphs as a pure Data Model'
+				url = 'https://github.com/dev-felix-1/wein'
+				licenses {
+					license {
+						name = 'The Apache License, Version 2.0'
+						url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+					}
+				}
+				developers {
+					developer {
+						id = 'feklwi'
+						name = 'Felix Kleine-Wilde'
+						email = 'kleinfhq@gmail.com'
+					}
+				}
+			}
+			
+			groupId = 'io.github.feklwi'
+			artifactId = 'dine'
+			version = '1.0.0'
 			from components.java
 		}
 	}
@@ -75,7 +97,7 @@ dependencies {
 }
 
 group = 'de.fekl'
-version = '1.1.0'
+version = '1.0.0-SNAPSHOT'
 description = 'dine'
 java.sourceCompatibility = JavaVersion.VERSION_15
 
