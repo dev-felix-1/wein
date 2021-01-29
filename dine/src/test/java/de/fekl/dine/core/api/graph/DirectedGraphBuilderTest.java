@@ -30,6 +30,26 @@ public class DirectedGraphBuilderTest {
 	}
 
 	@Test
+	public void testCreateDirectedGraphWithNodeImplInEdgeBuild() {
+		IDirectedGraph<SimpleNode> graph;
+
+		graph = new DirectedGraphBuilder<SimpleNode>().addEdge(new SimpleNode("A"), new SimpleNode("B")).build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(2, graph.getNodes().size());
+		Assertions.assertEquals(1, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().addNode("A").addEdge("A", new SimpleNode("B")).build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(2, graph.getNodes().size());
+		Assertions.assertEquals(1, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().addNode("B").addEdge(new SimpleNode("A"), "B").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(2, graph.getNodes().size());
+		Assertions.assertEquals(1, graph.getEdges().size());
+	}
+
+	@Test
 	public void testCreateDirectedGraphWithNodeBuilders() {
 
 		//@formatter:off

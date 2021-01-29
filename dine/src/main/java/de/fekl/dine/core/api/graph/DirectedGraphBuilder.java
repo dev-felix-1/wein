@@ -50,7 +50,7 @@ public class DirectedGraphBuilder<N extends INode> {
 	private final List<IEdge> edges = new ArrayList<>();
 
 	private final List<String> nodesToCreateByName = new ArrayList<>();
-	private final List<Entry<String, String>> edgesToCreate = new ArrayList<>();
+	private final List<Entry<Object, Object>> edgesToCreate = new ArrayList<>();
 
 	private IDirectedGraphFactory<N> directedGraphFactory = new SimpleDirectedGraphFactory<N>();
 	private EdgeBuilderHolder<?, ?, ?> edgeBuilderHolder = new EdgeBuilderHolder<>(new SimpleEdgeBuilder());
@@ -99,10 +99,26 @@ public class DirectedGraphBuilder<N extends INode> {
 		return this;
 	}
 
+	public DirectedGraphBuilder<N> addEdge(String sourceNode, N targetNode) {
+		edgesToCreate.add(new AbstractMap.SimpleEntry<>(sourceNode, targetNode));
+		return this;
+	}
+
+	public DirectedGraphBuilder<N> addEdge(N sourceNode, String targetNode) {
+		edgesToCreate.add(new AbstractMap.SimpleEntry<>(sourceNode, targetNode));
+		return this;
+	}
+
+	public DirectedGraphBuilder<N> addEdge(N sourceNode, N targetNode) {
+		edgesToCreate.add(new AbstractMap.SimpleEntry<>(sourceNode, targetNode));
+		return this;
+	}
+
 	/**
 	 * 
 	 * @return a directed graph implementation
 	 */
+	@SuppressWarnings("unchecked")
 	public IDirectedGraph<N> build() {
 		for (String nodeId : nodesToCreateByName) {
 			if (nodeBuilderHolder == null || nodeBuilderHolder.nodeBuilder == null) {
@@ -111,12 +127,30 @@ public class DirectedGraphBuilder<N extends INode> {
 			N node = nodeBuilderHolder.nodeBuilder.id(nodeId).build();
 			nodes.add(node);
 		}
-		for (Entry<String, String> entry : edgesToCreate) {
+		for (Entry<Object, Object> entry : edgesToCreate) {
 			if (edgeBuilderHolder == null || edgeBuilderHolder.edgeBuilder == null) {
 				throw new IllegalStateException(
 						"You have to set an edgeBuilder, when you are using #addEdge(String,String)");
 			}
-			IEdge edge = edgeBuilderHolder.edgeBuilder.source(entry.getKey()).target(entry.getValue()).build();
+			Object key = entry.getKey();
+			Object value = entry.getValue();
+			String sourceId;
+			String targetId;
+
+			if (key instanceof INode) {
+				sourceId = ((INode) key).getId();
+				nodes.add((N) key);
+			} else {
+				sourceId = (String) key;
+			}
+			if (value instanceof INode) {
+				targetId = ((INode) value).getId();
+				nodes.add((N) value);
+			} else {
+				targetId = (String) value;
+			}
+
+			IEdge edge = edgeBuilderHolder.edgeBuilder.source(sourceId).target(targetId).build();
 			edges.add(edge);
 		}
 		if (LOOK_UP_NODES_FROM_EDGES) {
