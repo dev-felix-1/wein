@@ -28,6 +28,7 @@ import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
 import de.fekl.stat.core.api.token.IToken;
 import de.fekl.stat.core.api.token.ITokenFactory;
 import de.fekl.stat.core.api.token.ITokenStore;
+import de.fekl.stat.core.impl.edge.conditional.SimpleConditionEvaluationContext;
 
 public abstract class AbstractColouredNetProcessingContainer<T extends IToken, N extends INode>
 		implements IColouredNetProcessingContainer<T> {
@@ -153,7 +154,8 @@ public abstract class AbstractColouredNetProcessingContainer<T extends IToken, N
 	@SuppressWarnings("unchecked")
 	protected boolean evaluateEdgeCondition(N sourceNode, N targetNode, T token, IEdge edge) {
 		ICondition<N, T> condition = ((IConditionalEdge<N, T>) edge).getCondition();
-		return condition.evaluate(sourceNode, targetNode, token);
+		return condition.evaluate(
+				new SimpleConditionEvaluationContext<>(sourceNode, targetNode, token, (IConditionalEdge<N, T>) edge));
 	}
 
 	protected boolean edgeCanTransition(T token, IEdge edge) {

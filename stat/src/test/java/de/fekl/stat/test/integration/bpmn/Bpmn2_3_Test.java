@@ -6,17 +6,14 @@ import org.junit.jupiter.api.Test;
 import de.fekl.dine.core.api.graph.DirectedGraphBuilder;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
 import de.fekl.dine.core.api.sponge.SpongeNetBuilder;
+import de.fekl.stat.core.api.edge.conditional.IConditionEvaluationContext;
 
 public class Bpmn2_3_Test {
 
 	private static final String LBL_SALAT_ANR = "Salat anrichten";
-	private static final String LABEL_STEAK_BRATEN = "Steak braten";
+	private static final String LBL_STEAK_BRATEN = "Steak braten";
 	private static final String LBL_PASTA_KOCHEN = "Pasta kochen";
-	private static final String SALAT = "Salat";
-	private static final String STEAK = "Steak";
-	private static final String PASTA = "Pasta";
 	private static final String LBL_GEW_GER = "Gewünschtes Gericht?";
-	private static final String VAR_GEW_GER = "gewuenschtes_gericht";
 
 	private ISpongeNet<IBpmnFlowObject> buildModel() {
 		//@formatter:off
@@ -27,21 +24,15 @@ public class Bpmn2_3_Test {
 					.addEdge("Rezept aussuchen", LBL_GEW_GER)
 					
 					.addNode(new BpmnGatewayXOR(LBL_GEW_GER))	
-					.addEdge(new BpmnConnector(PASTA, LBL_GEW_GER, LBL_PASTA_KOCHEN, (source,target,token)->
-						token.get(VAR_GEW_GER).equals(PASTA)
-					))
-					.addEdge(new BpmnConnector(STEAK, LBL_GEW_GER, LABEL_STEAK_BRATEN, (source,target,token)->
-						token.get(VAR_GEW_GER).equals(STEAK)
-					))
-					.addEdge(new BpmnConnector(SALAT, LBL_GEW_GER, LBL_SALAT_ANR, (source,target,token)->
-						token.get(VAR_GEW_GER).equals(SALAT)
-					))
+					.addEdge(new BpmnConnector("Pasta", LBL_GEW_GER, LBL_PASTA_KOCHEN, (context)-> gewuenscht(context)))
+					.addEdge(new BpmnConnector("Steak", LBL_GEW_GER, LBL_STEAK_BRATEN, (context)-> gewuenscht(context)))
+					.addEdge(new BpmnConnector("Salat", LBL_GEW_GER, LBL_SALAT_ANR, (context)-> gewuenscht(context)))
 					
 					.addNode(new BpmnActivity(LBL_PASTA_KOCHEN))	
 					.addEdge(LBL_PASTA_KOCHEN, new BpmnEvent("Pasta fertig"))
 					
-					.addNode(new BpmnActivity(LABEL_STEAK_BRATEN))
-					.addEdge(LABEL_STEAK_BRATEN, new BpmnEvent("Steak fertig"))
+					.addNode(new BpmnActivity(LBL_STEAK_BRATEN))
+					.addEdge(LBL_STEAK_BRATEN, new BpmnEvent("Steak fertig"))
 					
 					.addNode(new BpmnActivity(LBL_SALAT_ANR))	
 					.addEdge(LBL_SALAT_ANR, new BpmnEvent("Salat fertig"))
@@ -50,6 +41,14 @@ public class Bpmn2_3_Test {
 		//@formatter:on
 		return model;
 
+	}
+
+	private boolean gewuenscht(IConditionEvaluationContext<IBpmnFlowObject, IBpmnToken> context) {
+		return getGewuenschtesGericht(context.getToken()).equals(((BpmnConnector) context.getEdge()).getId());
+	}
+
+	private Object getGewuenschtesGericht(IBpmnToken token) {
+		return token.get("gewuenschtes_gericht");
 	}
 
 	@Test
