@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import de.fekl.dine.core.api.edge.IEdge;
 import de.fekl.stat.core.api.state.operations.IStateChangeOperation;
 import de.fekl.stat.core.api.state.operations.ITokenCreationOperation;
 import de.fekl.stat.core.api.state.operations.ITokenMergeOperation;
@@ -236,6 +237,10 @@ public class ColouredNetOperations {
 	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> moveToken(String sourceNodeId,
 			String targetNodeId, T token) {
 		return new MoveToken<>(sourceNodeId, targetNodeId, token);
+	}
+	
+	public static <T extends IToken> IStateChangeOperation<ITokenStore<T>> moveToken(IEdge edge, T token) {
+		return new MoveToken<>(edge.getSource(), edge.getTarget(), token);
 	}
 
 	public static <T extends IToken, F extends ITokenFactory<T>> ITokenCreationOperation<T> copyToken(

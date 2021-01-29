@@ -130,7 +130,7 @@ public class AsyncColouredNetProcessingContainerTest {
 		Assertions.assertEquals("D", position);
 	}
 
-//	@Test
+	@Test
 	public void testConditionalRouteOnSplitterNodeProcessing() {
 
 		//@formatter:off
@@ -139,6 +139,7 @@ public class AsyncColouredNetProcessingContainerTest {
 						.addNode(new SimpleAutoSplitNode("B"))
 						.addEdge("A","B")
 						.addEdge(new SimpleConditionalEdge<>("B", "C", (a,b,c)-> true))
+						.addEdge(new SimpleConditionalEdge<>("B", "C", (a,b,c)-> false))
 						.addEdge("C","D"))
 				.build();
 		//@formatter:on
@@ -148,8 +149,7 @@ public class AsyncColouredNetProcessingContainerTest {
 		IColouredNetProcessingContainer<SimpleToken> processingContainer = new AsyncColouredNetProcessingContainer<>(
 				spongeNet, simpleTokenFactory);
 
-		Assertions.assertThrows(IllegalStateException.class,
-				() -> processingContainer.process(simpleTokenFactory.createToken()));
+		processingContainer.process(simpleTokenFactory.createToken());
 
 	}
 

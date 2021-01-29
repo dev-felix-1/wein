@@ -1,6 +1,9 @@
 package de.fekl.stat.core.impl.state.net;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import de.fekl.dine.core.api.edge.IEdge;
 import de.fekl.dine.core.api.node.INode;
@@ -164,9 +167,13 @@ public abstract class AbstractColouredNetProcessingContainer<T extends IToken, N
 			return true;
 		}
 	}
-	
+
 	protected boolean isFinished() {
 		return getTokenPositions().entrySet().stream().allMatch(e -> getNet().isLeaf(e.getValue()));
+	}
+
+	protected List<IEdge> filterTransitionReadyEdges(List<IEdge> edges, T token) {
+		return edges.stream().filter(e -> edgeCanTransition(token, e)).collect(Collectors.toList());
 	}
 
 }

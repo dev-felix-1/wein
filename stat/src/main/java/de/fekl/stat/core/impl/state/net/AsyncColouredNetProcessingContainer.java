@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import de.fekl.dine.core.api.edge.IEdge;
 import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
-import de.fekl.stat.core.api.edge.conditional.IConditionalEdge;
 import de.fekl.stat.core.api.state.IHistory;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
 import de.fekl.stat.core.api.state.operations.ITokenCreationOperation;
@@ -80,12 +79,10 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 		}
 
 		private void handleTokenSplitTransition(N currentNode, List<IEdge> outgoingEdges) {
-			for (int i = 0; i < outgoingEdges.size(); i++) {
-				IEdge edge = outgoingEdges.get(i);
-				if (edge instanceof IConditionalEdge) {
-					throw new IllegalStateException("Conditional Edge on Splitter-Node currently not supported!");
-				}
-				if (i == outgoingEdges.size() - 1) {
+			List<IEdge> readyEdges = filterTransitionReadyEdges(outgoingEdges, token);
+			for (int i = 0; i < readyEdges.size(); i++) {
+				IEdge edge = readyEdges.get(i);
+				if (i == readyEdges.size() - 1) {
 					handleTokenMoveTransition(token, edge);
 				} else {
 					handleTokenCopyTransition(token, edge);

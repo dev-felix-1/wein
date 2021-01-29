@@ -62,7 +62,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.fekl:dine:1.0.0-SNAPSHOT'
+    implementation 'io.github.feklwi:dine:1.0.0-SNAPSHOT'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
