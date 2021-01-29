@@ -89,7 +89,7 @@ public class SimpleColouredNetProcessingContainerTest {
 		ISpongeNet<SimpleNode> spongeNet = new SpongeNetBuilder<SimpleNode>()
 				.setGraph(new DirectedGraphBuilder<SimpleNode>()
 						.addEdge("A","B")
-						.addEdge(new SimpleConditionalEdge<>("B", "C", (a,b,c)-> conditionHolder.value))
+						.addEdge(new SimpleConditionalEdge<>("B", "C", (c)-> conditionHolder.value))
 						.addEdge("C","D"))
 				.setStartNode("A")
 				.build();
@@ -136,7 +136,7 @@ public class SimpleColouredNetProcessingContainerTest {
 				.setGraph(new DirectedGraphBuilder<SimpleNode>()
 						.addNode(new SimpleAutoSplitNode("B"))
 						.addEdge("A","B")
-						.addEdge(new SimpleConditionalEdge<>("B", "C", (a,b,c)-> true))
+						.addEdge(new SimpleConditionalEdge<>("B", "C", (c)-> true))
 						.addEdge("C","D"))
 				.build();
 		//@formatter:on

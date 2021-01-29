@@ -11,7 +11,7 @@ public class SimpleNode extends AbstractIdHolder<String> implements INode {
 
 	@Override
 	public String toString() {
-		return String.format("SimpleNode(%s)", getId());
+		return String.format("%s(%s)", getClass().getSimpleName(), getId());
 	}
 
 	@Override

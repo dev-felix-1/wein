@@ -1,12 +1,12 @@
 package de.fekl.stat.core.impl.state.net;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import de.fekl.dine.core.api.edge.IEdge;
 import de.fekl.dine.core.api.node.INode;
 import de.fekl.dine.core.api.sponge.ISpongeNet;
+import de.fekl.stat.core.api.events.IEvent;
 import de.fekl.stat.core.api.state.IHistory;
 import de.fekl.stat.core.api.state.net.IColouredNetProcessingContainer;
 import de.fekl.stat.core.api.state.operations.ITokenCreationOperation;
@@ -36,14 +37,37 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 	private boolean running;
 	private CountDownLatch waitForFinish;
 
-	private final Map<String, Map<String, List<T>>> tokenBuffers = new HashMap<>();
+	private final Map<String, Map<String, List<T>>> tokenBuffers = new ConcurrentHashMap<>();
 
 	private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 	private final List<TokenProcessingThread> tokenProcessors = new ArrayList<>();
 
+	class ArrivedOnMergeNode implements IEvent {
+
+		private final T token;
+		private final IEdge edge;
+
+		public ArrivedOnMergeNode(T token, IEdge edge) {
+			super();
+			this.token = token;
+			this.edge = edge;
+		}
+
+		public T getToken() {
+			return token;
+		}
+
+		public IEdge getEdge() {
+			return edge;
+		}
+
+	}
+
 	class TokenProcessingThread implements Runnable {
 
 		private CountDownLatch waitForUpdate;
+		
+		private boolean abort;
 
 		private final T token;
 
@@ -64,7 +88,7 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 
 				handleTokenTransition(currentNode);
 
-			} while (!getNet().isLeaf(position));
+			} while (!getNet().isLeaf(position) && !abort);
 
 		}
 
@@ -90,14 +114,6 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 			}
 		}
 
-		private void handleTokenWaitingForMerge(N currentNode, List<IEdge> outgoingEdges) {
-			List<T> allBufferedTokens = tokenBuffers.computeIfAbsent(currentNode.getId(), s -> new HashMap<>()).values()
-					.stream().flatMap(Collection::stream).collect(Collectors.toList());
-			if (!allBufferedTokens.contains(token)) {
-				attemptMoveToken(outgoingEdges);
-			}
-		}
-
 		private void attemptMoveToken(List<IEdge> outgoingEdges) {
 			Optional<IEdge> firstEdge = outgoingEdges.stream().filter(e -> edgeCanTransition(token, e)).findFirst();
 			if (firstEdge.isPresent()) {
@@ -112,9 +128,6 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 			if (!outgoingEdges.isEmpty()) {
 				if (isSplitterNode(currentNode)) {
 					handleTokenSplitTransition(currentNode, outgoingEdges);
-				} else if (isMergerNode(currentNode)) {
-					handleTokenWaitingForMerge(currentNode, outgoingEdges);
-					handleMerges();
 				} else {
 					attemptMoveToken(outgoingEdges);
 				}
@@ -123,6 +136,29 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 				if (isFinished()) {
 					shutdownProcess();
 				}
+			}
+		}
+
+		private void handleTokenMoveTransition(T token, IEdge edge) {
+			String target = edge.getTarget();
+			String source = edge.getSource();
+			getStateContainer().changeState(ColouredNetOperations.moveToken(source, target, token));
+			if (isMergerNode(getNet().getNode(target))) {
+				postProcessingEvent(new ArrivedOnMergeNode(token, edge));
+				abort = true;
+			}
+		}
+
+		private void handleTokenCopyTransition(T token, IEdge edge) {
+			String target = edge.getTarget();
+			ITokenCreationOperation<T> copyTokenOperation = ColouredNetOperations.copyToken(target, token,
+					getTokenFactory());
+			changeState(copyTokenOperation);
+			if (isMergerNode(getNet().getNode(target))) {
+				postProcessingEvent(new ArrivedOnMergeNode(token, edge));
+				abort = true;
+			} else {
+				startTokenProcessing(copyTokenOperation.getCreatedToken());
 			}
 		}
 
@@ -138,10 +174,11 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 
 	}
 
-	protected void startTokenProcessing(T token) {
+	protected TokenProcessingThread startTokenProcessing(T token) {
 		var tokenProcessor = new TokenProcessingThread(token);
 		tokenProcessors.add(tokenProcessor);
 		executorService.execute(tokenProcessor);
+		return tokenProcessor;
 	}
 
 	public AsyncColouredNetProcessingContainer(ISpongeNet<N> net, ITokenStore<T> initialState,
@@ -165,6 +202,44 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 
 		onStateChangedEvent(e -> {
 			System.err.println(ITokenStore.print(getCurrentState()));
+		});
+
+		onProcessingEvent(ArrivedOnMergeNode.class, event -> {
+
+			// add token to buffer
+			IEdge eventEdge = event.getEdge();
+			T eventToken = (T) event.getToken();
+			Map<String, List<T>> tokensBySourceNode = tokenBuffers.computeIfAbsent(eventEdge.getTarget(),
+					s -> new HashMap<>());
+			List<T> tokensForSourceNode = tokensBySourceNode.computeIfAbsent(eventEdge.getSource(),
+					s -> new ArrayList<>());
+			tokensForSourceNode.add(eventToken);
+
+			// check if a buffer is ready to be resolved and resolve
+			for (N mergeNode : getMergeNodes()) {
+				Map<String, List<T>> tokenBuffer = tokenBuffers.computeIfAbsent(mergeNode.getId(),
+						s -> new HashMap<>());
+				List<IEdge> incomingEdges = getNet().getIncomingEdges(mergeNode);
+				if (tokenBuffer.size() > 0) {
+					boolean doMerge = incomingEdges.size() > 0;
+					for (IEdge edge : incomingEdges) {
+						List<T> bufferedTokensForSource = tokenBuffer.get(edge.getSource());
+						if (bufferedTokensForSource == null || bufferedTokensForSource.isEmpty()) {
+							doMerge = false;
+							break;
+						}
+					}
+					if (doMerge) {
+						List<T> tokensToBeMerged = new ArrayList<>(incomingEdges.size());
+						for (IEdge edge : incomingEdges) {
+							List<T> bufferedTokensForSource = tokenBuffer.get(edge.getSource());
+							tokensToBeMerged.add(bufferedTokensForSource.remove(0));
+						}
+						handleTokenMerge(tokensToBeMerged, mergeNode.getId());
+					}
+				}
+			}
+
 		});
 
 		try {
@@ -191,58 +266,10 @@ public class AsyncColouredNetProcessingContainer<N extends INode, T extends ITok
 		postProcessingEvent(new ProcessFinishedEvent());
 	}
 
-	private synchronized void handleMerges() {
-		for (N mergeNode : getMergeNodes()) {
-			Map<String, List<T>> tokenBuffer = tokenBuffers.computeIfAbsent(mergeNode.getId(), s -> new HashMap<>());
-			List<IEdge> incomingEdges = getNet().getIncomingEdges(mergeNode);
-			if (tokenBuffer.size() > 0) {
-				boolean doMerge = incomingEdges.size() > 0;
-				for (IEdge edge : incomingEdges) {
-					List<T> bufferedTokensForSource = tokenBuffer.get(edge.getSource());
-					if (bufferedTokensForSource == null || bufferedTokensForSource.isEmpty()) {
-						doMerge = false;
-						break;
-					}
-				}
-				if (doMerge) {
-					List<T> tokensToBeMerged = new ArrayList<>(incomingEdges.size());
-					for (IEdge edge : incomingEdges) {
-						List<T> bufferedTokensForSource = tokenBuffer.get(edge.getSource());
-						tokensToBeMerged.add(bufferedTokensForSource.remove(0));
-					}
-					handleTokenMerge(tokensToBeMerged, mergeNode.getId());
-				}
-			}
-		}
-	}
-
 	private void handleTokenMerge(List<T> tokens, String targetNode) {
 		ITokenMergeOperation<T> mergeToken = ColouredNetOperations.mergeToken(targetNode, tokens, getTokenFactory());
 		changeState(mergeToken);
 		startTokenProcessing(mergeToken.getResultToken());
-	}
-
-	private void handleTokenCopyTransition(T token, IEdge edge) {
-		String target = edge.getTarget();
-		ITokenCreationOperation<T> copyTokenOperation = ColouredNetOperations.copyToken(target, token,
-				getTokenFactory());
-		changeState(copyTokenOperation);
-		startTokenProcessing(copyTokenOperation.getCreatedToken());
-	}
-
-	private void handleTokenMoveTransition(T token, IEdge edge) {
-		String target = edge.getTarget();
-		String source = edge.getSource();
-		getStateContainer().changeState(ColouredNetOperations.moveToken(source, target, token));
-		if (isMergerNode(getNet().getNode(target))) {
-			handleTokenArrivedOnMergeNode(source, target, token);
-		}
-	}
-
-	private void handleTokenArrivedOnMergeNode(String sourceNodeId, String mergerNodeId, T token) {
-		List<T> bufferedTokens = tokenBuffers.computeIfAbsent(mergerNodeId, s -> new HashMap<>())
-				.computeIfAbsent(sourceNodeId, s -> new LinkedList<>());
-		bufferedTokens.add(token);
 	}
 
 	private List<N> getMergeNodes() {

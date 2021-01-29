@@ -8,4 +8,9 @@ public class BpmnActivity extends SimpleNode implements IBpmnActivity {
 		super(id);
 	}
 
+	@Override
+	public void performActivity(IBpmnToken token) {
+		System.err.println("PERFROM: " + token);
+	}
+
 }

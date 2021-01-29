@@ -30,6 +30,88 @@ public class DirectedGraphBuilderTest {
 	}
 
 	@Test
+	public void testCreateDirectedGraphWithChainMethod() {
+
+		IDirectedGraph<SimpleNode> graph = new DirectedGraphBuilder<SimpleNode>().chain("A", "B", "C").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(3, graph.getNodes().size());
+		Assertions.assertEquals(2, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().addNode("D").chain("A", "B", "C").addEdge("C", "D").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(4, graph.getNodes().size());
+		Assertions.assertEquals(3, graph.getEdges().size());
+
+		Assertions.assertThrows(IllegalArgumentException.class,
+				() -> new DirectedGraphBuilder<SimpleNode>().chain("A").build());
+	}
+
+	@Test
+	public void testCreateDirectedGraphWithForkMethod() {
+		IDirectedGraph<SimpleNode> graph;
+
+		graph = new DirectedGraphBuilder<SimpleNode>().fork("A", "B").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(2, graph.getNodes().size());
+		Assertions.assertEquals(1, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().fork("A", "B", "C").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(3, graph.getNodes().size());
+		Assertions.assertEquals(2, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().addNode("A").fork("A", "B", "C", "D").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(4, graph.getNodes().size());
+		Assertions.assertEquals(3, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().fork(new SimpleNode("A"), "B").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(2, graph.getNodes().size());
+		Assertions.assertEquals(1, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().fork(new SimpleNode("A"), "B", "C").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(3, graph.getNodes().size());
+		Assertions.assertEquals(2, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().fork(new SimpleNode("A"), "B", "C", "D").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(4, graph.getNodes().size());
+		Assertions.assertEquals(3, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().fork(new SimpleNode("A"), new SimpleNode("B")).build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(2, graph.getNodes().size());
+		Assertions.assertEquals(1, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().fork("A", new SimpleNode("B")).build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(2, graph.getNodes().size());
+		Assertions.assertEquals(1, graph.getEdges().size());
+	}
+
+	@Test
+	public void testCreateDirectedGraphWithJoinMethod() {
+		IDirectedGraph<SimpleNode> graph;
+
+		graph = new DirectedGraphBuilder<SimpleNode>().join("A").on("B").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(2, graph.getNodes().size());
+		Assertions.assertEquals(1, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().join("A", "B").on("C").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(3, graph.getNodes().size());
+		Assertions.assertEquals(2, graph.getEdges().size());
+
+		graph = new DirectedGraphBuilder<SimpleNode>().addNode("A").join("A").on("B").build();
+		Assertions.assertNotNull(graph);
+		Assertions.assertEquals(2, graph.getNodes().size());
+		Assertions.assertEquals(1, graph.getEdges().size());
+	}
+
+	@Test
 	public void testCreateDirectedGraphWithNodeImplInEdgeBuild() {
 		IDirectedGraph<SimpleNode> graph;
 
@@ -193,6 +275,28 @@ public class DirectedGraphBuilderTest {
 		Assertions.assertEquals(2, graph.getNodes().size());
 		Assertions.assertEquals(1, graph.getEdges().size());
 
+	}
+
+	@Test
+	public void testMediatorSyntaxForFork() {
+
+//		IDirectedGraph<SimpleNode> graph = new DirectedGraphBuilder<SimpleNode>()
+//		//@formatter:off		
+////				.fork("A", new DirectedGraphBuilder()
+////						
+////				
+////				)
+////					.to("B")
+////					.to("C")
+////					.fork("D")
+////						.to()
+////						.to()
+//		
+//		//@formatter:on
+//				.build();
+////		Assertions.assertNotNull(graph);
+////		Assertions.assertEquals(3, graph.getNodes().size());
+////		Assertions.assertEquals(2, graph.getEdges().size());
 	}
 
 }

@@ -17,6 +17,8 @@ import de.fekl.dine.core.api.sponge.ISpongeNet;
 import de.fekl.dine.core.impl.edge.SimpleEdge;
 import de.fekl.dine.util.Precondition;
 
+//FIXME it is not clear, if we really want to support only one start node. For BPMN, this would a problem, because there might be joining events.
+//also we cannot detect if everything is connected correctly
 public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 
 	private final IDirectedGraph<N> graph;
@@ -41,27 +43,21 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 	}
 
 	private static <N extends INode> void checkIsConnected(IDirectedGraph<N> graph, String startNode) {
-		Set<String> collectChildren = collectChildrenUndirected(graph, startNode);
+		Set<String> collectChildren = collectChildren(graph, startNode);
 		if (collectChildren.size() != graph.getNodes().size()) {
 			ArrayList<String> nodeIds = new ArrayList<>(graph.getNodeIds());
 			nodeIds.removeAll(collectChildren);
 			throw new IllegalArgumentException(
-					String.format("Found %s unconnected nodes: %s", nodeIds.size(), nodeIds));
+					String.format("Found %s unconnected nodes: %s %ngraph>%s", nodeIds.size(), nodeIds, graph));
 		}
 	}
 
-	private static <N extends INode> void collectChildrenUndirected(IDirectedGraph<N> graph, String startNode,
+	private static <N extends INode> void collectChildren(IDirectedGraph<N> graph, String startNode,
 			Set<String> visited) {
 		String currentOut = collectChildrenOnewayOutgoingPath(graph, startNode, visited);
 		for (IEdge edge : graph.getOutgoingEdges(currentOut)) {
 			if (!visited.contains(edge.getTarget())) {
-				collectChildrenUndirected(graph, edge.getTarget(), visited);
-			}
-		}
-		String currentIn = collectChildrenOnewayIncomingPath(graph, startNode, visited);
-		for (IEdge edge : graph.getIncomingEdges(currentIn)) {
-			if (!visited.contains(edge.getSource())) {
-				collectChildrenUndirected(graph, edge.getSource(), visited);
+				collectChildren(graph, edge.getTarget(), visited);
 			}
 		}
 	}
@@ -81,24 +77,9 @@ public class SimpleSpongeNet<N extends INode> implements ISpongeNet<N> {
 		return current;
 	}
 
-	private static <N extends INode> String collectChildrenOnewayIncomingPath(IDirectedGraph<N> graph, String startNode,
-			Set<String> visited) {
-		String current = startNode;
-		List<IEdge> incomingEdges = null;
-		while ((incomingEdges = graph.getIncomingEdges(current)).size() == 1) {
-			if (visited.contains(current)) {
-				return current;
-			}
-			visited.add(current);
-			current = incomingEdges.get(0).getSource();
-		}
-		visited.add(current);
-		return current;
-	}
-
-	private static <N extends INode> Set<String> collectChildrenUndirected(IDirectedGraph<N> graph, String startNode) {
+	private static <N extends INode> Set<String> collectChildren(IDirectedGraph<N> graph, String startNode) {
 		Set<String> children = new HashSet<>();
-		collectChildrenUndirected(graph, startNode, children);
+		collectChildren(graph, startNode, children);
 		return children;
 	}
 

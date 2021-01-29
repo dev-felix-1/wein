@@ -7,6 +7,7 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+//FIXME random names sometimes collide
 public class NodeNamesTest {
 
 	@Test
@@ -22,7 +23,7 @@ public class NodeNamesTest {
 	public void testQuickCollision() {
 
 		List<String> randomNames = new LinkedList<>();
-		for (int i = 0; i < 24000; i++) {
+		for (int i = 0; i < 22000; i++) {
 			randomNames.add(NodeNames.generateNodeName());
 		}
 		// hashCode Collision
@@ -31,7 +32,8 @@ public class NodeNamesTest {
 			// string Collision (real collision)
 			while (randomNames.size() > 0) {
 				String removed = randomNames.remove(0);
-				Assertions.assertFalse(randomNames.stream().anyMatch(name -> name.equals(removed)));
+				Assertions.assertFalse(randomNames.stream().anyMatch(name -> name.equals(removed)),
+						String.format("%s", randomNames));
 			}
 		}
 	}

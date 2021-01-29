@@ -2,7 +2,6 @@ package de.fekl.stat.core.impl.state.net;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import de.fekl.dine.core.api.edge.IEdge;
@@ -136,11 +135,11 @@ public abstract class AbstractColouredNetProcessingContainer<T extends IToken, N
 	}
 
 	protected boolean isSplitterNode(N node) {
-		return node instanceof IAutoSplitNode;
+		return node instanceof IAutoSplitNode && getNet().getOutgoingEdges(node).size() > 1;
 	}
 
 	protected boolean isMergerNode(N node) {
-		return node instanceof IAutoMergeNode;
+		return node instanceof IAutoMergeNode && getNet().getIncomingEdges(node).size() > 1;
 	}
 
 	protected void changeState(IStateChangeOperation<ITokenStore<T>> stateChangeOperation) {
